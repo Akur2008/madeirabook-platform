@@ -52,15 +52,15 @@ export interface AudioEngineContextValue {
   state: EngineState | null
   start: () => Promise<void>
   stop: () => Promise<void>
-  playAmbient: (url: string, options?: { loop?: boolean; volume?: number }) => Promise<void>
-  playSluice: (url: string, durationSec?: number) => Promise<void>
-  playVideo: (url: string, options?: { loop?: boolean }) => Promise<void>
+  playAmbient: (url: string | string[], options?: { loop?: boolean; volume?: number }) => Promise<void>
+  playSluice: (url: string | string[], durationSec?: number) => Promise<void>
+  playVideo: (url: string | string[], options?: { loop?: boolean }) => Promise<void>
   stopVideo: () => void
   stopAll: () => void
   setVolume: (channel: ChannelName, value: number) => void
   duck: (targetVolume?: number, duration?: number) => void
   unduck: (targetVolume?: number, duration?: number) => void
-  crossfade: (fromUrl: string, toUrl: string, duration?: number) => Promise<void>
+  crossfade: (fromUrl: string, toUrl: string | string[], duration?: number) => Promise<void>
 }
 
 const AudioEngineContext = createContext<AudioEngineContextValue | null>(null)

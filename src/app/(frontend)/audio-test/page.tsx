@@ -4,10 +4,13 @@ import React, { useState } from 'react'
 import { useAudioEngine } from '@/audio/useAudioEngine'
 import { ChannelName } from '@/audio/types'
 
-const AMBIENT_URL = '/audio/ambient-dawn.m4a'
-const AMBIENT_ALT_URL = '/audio/ambient-crickets.m4a'
-const SLUICE_URL = '/audio/sluice-bird.m4a'
-const VIDEO_URL = '/audio/ambient-dawn.m4a'
+const R2 = 'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev'
+
+// R2 primary, local public/audio fallback (R2 bucket lacks CORS for now)
+const AMBIENT_URL = [`${R2}/sounds/ocean-ambient.m4a`, '/audio/ambient-dawn.m4a']
+const AMBIENT_ALT_URL = [`${R2}/gateways/catamaran.m4a`, '/audio/ambient-crickets.m4a']
+const SLUICE_URL = [`${R2}/gateways/above-clouds.m4a`, '/audio/sluice-bird.m4a']
+const VIDEO_URL = [`${R2}/gateways/dolphins.m4a`, '/audio/ambient-dawn.m4a']
 
 const CHANNELS: ChannelName[] = ['globalAmbient', 'sluiceBuffer', 'videoAudio']
 
@@ -113,7 +116,7 @@ export default function AudioTestPage() {
             async () => {
               const from = ambientAlt ? AMBIENT_ALT_URL : AMBIENT_URL
               const to = ambientAlt ? AMBIENT_URL : AMBIENT_ALT_URL
-              await engine.crossfade(from, to, 1500)
+              await engine.crossfade(from[0], to, 1500)
               setAmbientAlt(!ambientAlt)
             },
           )}

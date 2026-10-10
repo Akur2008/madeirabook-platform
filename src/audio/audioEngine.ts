@@ -78,7 +78,7 @@ export class AudioEngine {
     })
   }
 
-  private load(url: string): Promise<AudioBuffer> {
+  private loadOne(url: string): Promise<AudioBuffer> {
     let cached = this.buffers.get(url)
     if (!cached) {
       cached = Promise.race([
@@ -96,6 +96,21 @@ export class AudioEngine {
       cached.catch(() => this.buffers.delete(url))
     }
     return cached
+  }
+
+  private async load(
+    input: string | string[],
+  ): Promise<{ buffer: AudioBuffer; url: string }> {
+    const urls = Array.isArray(input) ? input : [input]
+    let lastErr: unknown
+    for (const url of urls) {
+      try {
+        return { buffer: await this.loadOne(url), url }
+      } catch (err) {
+        lastErr = err
+      }
+    }
+    throw lastErr instanceof Error ? lastErr : new Error('all audio sources failed')
   }
 
   private makeSource(
@@ -171,17 +186,17 @@ export class AudioEngine {
   }
 
   async playAmbient(
-    url: string,
+    url: string | string[],
     options: { loop?: boolean; volume?: number } = {},
   ): Promise<void> {
     const ctx = this.ensureContext()
     const { loop = true, volume } = options
     if (volume !== undefined) this.setVolume('globalAmbient', volume)
-    const buffer = await this.load(url)
+    const { buffer, url: resolvedUrl } = await this.load(url)
     this.stopActive(this.ambientSource)
     const channelGain = this.channelGains!.globalAmbient
     const active = this.makeSource(buffer, channelGain, loop)
-    active.url = url
+    active.url = resolvedUrl
     active.gain.gain.value = 1
     active.source.onended = () => {
       if (this.ambientSource === active) {
@@ -194,12 +209,12 @@ export class AudioEngine {
     this.emit()
   }
 
-  async playSluice(url: string, durationSec?: number): Promise<void> {
+  async playSluice(url: string | string[], durationSec?: number): Promise<void> {
     const ctx = this.ensureContext()
-    const buffer = await this.load(url)
+    const { buffer, url: resolvedUrl } = await this.load(url)
     this.stopActive(this.sluiceSource)
     const active = this.makeSource(buffer, this.channelGains!.sluiceBuffer, false)
-    active.url = url
+    active.url = resolvedUrl
     active.gain.gain.value = 1
     active.source.onended = () => {
       if (this.sluiceSource === active) {
@@ -216,16 +231,16 @@ export class AudioEngine {
     this.emit()
   }
 
-  async playVideo(url: string, options: { loop?: boolean } = {}): Promise<void> {
+  async playVideo(url: string | string[], options: { loop?: boolean } = {}): Promise<void> {
     const ctx = this.ensureContext()
-    const buffer = await this.load(url)
+    const { buffer, url: resolvedUrl } = await this.load(url)
     this.stopActive(this.videoSource)
     const active = this.makeSource(
       buffer,
       this.channelGains!.videoAudio,
       options.loop ?? true,
     )
-    active.url = url
+    active.url = resolvedUrl
     active.gain.gain.value = 1
     active.source.onended = () => {
       if (this.videoSource === active) {
@@ -296,11 +311,11 @@ export class AudioEngine {
 
   async crossfade(
     _fromUrl: string,
-    toUrl: string,
+    toUrl: string | string[],
     duration = CROSSFADE_DURATION_MS,
   ): Promise<void> {
     const ctx = this.ensureContext()
-    const buffer = await this.load(toUrl)
+    const { buffer, url: resolvedUrl } = await this.load(toUrl)
     const channelGain = this.channelGains!.globalAmbient
     const durationSec = duration / 1000
     const now = ctx.currentTime
@@ -320,7 +335,7 @@ export class AudioEngine {
     }
 
     const incoming = this.makeSource(buffer, channelGain, true)
-    incoming.url = toUrl
+    incoming.url = resolvedUrl
     incoming.gain.gain.value = 0
     incoming.gain.gain.setValueCurveAtTime(fadeInCurve(0, 1), now, durationSec)
     incoming.source.onended = () => {
