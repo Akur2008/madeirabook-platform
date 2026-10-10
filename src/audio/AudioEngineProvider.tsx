@@ -8,11 +8,44 @@ import React, {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react'
 import { AudioEngine } from './audioEngine'
 import { ChannelName, EngineState } from './types'
 
 export const AUDIO_STARTED_KEY = 'madeirabook_audio_started'
+
+const armedListeners = new Set<() => void>()
+
+function readArmed(): boolean {
+  try {
+    return localStorage.getItem(AUDIO_STARTED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function setArmed(value: boolean): void {
+  try {
+    if (value) {
+      localStorage.setItem(AUDIO_STARTED_KEY, '1')
+    } else {
+      localStorage.removeItem(AUDIO_STARTED_KEY)
+    }
+  } catch {
+    // private mode
+  }
+  for (const listener of armedListeners) listener()
+}
+
+function subscribeArmed(listener: () => void): () => void {
+  armedListeners.add(listener)
+  return () => armedListeners.delete(listener)
+}
+
+function serverArmed(): boolean {
+  return false
+}
 
 export interface AudioEngineContextValue {
   isStarted: boolean
@@ -34,14 +67,7 @@ const AudioEngineContext = createContext<AudioEngineContextValue | null>(null)
 
 export function AudioEngineProvider({ children }: { children: React.ReactNode }) {
   const engineRef = useRef<AudioEngine | null>(null)
-  const [isStarted, setIsStarted] = useState(() => {
-    if (typeof window === 'undefined') return false
-    try {
-      return localStorage.getItem(AUDIO_STARTED_KEY) === '1'
-    } catch {
-      return false
-    }
-  })
+  const isStarted = useSyncExternalStore(subscribeArmed, readArmed, serverArmed)
   const [state, setState] = useState<EngineState | null>(null)
 
   const engine = useCallback((): AudioEngine => {
@@ -54,23 +80,13 @@ export function AudioEngineProvider({ children }: { children: React.ReactNode })
 
   const start = useCallback(async () => {
     await engine().start()
-    setIsStarted(true)
-    try {
-      localStorage.setItem(AUDIO_STARTED_KEY, '1')
-    } catch {
-      // private mode
-    }
+    setArmed(true)
   }, [engine])
 
   const stop = useCallback(async () => {
     engine().stopAll()
     await engine().suspend()
-    setIsStarted(false)
-    try {
-      localStorage.removeItem(AUDIO_STARTED_KEY)
-    } catch {
-      // private mode
-    }
+    setArmed(false)
   }, [engine])
 
   useEffect(() => {

@@ -81,12 +81,17 @@ export class AudioEngine {
   private load(url: string): Promise<AudioBuffer> {
     let cached = this.buffers.get(url)
     if (!cached) {
-      cached = fetch(url)
-        .then((res) => {
-          if (!res.ok) throw new Error(`fetch ${url} -> ${res.status}`)
-          return res.arrayBuffer()
-        })
-        .then((buf) => this.decode(buf))
+      cached = Promise.race([
+        fetch(url)
+          .then((res) => {
+            if (!res.ok) throw new Error(`fetch ${url} -> ${res.status}`)
+            return res.arrayBuffer()
+          })
+          .then((buf) => this.decode(buf)),
+        new Promise<AudioBuffer>((_, reject) =>
+          setTimeout(() => reject(new Error(`decode timeout: ${url}`)), 20000),
+        ),
+      ])
       this.buffers.set(url, cached)
       cached.catch(() => this.buffers.delete(url))
     }
