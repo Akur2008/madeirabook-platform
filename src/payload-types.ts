@@ -73,6 +73,8 @@ export interface Config {
     amenities: Amenity;
     properties: Property;
     gateways: Gateway;
+    'sluice-pages': SluicePage;
+    cities: City;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +88,8 @@ export interface Config {
     amenities: AmenitiesSelect<false> | AmenitiesSelect<true>;
     properties: PropertiesSelect<false> | PropertiesSelect<true>;
     gateways: GatewaysSelect<false> | GatewaysSelect<true>;
+    'sluice-pages': SluicePagesSelect<false> | SluicePagesSelect<true>;
+    cities: CitiesSelect<false> | CitiesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -268,6 +272,56 @@ export interface Gateway {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sluice-pages".
+ */
+export interface SluicePage {
+  id: number;
+  title: string;
+  slug: string;
+  brand: 'mb' | 'mo';
+  stateGroup: 'MB-01' | 'MB-02' | 'MB-03' | 'MB-04' | 'MB-05' | 'MO-01' | 'MO-02' | 'MO-03';
+  element?: ('ocean' | 'terra' | 'forest' | 'sun' | 'wild') | null;
+  phase?: ('direct' | 'adjacent' | 'wildcard' | 'any') | null;
+  videoUrl?: string | null;
+  posterUrl?: string | null;
+  ambientAudioUrl?: string | null;
+  videoDurationSeconds?: number | null;
+  shortDescription?: string | null;
+  fullDescription?: string | null;
+  transcript?: string | null;
+  schemaJson?: string | null;
+  status?: ('draft' | 'published') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cities".
+ */
+export interface City {
+  id: number;
+  name: string;
+  slug: string;
+  airportCode: string;
+  country: string;
+  flightDurationMinutes?: number | null;
+  basePrice?: number | null;
+  currency?: string | null;
+  hero?: string | null;
+  description?: string | null;
+  faqs?:
+    | {
+        question?: string | null;
+        answer?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  status?: ('draft' | 'published') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -313,6 +367,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'gateways';
         value: number | Gateway;
+      } | null)
+    | ({
+        relationTo: 'sluice-pages';
+        value: number | SluicePage;
+      } | null)
+    | ({
+        relationTo: 'cities';
+        value: number | City;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -463,6 +525,54 @@ export interface GatewaysSelect<T extends boolean = true> {
   slug?: T;
   subtitle?: T;
   element?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sluice-pages_select".
+ */
+export interface SluicePagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  brand?: T;
+  stateGroup?: T;
+  element?: T;
+  phase?: T;
+  videoUrl?: T;
+  posterUrl?: T;
+  ambientAudioUrl?: T;
+  videoDurationSeconds?: T;
+  shortDescription?: T;
+  fullDescription?: T;
+  transcript?: T;
+  schemaJson?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cities_select".
+ */
+export interface CitiesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  airportCode?: T;
+  country?: T;
+  flightDurationMinutes?: T;
+  basePrice?: T;
+  currency?: T;
+  hero?: T;
+  description?: T;
+  faqs?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   status?: T;
   updatedAt?: T;
   createdAt?: T;
