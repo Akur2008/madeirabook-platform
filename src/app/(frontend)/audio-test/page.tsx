@@ -1,0 +1,137 @@
+'use client'
+
+import React, { useState } from 'react'
+import { useAudioEngine } from '@/audio/useAudioEngine'
+import { ChannelName } from '@/audio/types'
+
+const AMBIENT_URL = '/audio/ambient-river.m4a'
+const AMBIENT_ALT_URL = '/audio/ambient-crickets.m4a'
+const SLUICE_URL = '/audio/sluice-bird.m4a'
+const VIDEO_URL = '/audio/ambient-river.m4a'
+
+const CHANNELS: ChannelName[] = ['globalAmbient', 'sluiceBuffer', 'videoAudio']
+
+export default function AudioTestPage() {
+  const engine = useAudioEngine()
+  const [log, setLog] = useState<string[]>([])
+  const [videoOn, setVideoOn] = useState(false)
+  const [ambientAlt, setAmbientAlt] = useState(false)
+
+  const addLog = (msg: string) => {
+    setLog((prev) => [`${new Date().toLocaleTimeString()} ${msg}`, ...prev].slice(0, 40))
+  }
+
+  const run = (label: string, fn: () => void | Promise<void>) => async () => {
+    addLog(label)
+    try {
+      await fn()
+    } catch (err) {
+      addLog(`ERROR: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  const btn =
+    'rounded border border-gray-600 bg-gray-800 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-700 disabled:opacity-40'
+
+  return (
+    <div className="mx-auto max-w-2xl px-6 py-12 text-white">
+      <h1 className="mb-2 text-3xl font-bold">AudioEngine Test</h1>
+      <p className="mb-6 text-sm text-gray-400">
+        context: {engine.state?.contextState ?? 'uninitialized'} · started:{' '}
+        {String(engine.isStarted)}
+      </p>
+
+      {!engine.isStarted && (
+        <button
+          className={`${btn} mb-6 border-green-600 bg-green-800 text-base hover:bg-green-700`}
+          onClick={run('start()', () => engine.start())}
+        >
+          ▶ Start Engine
+        </button>
+      )}
+
+      <div className="mb-6 grid grid-cols-3 gap-3">
+        {CHANNELS.map((name) => {
+          const ch = engine.state?.channels[name]
+          return (
+            <div key={name} className="rounded border border-gray-700 bg-gray-900 p-3">
+              <div className="text-xs uppercase text-gray-400">{name}</div>
+              <div className="text-2xl font-mono">{(ch?.volume ?? 0).toFixed(2)}</div>
+              <div className="text-xs text-gray-500">
+                {ch?.playing ? `playing: ${ch.url}` : 'idle'}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        <button
+          className={btn}
+          disabled={!engine.isStarted}
+          onClick={run('playAmbient(river, loop, 0.25)', () =>
+            engine.playAmbient(AMBIENT_URL, { loop: true, volume: 0.25 }),
+          )}
+        >
+          Play Ambient
+        </button>
+        <button
+          className={btn}
+          disabled={!engine.isStarted}
+          onClick={run('playSluice(2s)', () => engine.playSluice(SLUICE_URL, 2))}
+        >
+          Play Sluice
+        </button>
+        <button
+          className={btn}
+          disabled={!engine.isStarted}
+          onClick={run(videoOn ? 'stopVideo() + unduck' : 'playVideo() + duck', async () => {
+            if (videoOn) {
+              engine.stopVideo()
+              setVideoOn(false)
+            } else {
+              await engine.playVideo(VIDEO_URL)
+              setVideoOn(true)
+            }
+          })}
+        >
+          Toggle Video
+        </button>
+        <button
+          className={btn}
+          disabled={!engine.isStarted}
+          onClick={run(
+            `crossfade(${ambientAlt ? 'crickets' : 'river'} -> ${ambientAlt ? 'river' : 'crickets'}, 1500ms)`,
+            async () => {
+              const from = ambientAlt ? AMBIENT_ALT_URL : AMBIENT_URL
+              const to = ambientAlt ? AMBIENT_URL : AMBIENT_ALT_URL
+              await engine.crossfade(from, to, 1500)
+              setAmbientAlt(!ambientAlt)
+            },
+          )}
+        >
+          Crossfade Ambient
+        </button>
+        <button
+          className={`${btn} border-red-700 hover:bg-red-900`}
+          disabled={!engine.isStarted}
+          onClick={run('stopAll()', () => {
+            engine.stopAll()
+            setVideoOn(false)
+          })}
+        >
+          Stop All
+        </button>
+      </div>
+
+      <h2 className="mb-2 text-lg font-semibold">Event log</h2>
+      <div className="h-56 overflow-y-auto rounded border border-gray-700 bg-black p-3 font-mono text-xs text-green-400">
+        {log.length === 0 ? (
+          <div className="text-gray-600">no events yet</div>
+        ) : (
+          log.map((entry, i) => <div key={i}>{entry}</div>)
+        )}
+      </div>
+    </div>
+  )
+}
