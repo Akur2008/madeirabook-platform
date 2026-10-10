@@ -1,67 +1,71 @@
-# Payload Blank Template
+# madeirabook-platform
 
-This template comes configured with the bare minimum to get started on anything you need.
+Pilot portal for Madeirabook — Next.js 15 (App Router) + Payload CMS v3 + Neon Postgres.
 
-## Quick start
+This is a parallel pilot, not a migration. The Express backend (`madeirabook-core`) keeps running and shares the same Neon database.
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+## Stack
 
-## Quick Start - local setup
+- Next.js 15.5.4 (App Router, TypeScript)
+- Payload CMS 3.90.2 (embedded, admin at `/admin`)
+- `@payloadcms/db-postgres` — Neon Postgres
+- React 19, Tailwind
 
-To spin up this template locally, follow these steps:
+## Requirements
 
-### Clone
+- Node.js `^18.20.2 || >=20.9.0`
+- npm 10+ (or pnpm 9/10/11)
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+## Setup
 
-### Development
+```bash
+git clone git@github.com:Akur2008/madeirabook-platform.git
+cd madeirabook-platform
+cp .env.example .env
+npm install
+```
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+Fill in `.env`:
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+| Variable         | Description                                          |
+| ---------------- | ---------------------------------------------------- |
+| `DATABASE_URL`   | Neon Postgres connection string (same DB as core)    |
+| `PAYLOAD_SECRET` | Random secret string (e.g. `openssl rand -hex 32`)   |
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+Payload creates its own tables in the shared database on first run (schema push in dev mode). It does not modify existing tables — do NOT touch the `legacy` schema.
 
-#### Docker (Optional)
+## Run
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+```bash
+npm run dev
+```
 
-To do so, follow these steps:
+- Frontend: http://localhost:3000
+- Admin panel: http://localhost:3000/admin — create the first admin user on first visit
+- REST API: http://localhost:3000/api/gateways
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+## Build
 
-## How it works
+```bash
+npm run build
+npm start
+```
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+## Useful scripts
 
-### Collections
+| Command                     | Purpose                                  |
+| --------------------------- | ---------------------------------------- |
+| `npm run generate:types`    | Regenerate `src/payload-types.ts`        |
+| `npm run generate:importmap`| Regenerate admin import map              |
+| `npm run lint`              | ESLint                                   |
+| `npm run test:int`          | Integration tests (vitest)               |
+| `npm run test:e2e`          | E2E tests (playwright)                   |
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+## Collections
 
-- #### Users (Authentication)
+- `users` — admin auth
+- `media` — uploads
+- `locations`, `amenities`, `properties` — domain content
+- `gateways` — test collection (connectivity check)
 
-  Users are auth-enabled collections that have access to the admin panel.
-
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
-
-- #### Media
-
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
-
-### Docker
-
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
-
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+Globals: `privacy-policy`, `terms-of-service`, `cookie-policy`, `legal-info`.
