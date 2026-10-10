@@ -21,32 +21,17 @@ export default function SoundButton() {
         type="button"
         aria-label={isStarted ? 'Mute sound' : 'Enable sound'}
         onClick={() => (isStarted ? void stop() : void start())}
+        className="fixed bottom-[90px] right-5 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-[22px] backdrop-blur-sm transition-colors hover:bg-black/80"
         style={{
-          position: 'fixed',
-          bottom: '90px',
-          right: '20px',
-          zIndex: 50,
-          width: '48px',
-          height: '48px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: '50%',
-          border: '1px solid rgba(255,255,255,0.2)',
-          background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(4px)',
-          fontSize: '22px',
-          cursor: 'pointer',
           animation: isStarted ? 'soundButtonPulse 2s infinite' : 'none',
         }}
       >
         <span
-          style={{
-            filter: isStarted
-              ? 'drop-shadow(0 0 6px rgba(34,197,94,0.9))'
-              : 'grayscale(1)',
-            opacity: isStarted ? 1 : 0.5,
-          }}
+          className={
+            isStarted
+              ? 'opacity-100 drop-shadow-[0_0_6px_rgba(34,197,94,0.9)]'
+              : 'opacity-50 grayscale'
+          }
         >
           🔊
         </span>
