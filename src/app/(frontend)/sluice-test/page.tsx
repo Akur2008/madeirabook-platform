@@ -76,7 +76,6 @@ export default function SluiceTest() {
   const engine = useAudioEngine()
   const [phase, setPhase] = useState<Phase>('idle')
   const [introMode, setIntroMode] = useState<IntroMode>('statement')
-  const [showCard, setShowCard] = useState(false)
   const [breathStep, setBreathStep] = useState(0)
   const [breathSecond, setBreathSecond] = useState(1)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -198,16 +197,6 @@ export default function SluiceTest() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
 
-  // Карточка появляется ТОЛЬКО на финальном экране (done), через 5 секунд
-  useEffect(() => {
-    if (phase !== 'done') {
-      setShowCard(false)
-      return
-    }
-    const t = setTimeout(() => setShowCard(true), TIMING.DONE_CARD_AT_MS)
-    return () => clearTimeout(t)
-  }, [phase])
-
   useEffect(() => {
     return () => {
       stopBreathLoop()
@@ -304,7 +293,7 @@ export default function SluiceTest() {
 
       {showBreathOverlay && <BreathOverlay step={breathStep} second={breathSecond} />}
 
-      {phase === 'done' && showCard && (
+      {phase === 'done' && (
         <EscapeCard onBook={() => alert('BottomSheet will open here')} />
       )}
 
@@ -353,31 +342,12 @@ function IntroScreen({
   onModeToggle: () => void
 }) {
   const [statementLine, setStatementLine] = useState(0)
-  const [typedText, setTypedText] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
   const statementLines = [
     'The city is loud.',
     'Your mind is louder.',
     'Madeira remembers how to be quiet.',
     'Give us two minutes.',
   ]
-
-  useEffect(() => {
-    if (mode !== 'statement') return
-    setTypedText('')
-    setIsTyping(true)
-    const line = statementLines[statementLine]
-    let charIndex = 0
-    const typeInterval = setInterval(() => {
-      charIndex++
-      setTypedText(line.slice(0, charIndex))
-      if (charIndex >= line.length) {
-        clearInterval(typeInterval)
-        setIsTyping(false)
-      }
-    }, 50)
-    return () => clearInterval(typeInterval)
-  }, [statementLine, mode])
 
   useEffect(() => {
     if (mode !== 'statement') return
@@ -389,13 +359,7 @@ function IntroScreen({
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
       {mode === 'statement' ? (
-        <p
-          className="text-xl md:text-3xl font-light text-white/90"
-          style={{ fontFamily: 'Cormorant Garamond, serif' }}
-        >
-          {typedText}
-          {isTyping && <span className="animate-pulse">|</span>}
-        </p>
+        <TypewriterLine key={statementLine} line={statementLines[statementLine]} />
       ) : (
         <QuizFlow />
       )}
@@ -407,6 +371,30 @@ function IntroScreen({
         switch mode
       </button>
     </div>
+  )
+}
+
+function TypewriterLine({ line }: { line: string }) {
+  const [charCount, setCharCount] = useState(0)
+
+  useEffect(() => {
+    let i = 0
+    const typeInterval = setInterval(() => {
+      i++
+      setCharCount(Math.min(i, line.length))
+      if (i >= line.length) clearInterval(typeInterval)
+    }, 50)
+    return () => clearInterval(typeInterval)
+  }, [line])
+
+  return (
+    <p
+      className="text-xl md:text-3xl font-light text-white/90"
+      style={{ fontFamily: 'Cormorant Garamond, serif' }}
+    >
+      {line.slice(0, charCount)}
+      {charCount < line.length && <span className="animate-pulse">|</span>}
+    </p>
   )
 }
 
@@ -566,7 +554,7 @@ function EscapeCard({ onBook }: { onBook: () => void }) {
       className="absolute bottom-4 md:bottom-8 left-1/2 w-[88%] max-w-[340px] md:max-w-[380px] rounded-2xl p-5 backdrop-blur-xl border border-white/15 z-30"
       style={{
         background: 'rgba(10, 20, 32, 0.6)',
-        animation: 'fadeSlideUp 2200ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        animation: `fadeSlideUp 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${TIMING.DONE_CARD_AT_MS}ms backwards`,
         transform: 'translateX(-50%)',
       }}
     >
