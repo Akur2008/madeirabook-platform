@@ -51,6 +51,27 @@ type Phase =
   | 'done'
 type IntroMode = 'quiz' | 'statement'
 
+const PROGRESS_KEY = 'madeirabook_sluice_progress'
+const PROGRESS_TTL_MS = 60 * 60 * 1000
+const RESTORABLE_PHASES: readonly Phase[] = ['intro', 'video']
+
+function readStoredPhase(): Phase | null {
+  try {
+    const raw = sessionStorage.getItem(PROGRESS_KEY)
+    if (!raw) return null
+    const { phase, timestamp } = JSON.parse(raw) as {
+      phase?: Phase
+      timestamp?: number
+    }
+    if (typeof timestamp !== 'number') return null
+    if (Date.now() - timestamp > PROGRESS_TTL_MS) return null
+    if (!phase || !RESTORABLE_PHASES.includes(phase)) return null
+    return phase
+  } catch {
+    return null
+  }
+}
+
 export default function SluiceTest() {
   const engine = useAudioEngine()
   const [phase, setPhase] = useState<Phase>('idle')
@@ -107,6 +128,18 @@ export default function SluiceTest() {
     await engine.start()
     engine.playAmbient(AUDIO.WHALES, { loop: true, volume: VOLUME.WHALES_INTRO_START })
     setPhase('intro')
+  }
+
+  const handleRestart = () => {
+    try {
+      sessionStorage.removeItem(PROGRESS_KEY)
+    } catch {
+      // storage unavailable
+    }
+    stopBreathLoop()
+    clearTimers()
+    engine.stopAll()
+    setPhase('idle')
   }
 
   useEffect(() => {
@@ -193,6 +226,38 @@ export default function SluiceTest() {
     }
   }, [])
 
+  // Restore an in-progress phase on mount (intro/video only, < 60 min old).
+  // AudioContext still needs a user gesture, so audio resumes on first tap.
+  useEffect(() => {
+    const stored = readStoredPhase()
+    if (!stored) return
+    setPhase(stored)
+    const resumeAudio = () => {
+      engine.start()
+      if (stored === 'intro') {
+        engine.playAmbient(AUDIO.WHALES, {
+          loop: true,
+          volume: VOLUME.WHALES_INTRO_START,
+        })
+      }
+    }
+    window.addEventListener('pointerdown', resumeAudio, { once: true })
+    return () => window.removeEventListener('pointerdown', resumeAudio)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Persist the current phase so a reloaded tab can resume
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        PROGRESS_KEY,
+        JSON.stringify({ phase, timestamp: Date.now() }),
+      )
+    } catch {
+      // storage unavailable
+    }
+  }, [phase])
+
   const showBreathFullScreen = phase === 'breath-first'
   const showBreathOverlay = phase === 'immersion' || phase === 'done'
 
@@ -248,6 +313,15 @@ export default function SluiceTest() {
 
       {phase === 'done' && showCard && (
         <EscapeCard onBook={() => alert('BottomSheet will open here')} />
+      )}
+
+      {phase !== 'idle' && (
+        <button
+          onClick={handleRestart}
+          className="absolute top-4 left-4 z-40 px-3 py-1.5 rounded-full border border-white/20 text-white/50 text-xs tracking-wider uppercase hover:text-white/80 hover:border-white/40 transition-colors"
+        >
+          Restart
+        </button>
       )}
     </main>
   )
