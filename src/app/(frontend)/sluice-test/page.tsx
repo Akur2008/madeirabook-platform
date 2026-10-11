@@ -322,7 +322,7 @@ export default function SluiceTest() {
       {showBreathOverlay && <BreathOverlay step={breathStep} second={breathSecond} />}
 
       {phase === 'done' && (
-        <EscapeCard onBook={() => alert('BottomSheet will open here')} />
+        <EscapeCard />
       )}
 
     </main>
@@ -576,7 +576,7 @@ function BreathOverlay({ step, second }: { step: number; second: number }) {
   )
 }
 
-function EscapeCard({ onBook }: { onBook: () => void }) {
+function EscapeCard() {
   return (
     <div
       className="absolute bottom-4 md:bottom-8 left-1/2 w-[88%] max-w-[340px] md:max-w-[380px] rounded-2xl p-5 backdrop-blur-xl border border-white/15 z-30"
@@ -589,12 +589,12 @@ function EscapeCard({ onBook }: { onBook: () => void }) {
       <p className="text-white/95 text-xl" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
         Ready to go?
       </p>
-      <button
-        onClick={onBook}
-        className="mt-4 w-full py-3 rounded-full bg-white/10 border border-white/30 text-white text-sm tracking-widest uppercase hover:bg-white/20 transition-colors"
+      <a
+        href="https://app.madeirabook.com/"
+        className="mt-4 block w-full py-3 rounded-full bg-white/10 border border-white/30 text-white text-sm tracking-widest uppercase text-center hover:bg-white/20 transition-colors"
       >
         Begin →
-      </button>
+      </a>
     </div>
   )
 }
