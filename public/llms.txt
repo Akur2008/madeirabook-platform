@@ -8,9 +8,6 @@
 ## Pages
 
 - https://madeirabook-platform.vercel.app/ — Portal home
-- https://madeirabook-platform.vercel.app/booking — Choose your escape: three
-  stays (Apartamentos do Mar 303, Apartamentos do Mar 607, Penthouse on the
-  Beach Madeira). Reservations handled at app.madeirabook.com
 - https://madeirabook-platform.vercel.app/gateways — Gallery of emotional
   gateways grouped by element (ocean, terra, forest, sun, wild)
 - https://madeirabook-platform.vercel.app/gateway/dolphins — Gateway: dolphins
