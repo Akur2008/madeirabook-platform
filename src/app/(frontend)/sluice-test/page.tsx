@@ -24,6 +24,30 @@ const VIDEO = {
   IMMERSION: '/videos/hd-dolby-42s.mp4',
 }
 
+const VIDEO_JSONLD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'VideoObject',
+      name: 'Madeira — a 33 second escape',
+      description:
+        'Emotional gateway to Madeira: ocean, silence, two minutes away from the city noise.',
+      thumbnailUrl: 'https://www.madeirabook.com/hero.jpg',
+      contentUrl: 'https://madeirabook-platform.vercel.app/videos/reference-33s.mp4',
+      uploadDate: '2026-10-11',
+    },
+    {
+      '@type': 'VideoObject',
+      name: 'Madeira — immersion',
+      description:
+        'Full immersion into Madeira: direct ocean, whales, the quiet the island remembers.',
+      thumbnailUrl: 'https://www.madeirabook.com/hero.jpg',
+      contentUrl: 'https://madeirabook-platform.vercel.app/videos/hd-dolby-42s.mp4',
+      uploadDate: '2026-10-11',
+    },
+  ],
+}
+
 const VOLUME = {
   WHALES_INTRO_START: 0.22,
   WHALES_INTRO_END: 0.32,
@@ -245,6 +269,10 @@ export default function SluiceTest() {
 
   return (
     <main className="relative w-full h-[100dvh] overflow-hidden bg-[#0a1420]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(VIDEO_JSONLD) }}
+      />
       <style jsx>{`
         @keyframes fadeSlideUp {
           from { opacity: 0; transform: translate(-50%, 80px); }

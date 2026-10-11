@@ -1,0 +1,26 @@
+# Madeirabook
+
+> Madeirabook is not a hotel catalogue. It is an editorial portal of rare
+> Atlantic places — curated escapes to Madeira for guests who seek honest
+> natural luxury, silence, and a clean ocean instead of mass tourism.
+> Two-minute emotional gateways lead to three bookable stays.
+
+## Pages
+
+- https://madeirabook-platform.vercel.app/ — Portal home
+- https://madeirabook-platform.vercel.app/booking — Choose your escape: three
+  stays (Apartamentos do Mar 303, Apartamentos do Mar 607, Penthouse on the
+  Beach Madeira). Reservations handled at app.madeirabook.com
+- https://madeirabook-platform.vercel.app/gateways — Gallery of emotional
+  gateways grouped by element (ocean, terra, forest, sun, wild)
+- https://madeirabook-platform.vercel.app/gateway/dolphins — Gateway: dolphins
+- https://madeirabook-platform.vercel.app/gateway/above-clouds — Gateway:
+  above the clouds
+- https://madeirabook-platform.vercel.app/gateway/levada-drone — Gateway:
+  levada drone
+- https://madeirabook-platform.vercel.app/sluice-test — Two-minute escape
+  prototype (intro, video, breath, immersion)
+
+## Sister site
+
+- https://www.madeirabook.com — Original landing and booking content
