@@ -301,7 +301,7 @@ export default function SluiceTest() {
           style={{ animation: 'fadeInSoft 1500ms ease-out forwards' }}
         >
           <p
-            className="text-white/80 text-2xl"
+            className="text-white/80 text-xl md:text-2xl"
             style={{ fontFamily: 'Cormorant Garamond, serif' }}
           >
             The escape is waiting.
@@ -405,7 +405,7 @@ function IntroScreen({
     <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
       {mode === 'statement' ? (
         <p
-          className="text-2xl md:text-3xl font-light text-white/90"
+          className="text-xl md:text-3xl font-light text-white/90"
           style={{ fontFamily: 'Cormorant Garamond, serif' }}
         >
           {typedText}
@@ -505,10 +505,9 @@ function BreathPromptScreen() {
         {lines.map((line, i) => (
           <p
             key={i}
-            className="text-white/80"
+            className="text-white/80 text-lg md:text-[1.4rem]"
             style={{
               fontFamily: 'Cormorant Garamond, serif',
-              fontSize: '1.4rem',
               opacity: i < visibleLines ? 1 : 0,
               transform: i < visibleLines ? 'translateY(0)' : 'translateY(8px)',
               transition: 'opacity 700ms ease, transform 700ms ease',
@@ -534,12 +533,12 @@ function BreathScreen({ step, second }: { step: number; second: number }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center">
       <div
-        className="w-40 h-40 rounded-full border border-white/30 transition-transform duration-1400 ease-linear"
+        className="w-32 h-32 md:w-40 md:h-40 rounded-full border border-white/30 transition-transform duration-1400 ease-linear"
         style={{ transform: `scale(${scale})` }}
       />
-      <p className="mt-16 text-white/70 tracking-widest uppercase text-sm">{current.label}</p>
+      <p className="mt-10 md:mt-16 text-white/70 tracking-widest uppercase text-sm">{current.label}</p>
       <p
-        className="mt-4 text-6xl font-light text-white/95 tabular-nums"
+        className="mt-4 text-5xl md:text-6xl font-light text-white/95 tabular-nums"
         style={{ fontFamily: 'Cormorant Garamond, serif' }}
       >
         {second}
@@ -567,7 +566,7 @@ function BreathOverlay({ step, second }: { step: number; second: number }) {
         {current.label}
       </p>
       <p
-        className="mt-2 text-5xl font-light text-white/95 tabular-nums"
+        className="mt-2 text-4xl md:text-5xl font-light text-white/95 tabular-nums"
         style={{ fontFamily: 'Cormorant Garamond, serif' }}
       >
         {second}
@@ -579,7 +578,7 @@ function BreathOverlay({ step, second }: { step: number; second: number }) {
 function EscapeCard({ onBook }: { onBook: () => void }) {
   return (
     <div
-      className="absolute bottom-8 left-1/2 w-[88%] max-w-[380px] rounded-2xl p-5 backdrop-blur-xl border border-white/15 z-30"
+      className="absolute bottom-4 md:bottom-8 left-1/2 w-[88%] max-w-[340px] md:max-w-[380px] rounded-2xl p-5 backdrop-blur-xl border border-white/15 z-30"
       style={{
         background: 'rgba(10, 20, 32, 0.6)',
         animation: 'fadeSlideUp 2200ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
