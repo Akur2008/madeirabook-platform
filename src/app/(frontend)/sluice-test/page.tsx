@@ -130,17 +130,6 @@ export default function SluiceTest() {
     setPhase('intro')
   }
 
-  const handleRestart = () => {
-    try {
-      sessionStorage.removeItem(PROGRESS_KEY)
-    } catch {
-      // storage unavailable
-    }
-    stopBreathLoop()
-    clearTimers()
-    engine.stopAll()
-    setPhase('idle')
-  }
 
   useEffect(() => {
     if (phase === 'idle') return
@@ -229,9 +218,10 @@ export default function SluiceTest() {
   // Restore an in-progress phase on mount (intro/video only, < 60 min old).
   // AudioContext still needs a user gesture, so audio resumes on first tap.
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const stored = readStoredPhase()
     if (!stored) return
-    setPhase(stored)
+    const t = setTimeout(() => setPhase(stored), 0)
     const resumeAudio = () => {
       engine.start()
       if (stored === 'intro') {
@@ -242,7 +232,10 @@ export default function SluiceTest() {
       }
     }
     window.addEventListener('pointerdown', resumeAudio, { once: true })
-    return () => window.removeEventListener('pointerdown', resumeAudio)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('pointerdown', resumeAudio)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -315,14 +308,6 @@ export default function SluiceTest() {
         <EscapeCard onBook={() => alert('BottomSheet will open here')} />
       )}
 
-      {phase !== 'idle' && (
-        <button
-          onClick={handleRestart}
-          className="absolute top-4 left-4 z-40 px-3 py-1.5 rounded-full border border-white/20 text-white/50 text-xs tracking-wider uppercase hover:text-white/80 hover:border-white/40 transition-colors"
-        >
-          Restart
-        </button>
-      )}
     </main>
   )
 }
@@ -586,14 +571,13 @@ function EscapeCard({ onBook }: { onBook: () => void }) {
       }}
     >
       <p className="text-white/95 text-xl" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
-        Escape to Madeira
+        Ready to go?
       </p>
-      <p className="text-white/60 text-sm mt-1">Weekend from €190</p>
       <button
         onClick={onBook}
         className="mt-4 w-full py-3 rounded-full bg-white/10 border border-white/30 text-white text-sm tracking-widest uppercase hover:bg-white/20 transition-colors"
       >
-        See options →
+        Begin →
       </button>
     </div>
   )
