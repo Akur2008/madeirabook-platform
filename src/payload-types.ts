@@ -75,6 +75,7 @@ export interface Config {
     gateways: Gateway;
     'sluice-pages': SluicePage;
     cities: City;
+    subscribers: Subscriber;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     gateways: GatewaysSelect<false> | GatewaysSelect<true>;
     'sluice-pages': SluicePagesSelect<false> | SluicePagesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
+    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -322,6 +324,18 @@ export interface City {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers".
+ */
+export interface Subscriber {
+  id: number;
+  email: string;
+  source?: string | null;
+  status?: ('active' | 'unsubscribed') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -375,6 +389,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'cities';
         value: number | City;
+      } | null)
+    | ({
+        relationTo: 'subscribers';
+        value: number | Subscriber;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -573,6 +591,17 @@ export interface CitiesSelect<T extends boolean = true> {
         answer?: T;
         id?: T;
       };
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers_select".
+ */
+export interface SubscribersSelect<T extends boolean = true> {
+  email?: T;
+  source?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -13,6 +13,7 @@ import { Properties } from './collections/Properties'
 import { Gateways } from './collections/Gateways'
 import { SluicePages } from './collections/SluicePages'
 import { Cities } from './collections/Cities'
+import { Subscribers } from './collections/Subscribers'
 import { PrivacyPolicy } from './globals/PrivacyPolicy'
 import { TermsOfService } from './globals/TermsOfService'
 import { CookiePolicy } from './globals/CookiePolicy'
@@ -28,7 +29,17 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Locations, Amenities, Properties, Gateways, SluicePages, Cities],
+  collections: [
+    Users,
+    Media,
+    Locations,
+    Amenities,
+    Properties,
+    Gateways,
+    SluicePages,
+    Cities,
+    Subscribers,
+  ],
   globals: [PrivacyPolicy, TermsOfService, CookiePolicy, LegalInfo],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
