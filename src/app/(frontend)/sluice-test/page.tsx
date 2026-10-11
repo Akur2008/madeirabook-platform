@@ -209,6 +209,8 @@ export default function SluiceTest() {
         }
       `}</style>
 
+      <VideoPreloader />
+
       {phase === 'idle' && <StartScreen onStart={handleStart} />}
 
       {phase === 'intro' && (
@@ -252,6 +254,19 @@ export default function SluiceTest() {
 }
 
 // ─────────────────────────────────────────────────────────────
+
+function VideoPreloader() {
+  return (
+    <div
+      aria-hidden
+      className="fixed w-px h-px opacity-0 pointer-events-none overflow-hidden"
+    >
+      {Object.values(VIDEO).map(src => (
+        <video key={src} src={src} preload="auto" muted playsInline />
+      ))}
+    </div>
+  )
+}
 
 function StartScreen({ onStart }: { onStart: () => void }) {
   return (
