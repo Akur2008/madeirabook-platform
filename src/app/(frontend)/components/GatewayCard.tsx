@@ -7,10 +7,19 @@ import type { SluicePage } from '@/payload-types'
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
+export const AUTOPLAY_SOUND_KEY = 'mb_autoplay_sound'
+
 export default function GatewayCard({ page }: { page: SluicePage }) {
   return (
     <Link
       href={`/gateway/${page.slug}`}
+      onClick={() => {
+        try {
+          sessionStorage.setItem(AUTOPLAY_SOUND_KEY, '1')
+        } catch {
+          // storage unavailable
+        }
+      }}
       className="group relative block aspect-[3/4] overflow-hidden rounded-2xl border border-white/10"
     >
       {page.posterUrl && (

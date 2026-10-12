@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { useAudioEngine } from '@/audio/useAudioEngine'
+import { AUTOPLAY_SOUND_KEY } from '@/app/(frontend)/components/GatewayCard'
 import type { SluicePage } from '@/payload-types'
 
 const styles = `
@@ -16,6 +17,28 @@ const styles = `
 export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) {
   const engine = useAudioEngine()
   const ambientUrl = sluicePage.ambientAudioUrl
+  const [soundRequested, setSoundRequested] = useState(false)
+  const [tapVisible, setTapVisible] = useState(false)
+
+  // Arriving from a gateway card: try to resume audio on its flag.
+  // If the browser still demands a gesture, a one-tap pill appears below.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(AUTOPLAY_SOUND_KEY) !== '1') return
+      sessionStorage.removeItem(AUTOPLAY_SOUND_KEY)
+    } catch {
+      return
+    }
+    void engine.start()
+    setSoundRequested(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!soundRequested || engine.isStarted) return
+    const t = setTimeout(() => setTapVisible(true), 700)
+    return () => clearTimeout(t)
+  }, [soundRequested, engine.isStarted])
 
   useEffect(() => {
     if (!engine.isStarted || !ambientUrl) return
@@ -48,6 +71,19 @@ export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) 
         >
           ←
         </Link>
+
+        {tapVisible && !engine.isStarted && (
+          <button
+            type="button"
+            onClick={() => {
+              void engine.start()
+              setTapVisible(false)
+            }}
+            className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/25 bg-[#0a1420]/80 px-6 py-2.5 text-sm text-white/90 backdrop-blur-md transition-colors hover:bg-white/10"
+          >
+            Tap for sound 🔊
+          </button>
+        )}
 
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-6 pb-16">
           <h1 className="mb-2 text-3xl font-bold leading-tight text-white">
