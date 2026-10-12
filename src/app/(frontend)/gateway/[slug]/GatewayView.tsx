@@ -6,6 +6,13 @@ import React, { useEffect } from 'react'
 import { useAudioEngine } from '@/audio/useAudioEngine'
 import type { SluicePage } from '@/payload-types'
 
+const styles = `
+@keyframes gatewayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+`
+
 export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) {
   const engine = useAudioEngine()
   const ambientUrl = sluicePage.ambientAudioUrl
@@ -19,7 +26,11 @@ export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) 
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-[#0a1420]">
-      <div className="relative aspect-[9/16] w-[min(100%,450px,calc(100dvh*9/16))] overflow-hidden">
+      <style>{styles}</style>
+      <div
+        className="relative aspect-[9/16] w-[min(100%,450px,calc(100dvh*9/16))] overflow-hidden"
+        style={{ animation: 'gatewayFadeIn 500ms ease-out both' }}
+      >
         <video
           className="absolute inset-0 h-full w-full object-cover"
           src={sluicePage.videoUrl ?? undefined}
