@@ -4,6 +4,8 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 
 import { useAudioEngine } from '@/audio/useAudioEngine'
+import { AUDIO_STARTED_KEY } from '@/audio/AudioEngineProvider'
+import { useAutoplayVideo } from '@/components/useAutoplayVideo'
 import { AUTOPLAY_SOUND_KEY } from '@/app/(frontend)/components/GatewayCard'
 import type { SluicePage } from '@/payload-types'
 
@@ -17,28 +19,31 @@ const styles = `
 export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) {
   const engine = useAudioEngine()
   const ambientUrl = sluicePage.ambientAudioUrl
-  const [soundRequested, setSoundRequested] = useState(false)
   const [tapVisible, setTapVisible] = useState(false)
+  const { videoRef, needsTap: videoNeedsTap, playNow } = useAutoplayVideo()
 
   // Arriving from a gateway card: try to resume audio on its flag.
   // If the browser still demands a gesture, a one-tap pill appears below.
   useEffect(() => {
+    let flagged = false
     try {
-      if (sessionStorage.getItem(AUTOPLAY_SOUND_KEY) !== '1') return
-      sessionStorage.removeItem(AUTOPLAY_SOUND_KEY)
+      flagged = sessionStorage.getItem(AUTOPLAY_SOUND_KEY) === '1'
+      if (flagged) sessionStorage.removeItem(AUTOPLAY_SOUND_KEY)
     } catch {
       return
     }
+    if (!flagged) return
     void engine.start()
-    setSoundRequested(true)
+    const t = setTimeout(() => {
+      try {
+        if (localStorage.getItem(AUDIO_STARTED_KEY) !== '1') setTapVisible(true)
+      } catch {
+        setTapVisible(true)
+      }
+    }, 700)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => {
-    if (!soundRequested || engine.isStarted) return
-    const t = setTimeout(() => setTapVisible(true), 700)
-    return () => clearTimeout(t)
-  }, [soundRequested, engine.isStarted])
 
   useEffect(() => {
     if (!engine.isStarted || !ambientUrl) return
@@ -55,6 +60,7 @@ export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) 
         style={{ animation: 'gatewayFadeIn 500ms ease-out both' }}
       >
         <video
+          ref={videoRef}
           className="absolute inset-0 h-full w-full object-cover"
           src={sluicePage.videoUrl ?? undefined}
           poster={sluicePage.posterUrl ?? undefined}
@@ -62,6 +68,8 @@ export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) 
           autoPlay
           loop
           playsInline
+          preload="auto"
+          controls={false}
         />
 
         <Link
@@ -72,16 +80,17 @@ export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) 
           ←
         </Link>
 
-        {tapVisible && !engine.isStarted && (
+        {(videoNeedsTap || (tapVisible && !engine.isStarted)) && (
           <button
             type="button"
             onClick={() => {
+              playNow()
               void engine.start()
               setTapVisible(false)
             }}
             className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/25 bg-[#0a1420]/80 px-6 py-2.5 text-sm text-white/90 backdrop-blur-md transition-colors hover:bg-white/10"
           >
-            Tap for sound 🔊
+            Tap for sound &amp; video �
           </button>
         )}
 

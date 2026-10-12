@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useAudioEngine } from '@/audio/useAudioEngine'
+import { useAutoplayVideo } from '@/components/useAutoplayVideo'
 
 const TIMING = {
   INTRO_MS: 24000,
@@ -506,7 +507,8 @@ function VideoLayer({
   onEnded?: () => void
   onError?: () => void
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const engine = useAudioEngine()
+  const { videoRef, needsTap, playNow } = useAutoplayVideo()
 
   useEffect(() => {
     const video = videoRef.current
@@ -552,6 +554,8 @@ function VideoLayer({
         autoPlay
         muted
         playsInline
+        preload="auto"
+        controls={false}
         loop={false}
         onEnded={onEnded}
         onError={onError}
@@ -560,6 +564,18 @@ function VideoLayer({
         }`}
         style={letterbox ? { maxHeight: '100vh' } : undefined}
       />
+      {needsTap && (
+        <button
+          type="button"
+          onClick={() => {
+            playNow()
+            void engine.start()
+          }}
+          className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/25 bg-[#0a1420]/80 px-6 py-2.5 text-sm text-white/90 backdrop-blur-md transition-colors hover:bg-white/10"
+        >
+          Tap for sound &amp; video 🔇
+        </button>
+      )}
     </div>
   )
 }
