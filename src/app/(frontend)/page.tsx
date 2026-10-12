@@ -4,6 +4,7 @@ import React from 'react'
 
 import config from '@/payload.config'
 import EscapeCardSheet from './components/EscapeCardSheet'
+import GatewayCard from './components/GatewayCard'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,27 +59,9 @@ export default async function HomePage() {
         >
           Three paths into silence
         </h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {gateways.map((page) => (
-            <Link
-              key={page.id}
-              href={`/gateway/${page.slug}`}
-              className="group relative block aspect-[3/4] overflow-hidden rounded-lg bg-white/5"
-            >
-              {page.posterUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={page.posterUrl}
-                  alt={page.title}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              )}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-5 pt-16">
-                <h3 className="text-xl font-medium leading-tight" style={SERIF}>
-                  {page.title}
-                </h3>
-              </div>
-            </Link>
+            <GatewayCard key={page.id} page={page} />
           ))}
         </div>
       </section>
