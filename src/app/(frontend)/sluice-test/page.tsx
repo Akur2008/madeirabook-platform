@@ -607,10 +607,17 @@ function BreathScreen({ step, second }: { step: number; second: number }) {
     0.8
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center">
+    <div className="absolute inset-0 flex flex-col items-center justify-center pb-32">
       <div
-        className="w-32 h-32 md:w-40 md:h-40 rounded-full border border-white/30 transition-transform duration-1400 ease-linear"
-        style={{ transform: `scale(${scale})` }}
+        className="w-32 h-32 md:w-40 md:h-40 rounded-full transition-transform duration-1400 ease-linear"
+        style={{
+          transform: `scale(${scale})`,
+          background:
+            'radial-gradient(circle at 30% 30%, rgba(180, 220, 255, 0.35) 0%, rgba(120, 180, 240, 0.15) 40%, rgba(80, 140, 200, 0.05) 70%, transparent 100%)',
+          boxShadow:
+            '0 0 80px 20px rgba(120, 180, 240, 0.15), inset 0 0 60px 10px rgba(180, 220, 255, 0.1)',
+          filter: 'blur(0.5px)',
+        }}
       />
       <p className="mt-10 md:mt-16 text-white/70 tracking-widest uppercase text-sm">{current.label}</p>
       <p
@@ -633,10 +640,17 @@ function BreathOverlay({ step, second }: { step: number; second: number }) {
     0.85
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+    <div className="absolute inset-0 flex flex-col items-center justify-center pb-32 pointer-events-none z-10">
       <div
-        className="w-28 h-28 rounded-full border border-white/40 transition-transform duration-1400 ease-linear"
-        style={{ transform: `scale(${scale})`, background: 'rgba(255,255,255,0.04)' }}
+        className="w-28 h-28 rounded-full transition-transform duration-1400 ease-linear"
+        style={{
+          transform: `scale(${scale})`,
+          background:
+            'radial-gradient(circle at 30% 30%, rgba(180, 220, 255, 0.21) 0%, rgba(120, 180, 240, 0.09) 40%, rgba(80, 140, 200, 0.03) 70%, transparent 100%)',
+          boxShadow:
+            '0 0 80px 20px rgba(120, 180, 240, 0.09), inset 0 0 60px 10px rgba(180, 220, 255, 0.06)',
+          filter: 'blur(0.5px)',
+        }}
       />
       <p className="mt-10 text-white/70 tracking-widest uppercase text-xs">
         {current.label}
