@@ -9,6 +9,7 @@ const TIMING = {
   BREATH_PROMPT_MS: 9000,
   IMMERSION_MS: 42000,
   DONE_CARD_AT_MS: 5000,
+  VIDEO_FALLBACK_MS: 5000,
 }
 
 const BREATH_TICK_MS = 1400
@@ -181,7 +182,9 @@ export default function SluiceTest() {
           }, i * 100),
         )
       }
-      timersRef.current.push(setTimeout(() => setPhase('breath-prompt'), TIMING.VIDEO_MS))
+      timersRef.current.push(
+        setTimeout(() => setPhase('breath-prompt'), TIMING.VIDEO_MS + TIMING.VIDEO_FALLBACK_MS),
+      )
     }
 
     if (phase === 'breath-prompt') {
@@ -213,7 +216,9 @@ export default function SluiceTest() {
       engine.setVolume('videoAudio', VOLUME.VIDEO_IMMERSION_FULL)
       engine.playVideo(AUDIO.VIDEO_IMMERSION_AUDIO, { loop: false })
       timersRef.current.push(setTimeout(() => engine.duck(VOLUME.WHALES_IMMERSION, 800), 500))
-      timersRef.current.push(setTimeout(() => setPhase('done'), TIMING.IMMERSION_MS))
+      timersRef.current.push(
+        setTimeout(() => setPhase('done'), TIMING.IMMERSION_MS + TIMING.VIDEO_FALLBACK_MS),
+      )
     }
 
     if (phase === 'done') {
@@ -300,14 +305,27 @@ export default function SluiceTest() {
         />
       )}
 
-      {phase === 'video' && <VideoLayer src={VIDEO.MADEIRA} objectFit="cover" />}
+      {phase === 'video' && (
+        <VideoLayer
+          src={VIDEO.MADEIRA}
+          objectFit="cover"
+          onEnded={() => setPhase('breath-prompt')}
+          onError={() => setPhase('breath-prompt')}
+        />
+      )}
 
       {phase === 'breath-prompt' && <BreathPromptScreen />}
 
       {showBreathFullScreen && <BreathScreen step={breathStep} second={breathSecond} />}
 
       {phase === 'immersion' && (
-        <VideoLayer src={VIDEO.IMMERSION} objectFit="contain" letterbox />
+        <VideoLayer
+          src={VIDEO.IMMERSION}
+          objectFit="contain"
+          letterbox
+          onEnded={() => setPhase('done')}
+          onError={() => setPhase('done')}
+        />
       )}
 
       {phase === 'done' && (
@@ -468,19 +486,38 @@ function VideoLayer({
   src,
   objectFit = 'cover',
   letterbox = false,
+  onEnded,
+  onError,
 }: {
   src: string
   objectFit?: 'cover' | 'contain'
   letterbox?: boolean
+  onEnded?: () => void
+  onError?: () => void
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !onError) return
+    const timer = setTimeout(() => {
+      if (video.readyState === 0) onError()
+    }, TIMING.VIDEO_FALLBACK_MS)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <div className="absolute inset-0 bg-black flex items-center justify-center">
       <video
+        ref={videoRef}
         src={src}
         autoPlay
         muted
         playsInline
         loop={false}
+        onEnded={onEnded}
+        onError={onError}
         className={`absolute inset-0 w-full h-full ${
           objectFit === 'cover' ? 'object-cover' : 'object-contain'
         }`}
