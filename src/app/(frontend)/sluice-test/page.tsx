@@ -10,6 +10,7 @@ const TIMING = {
   IMMERSION_MS: 42000,
   DONE_CARD_AT_MS: 5000,
   VIDEO_FALLBACK_MS: 5000,
+  VIDEO_NEVER_STARTED_MS: 20000,
 }
 
 const BREATH_TICK_MS = 1400
@@ -182,9 +183,8 @@ export default function SluiceTest() {
           }, i * 100),
         )
       }
-      timersRef.current.push(
-        setTimeout(() => setPhase('breath-prompt'), TIMING.VIDEO_MS + TIMING.VIDEO_FALLBACK_MS),
-      )
+      // Phase advances via VideoLayer's onEnded/onError — no timed cutoff,
+      // the video may start late on slow connections and must play in full.
     }
 
     if (phase === 'breath-prompt') {
@@ -216,9 +216,7 @@ export default function SluiceTest() {
       engine.setVolume('videoAudio', VOLUME.VIDEO_IMMERSION_FULL)
       engine.playVideo(AUDIO.VIDEO_IMMERSION_AUDIO, { loop: false })
       timersRef.current.push(setTimeout(() => engine.duck(VOLUME.WHALES_IMMERSION, 800), 500))
-      timersRef.current.push(
-        setTimeout(() => setPhase('done'), TIMING.IMMERSION_MS + TIMING.VIDEO_FALLBACK_MS),
-      )
+      // Phase advances via VideoLayer's onEnded/onError — see 'video' above.
     }
 
     if (phase === 'done') {
@@ -236,6 +234,12 @@ export default function SluiceTest() {
       stopBreathLoop()
       clearTimers()
     }
+  }, [])
+
+  // Fetch audio bytes at page load so the first tap only needs decode.
+  useEffect(() => {
+    engine.preload(Object.values(AUDIO))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Restore an in-progress phase on mount (intro/video only, < 60 min old).
@@ -500,10 +504,36 @@ function VideoLayer({
   useEffect(() => {
     const video = videoRef.current
     if (!video || !onError) return
-    const timer = setTimeout(() => {
+
+    let stallTimer: ReturnType<typeof setTimeout> | undefined
+
+    // No bytes at all within 5s — the load is dead, skip the phase.
+    const deadLoadTimer = setTimeout(() => {
       if (video.readyState === 0) onError()
     }, TIMING.VIDEO_FALLBACK_MS)
-    return () => clearTimeout(timer)
+
+    // Playback never started (stalled buffering, blocked autoplay) — skip.
+    const neverStartedTimer = setTimeout(() => {
+      if (video.currentTime === 0) onError()
+    }, TIMING.VIDEO_NEVER_STARTED_MS)
+
+    // Once playback begins, 'ended' should arrive within duration + grace.
+    // The clock starts at 'playing', not at mount — a slow network may
+    // delay the start and the video still has to play in full.
+    const handlePlaying = () => {
+      const durationMs = Number.isFinite(video.duration)
+        ? video.duration * 1000
+        : TIMING.VIDEO_MS
+      stallTimer = setTimeout(onError, durationMs + TIMING.VIDEO_FALLBACK_MS)
+    }
+    video.addEventListener('playing', handlePlaying)
+
+    return () => {
+      clearTimeout(deadLoadTimer)
+      clearTimeout(neverStartedTimer)
+      clearTimeout(stallTimer)
+      video.removeEventListener('playing', handlePlaying)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

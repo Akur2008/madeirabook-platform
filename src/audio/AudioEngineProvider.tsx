@@ -52,6 +52,7 @@ export interface AudioEngineContextValue {
   state: EngineState | null
   start: () => Promise<void>
   stop: () => Promise<void>
+  preload: (urls: string[]) => void
   playAmbient: (url: string | string[], options?: { loop?: boolean; volume?: number }) => Promise<void>
   playSluice: (url: string | string[], durationSec?: number) => Promise<void>
   playVideo: (url: string | string[], options?: { loop?: boolean }) => Promise<void>
@@ -104,6 +105,7 @@ export function AudioEngineProvider({ children }: { children: React.ReactNode })
       state,
       start,
       stop,
+      preload: (urls) => engine().preload(urls),
       playAmbient: (url, options) => engine().playAmbient(url, options),
       playSluice: (url, durationSec) => engine().playSluice(url, durationSec),
       playVideo: (url, options) => engine().playVideo(url, options),

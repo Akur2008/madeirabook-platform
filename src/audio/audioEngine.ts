@@ -40,6 +40,7 @@ export class AudioEngine {
   private ctx: AudioContext | null = null
   private channelGains: Record<ChannelName, GainNode> | null = null
   private buffers = new Map<string, Promise<AudioBuffer>>()
+  private rawBuffers = new Map<string, Promise<ArrayBuffer>>()
   private ambientSource: ActiveSource | null = null
   private sluiceSource: ActiveSource | null = null
   private videoSource: ActiveSource | null = null
@@ -78,16 +79,32 @@ export class AudioEngine {
     })
   }
 
+  private fetchBytes(url: string): Promise<ArrayBuffer> {
+    let cached = this.rawBuffers.get(url)
+    if (!cached) {
+      cached = fetch(url).then((res) => {
+        if (!res.ok) throw new Error(`fetch ${url} -> ${res.status}`)
+        return res.arrayBuffer()
+      })
+      this.rawBuffers.set(url, cached)
+      cached.catch(() => this.rawBuffers.delete(url))
+    }
+    return cached
+  }
+
+  preload(urls: string[]): void {
+    for (const url of urls) {
+      void this.fetchBytes(url).catch(() => undefined)
+    }
+  }
+
   private loadOne(url: string): Promise<AudioBuffer> {
     let cached = this.buffers.get(url)
     if (!cached) {
       cached = Promise.race([
-        fetch(url)
-          .then((res) => {
-            if (!res.ok) throw new Error(`fetch ${url} -> ${res.status}`)
-            return res.arrayBuffer()
-          })
-          .then((buf) => this.decode(buf)),
+        // decode on a copy: decodeAudioData detaches the buffer, and a retry
+        // must still see intact bytes
+        this.fetchBytes(url).then((buf) => this.decode(buf.slice(0))),
         new Promise<AudioBuffer>((_, reject) =>
           setTimeout(() => reject(new Error(`decode timeout: ${url}`)), 20000),
         ),
@@ -104,10 +121,12 @@ export class AudioEngine {
     const urls = Array.isArray(input) ? input : [input]
     let lastErr: unknown
     for (const url of urls) {
-      try {
-        return { buffer: await this.loadOne(url), url }
-      } catch (err) {
-        lastErr = err
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          return { buffer: await this.loadOne(url), url }
+        } catch (err) {
+          lastErr = err
+        }
       }
     }
     throw lastErr instanceof Error ? lastErr : new Error('all audio sources failed')
