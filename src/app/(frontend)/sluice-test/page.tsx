@@ -339,7 +339,7 @@ export default function SluiceTest() {
 
       {phase === 'done' && (
         <div
-          className="absolute inset-0 bg-[#0a1420] flex flex-col items-center justify-center text-center px-6 pt-[18vh]"
+          className="absolute inset-0 bg-[#0a1420] flex flex-col items-center justify-center text-center px-6 pt-[10vh]"
           style={{ animation: 'fadeInSoft 1500ms ease-out forwards' }}
         >
           <p
@@ -628,7 +628,7 @@ function BreathScreen({ step, second }: { step: number; second: number }) {
       />
       <p className="mt-10 md:mt-16 text-white/70 tracking-widest uppercase text-sm">{current.label}</p>
       <p
-        className="mt-12 text-5xl md:text-6xl font-light text-white/95 tabular-nums"
+        className="mt-16 text-5xl md:text-6xl font-light text-white/95 tabular-nums"
         style={{ fontFamily: 'Cormorant Garamond, serif' }}
       >
         {second}
