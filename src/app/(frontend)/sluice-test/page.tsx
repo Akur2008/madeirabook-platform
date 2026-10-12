@@ -621,7 +621,7 @@ function BreathScreen({ step, second }: { step: number; second: number }) {
       />
       <p className="mt-10 md:mt-16 text-white/70 tracking-widest uppercase text-sm">{current.label}</p>
       <p
-        className="mt-4 text-5xl md:text-6xl font-light text-white/95 tabular-nums"
+        className="mt-8 text-5xl md:text-6xl font-light text-white/95 tabular-nums"
         style={{ fontFamily: 'Cormorant Garamond, serif' }}
       >
         {second}
@@ -656,7 +656,7 @@ function BreathOverlay({ step, second }: { step: number; second: number }) {
         {current.label}
       </p>
       <p
-        className="mt-2 text-4xl md:text-5xl font-light text-white/95 tabular-nums"
+        className="mt-8 text-4xl md:text-5xl font-light text-white/95 tabular-nums"
         style={{ fontFamily: 'Cormorant Garamond, serif' }}
       >
         {second}
