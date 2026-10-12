@@ -147,9 +147,14 @@ export default function SluiceTest() {
     }
   }
 
-  const handleStart = async () => {
-    await engine.start()
-    engine.playAmbient(AUDIO.WHALES, { loop: true, volume: VOLUME.WHALES_INTRO_START })
+  const handleStart = () => {
+    // resume() + fetch must fire synchronously inside the click gesture —
+    // no await before them, or the browser may treat audio as autoplay
+    void engine.start()
+    void engine.playAmbient(AUDIO.WHALES, {
+      loop: true,
+      volume: VOLUME.WHALES_INTRO_START,
+    })
     setPhase('intro')
   }
 
@@ -339,6 +344,9 @@ function VideoPreloader() {
     >
       {Object.values(VIDEO).map(src => (
         <video key={src} src={src} preload="auto" muted playsInline />
+      ))}
+      {Object.values(AUDIO).map(src => (
+        <audio key={src} src={src} preload="auto" />
       ))}
     </div>
   )
