@@ -223,6 +223,11 @@ export default function SluiceTest() {
       // Останавливаем видео, возвращаем китов, показываем однотонный экран
       engine.stopVideo()
       engine.unduck(VOLUME.WHALES_DONE, 1200)
+      // EscapeCard slides in at DONE_CARD_AT_MS — sink the ambient under
+      // a low-pass filter so the card lands in a soft sound cocoon.
+      timersRef.current.push(
+        setTimeout(() => engine.duckToBackground(1200), TIMING.DONE_CARD_AT_MS),
+      )
     }
 
     return clearTimers
@@ -668,6 +673,16 @@ function BreathOverlay({ step, second, raised = false }: { step: number; second:
 }
 
 function EscapeCard() {
+  const engine = useAudioEngine()
+
+  const handleBegin = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    engine.restoreFromBackground(400)
+    setTimeout(() => {
+      window.location.href = 'https://app.madeirabook.com/'
+    }, 200)
+  }
+
   return (
     <div
       className="absolute bottom-4 md:bottom-8 left-1/2 w-[88%] max-w-[340px] md:max-w-[380px] rounded-2xl p-5 backdrop-blur-xl border border-white/15 z-30"
@@ -682,6 +697,7 @@ function EscapeCard() {
       </p>
       <a
         href="https://app.madeirabook.com/"
+        onClick={handleBegin}
         className="mt-4 block w-full py-3 rounded-full bg-white/10 border border-white/30 text-white text-sm tracking-widest uppercase text-center hover:bg-white/20 transition-colors"
       >
         Begin →
