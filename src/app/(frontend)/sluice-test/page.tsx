@@ -545,7 +545,7 @@ function VideoLayer({
   }, [])
 
   return (
-    <div className="absolute inset-0 bg-black flex items-center justify-center">
+    <div className="absolute inset-0 bg-[#0a1420] flex items-center justify-center">
       <video
         ref={videoRef}
         src={src}

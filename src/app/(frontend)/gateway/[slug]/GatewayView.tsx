@@ -18,7 +18,7 @@ export default function GatewayView({ sluicePage }: { sluicePage: SluicePage }) 
   }, [engine.isStarted, ambientUrl])
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-black">
+    <div className="flex min-h-dvh items-center justify-center bg-[#0a1420]">
       <div className="relative aspect-[9/16] w-[min(100%,450px,calc(100dvh*9/16))] overflow-hidden">
         <video
           className="absolute inset-0 h-full w-full object-cover"
