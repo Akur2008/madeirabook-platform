@@ -61,10 +61,10 @@ const VOLUME = {
 }
 
 const BREATH_STEPS = [
-  { label: 'Breathe in', seconds: 5 },
-  { label: 'Hold', seconds: 5 },
-  { label: 'Breathe out', seconds: 8 },
-  { label: 'Rest', seconds: 3 },
+  { label: 'Rest', seconds: 2 },
+  { label: 'Breathe in through your nose', seconds: 3 },
+  { label: 'Hold and relax', seconds: 5 },
+  { label: 'Exhale fully, smile', seconds: 8 },
 ] as const
 
 type Phase =
@@ -334,7 +334,7 @@ export default function SluiceTest() {
 
       {phase === 'done' && (
         <div
-          className="absolute inset-0 bg-[#0a1420] flex flex-col items-center justify-center text-center px-6"
+          className="absolute inset-0 bg-[#0a1420] flex flex-col items-center justify-center text-center px-6 pt-[18vh]"
           style={{ animation: 'fadeInSoft 1500ms ease-out forwards' }}
         >
           <p
@@ -346,7 +346,9 @@ export default function SluiceTest() {
         </div>
       )}
 
-      {showBreathOverlay && <BreathOverlay step={breathStep} second={breathSecond} />}
+      {showBreathOverlay && (
+        <BreathOverlay step={breathStep} second={breathSecond} raised={phase === 'done'} />
+      )}
 
       {phase === 'done' && (
         <EscapeCard />
@@ -562,10 +564,10 @@ function BreathPromptScreen() {
   const lines = [
     'Now we will breathe together.',
     'One cycle.',
-    'In for 5.',
+    'Rest for 2.',
+    'In for 3.',
     'Hold for 5.',
     'Out for 8.',
-    'Rest for 3.',
   ]
 
   useEffect(() => {
@@ -601,9 +603,9 @@ function BreathScreen({ step, second }: { step: number; second: number }) {
   const current = BREATH_STEPS[step]
   const totalSeconds = current.seconds
   const scale =
-    step === 0 ? 0.8 + (0.4 * second) / totalSeconds :
-    step === 1 ? 1.2 :
-    step === 2 ? 1.2 - (0.4 * second) / totalSeconds :
+    step === 1 ? 0.8 + (0.4 * second) / totalSeconds :
+    step === 2 ? 1.2 :
+    step === 3 ? 1.2 - (0.4 * second) / totalSeconds :
     0.8
 
   return (
@@ -621,7 +623,7 @@ function BreathScreen({ step, second }: { step: number; second: number }) {
       />
       <p className="mt-10 md:mt-16 text-white/70 tracking-widest uppercase text-sm">{current.label}</p>
       <p
-        className="mt-8 text-5xl md:text-6xl font-light text-white/95 tabular-nums"
+        className="mt-12 text-5xl md:text-6xl font-light text-white/95 tabular-nums"
         style={{ fontFamily: 'Cormorant Garamond, serif' }}
       >
         {second}
@@ -630,17 +632,17 @@ function BreathScreen({ step, second }: { step: number; second: number }) {
   )
 }
 
-function BreathOverlay({ step, second }: { step: number; second: number }) {
+function BreathOverlay({ step, second, raised = false }: { step: number; second: number; raised?: boolean }) {
   const current = BREATH_STEPS[step]
   const totalSeconds = current.seconds
   const scale =
-    step === 0 ? 0.85 + (0.3 * second) / totalSeconds :
-    step === 1 ? 1.15 :
-    step === 2 ? 1.15 - (0.3 * second) / totalSeconds :
+    step === 1 ? 0.85 + (0.3 * second) / totalSeconds :
+    step === 2 ? 1.15 :
+    step === 3 ? 1.15 - (0.3 * second) / totalSeconds :
     0.85
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center pb-32 pointer-events-none z-10">
+    <div className={`absolute inset-0 flex flex-col items-center pointer-events-none z-10 ${raised ? 'justify-start pt-[5vh]' : 'justify-center pb-32'}`}>
       <div
         className="w-28 h-28 rounded-full transition-transform duration-1400 ease-linear"
         style={{
@@ -656,7 +658,7 @@ function BreathOverlay({ step, second }: { step: number; second: number }) {
         {current.label}
       </p>
       <p
-        className="mt-8 text-4xl md:text-5xl font-light text-white/95 tabular-nums"
+        className="mt-12 text-4xl md:text-5xl font-light text-white/95 tabular-nums"
         style={{ fontFamily: 'Cormorant Garamond, serif' }}
       >
         {second}
