@@ -17,6 +17,9 @@ interface ActiveSource {
 }
 
 const CURVE_STEPS = 64
+const FILTER_OPEN_FREQ = 20000
+const FILTER_BACKGROUND_FREQ = 400
+const BACKGROUND_AMBIENT_GAIN = 0.12
 
 function fadeInCurve(from: number, to: number): Float32Array {
   const curve = new Float32Array(CURVE_STEPS)
@@ -44,6 +47,7 @@ export class AudioEngine {
   private ambientSource: ActiveSource | null = null
   private sluiceSource: ActiveSource | null = null
   private videoSource: ActiveSource | null = null
+  private backgroundFilter: BiquadFilterNode | null = null
   private listeners = new Set<EngineListener>()
   private volumes: Record<ChannelName, number> = {
     globalAmbient: DEFAULT_AMBIENT_VOLUME,
@@ -289,6 +293,10 @@ export class AudioEngine {
     this.ambientSource = null
     this.sluiceSource = null
     this.videoSource = null
+    if (this.backgroundFilter && this.ctx) {
+      this.backgroundFilter.frequency.cancelScheduledValues(this.ctx.currentTime)
+      this.backgroundFilter.frequency.setValueAtTime(FILTER_OPEN_FREQ, this.ctx.currentTime)
+    }
     this.setVolume('globalAmbient', DEFAULT_AMBIENT_VOLUME)
     this.emit()
   }
@@ -325,6 +333,56 @@ export class AudioEngine {
     gain.gain.setValueAtTime(from, now)
     gain.gain.setValueCurveAtTime(fadeInCurve(from, targetVolume), now, duration / 1000)
     this.volumes.globalAmbient = targetVolume
+    this.emit()
+  }
+
+  private ensureBackgroundFilter(): BiquadFilterNode {
+    if (this.backgroundFilter) return this.backgroundFilter
+    const ctx = this.ctx!
+    const filter = ctx.createBiquadFilter()
+    filter.type = 'lowpass'
+    filter.frequency.value = FILTER_OPEN_FREQ
+    const ambientGain = this.channelGains!.globalAmbient
+    ambientGain.disconnect()
+    ambientGain.connect(filter)
+    filter.connect(ctx.destination)
+    this.backgroundFilter = filter
+    return filter
+  }
+
+  duckToBackground(durationMs = 600): void {
+    const ctx = this.ctx
+    const gain = this.channelGains?.globalAmbient
+    if (!ctx || !gain) return
+    const filter = this.ensureBackgroundFilter()
+    const now = ctx.currentTime
+    const durationSec = durationMs / 1000
+    filter.frequency.cancelScheduledValues(now)
+    filter.frequency.setValueAtTime(filter.frequency.value, now)
+    filter.frequency.exponentialRampToValueAtTime(FILTER_BACKGROUND_FREQ, now + durationSec)
+    const from = gain.gain.value
+    gain.gain.cancelScheduledValues(now)
+    gain.gain.setValueAtTime(from, now)
+    gain.gain.setValueCurveAtTime(fadeOutCurve(from, BACKGROUND_AMBIENT_GAIN), now, durationSec)
+    this.volumes.globalAmbient = BACKGROUND_AMBIENT_GAIN
+    this.emit()
+  }
+
+  restoreFromBackground(durationMs = 800): void {
+    const ctx = this.ctx
+    const gain = this.channelGains?.globalAmbient
+    const filter = this.backgroundFilter
+    if (!ctx || !gain || !filter) return
+    const now = ctx.currentTime
+    const durationSec = durationMs / 1000
+    filter.frequency.cancelScheduledValues(now)
+    filter.frequency.setValueAtTime(filter.frequency.value, now)
+    filter.frequency.exponentialRampToValueAtTime(FILTER_OPEN_FREQ, now + durationSec)
+    const from = gain.gain.value
+    gain.gain.cancelScheduledValues(now)
+    gain.gain.setValueAtTime(from, now)
+    gain.gain.setValueCurveAtTime(fadeInCurve(from, DEFAULT_AMBIENT_VOLUME), now, durationSec)
+    this.volumes.globalAmbient = DEFAULT_AMBIENT_VOLUME
     this.emit()
   }
 

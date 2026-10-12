@@ -124,6 +124,22 @@ export default function AudioTestPage() {
           Crossfade Ambient
         </button>
         <button
+          className={btn}
+          disabled={disabled}
+          onClick={run('duckToBackground(600ms)', () => engine.duckToBackground())}
+        >
+          Duck to background
+        </button>
+        <button
+          className={btn}
+          disabled={disabled}
+          onClick={run('restoreFromBackground(800ms)', () =>
+            engine.restoreFromBackground(),
+          )}
+        >
+          Restore
+        </button>
+        <button
           className={`${btn} border-red-700 hover:bg-red-900`}
           disabled={disabled}
           onClick={run('stopAll()', () => {

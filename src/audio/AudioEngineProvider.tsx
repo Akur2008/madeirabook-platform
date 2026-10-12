@@ -61,6 +61,8 @@ export interface AudioEngineContextValue {
   setVolume: (channel: ChannelName, value: number) => void
   duck: (targetVolume?: number, duration?: number) => void
   unduck: (targetVolume?: number, duration?: number) => void
+  duckToBackground: (durationMs?: number) => void
+  restoreFromBackground: (durationMs?: number) => void
   crossfade: (fromUrl: string, toUrl: string | string[], duration?: number) => Promise<void>
 }
 
@@ -114,6 +116,8 @@ export function AudioEngineProvider({ children }: { children: React.ReactNode })
       setVolume: (channel, v) => engine().setVolume(channel, v),
       duck: (targetVolume, duration) => engine().duck(targetVolume, duration),
       unduck: (targetVolume, duration) => engine().unduck(targetVolume, duration),
+      duckToBackground: (durationMs) => engine().duckToBackground(durationMs),
+      restoreFromBackground: (durationMs) => engine().restoreFromBackground(durationMs),
       crossfade: (fromUrl, toUrl, duration) => engine().crossfade(fromUrl, toUrl, duration),
     }),
     [isStarted, state, start, stop, engine],
