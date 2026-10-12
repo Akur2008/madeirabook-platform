@@ -1,7 +1,14 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export default function Footer() {
+  const pathname = usePathname()
+  // The landing page renders its own minimal footer (3 links only).
+  if (pathname === '/') return null
+
   return (
     <footer className="bg-gray-900 text-white py-8 mt-12">
       <div className="container mx-auto px-4">
