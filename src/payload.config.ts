@@ -9,6 +9,7 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Locations } from './collections/Locations'
 import { Amenities } from './collections/Amenities'
+import { HouseRules } from './collections/HouseRules'
 import { Properties } from './collections/Properties'
 import { Gateways } from './collections/Gateways'
 import { SluicePages } from './collections/SluicePages'
@@ -34,6 +35,7 @@ export default buildConfig({
     Media,
     Locations,
     Amenities,
+    HouseRules,
     Properties,
     Gateways,
     SluicePages,

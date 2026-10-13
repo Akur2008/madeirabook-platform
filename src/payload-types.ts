@@ -71,6 +71,7 @@ export interface Config {
     media: Media;
     locations: Location;
     amenities: Amenity;
+    'house-rules': HouseRule;
     properties: Property;
     gateways: Gateway;
     'sluice-pages': SluicePage;
@@ -87,6 +88,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     amenities: AmenitiesSelect<false> | AmenitiesSelect<true>;
+    'house-rules': HouseRulesSelect<false> | HouseRulesSelect<true>;
     properties: PropertiesSelect<false> | PropertiesSelect<true>;
     gateways: GatewaysSelect<false> | GatewaysSelect<true>;
     'sluice-pages': SluicePagesSelect<false> | SluicePagesSelect<true>;
@@ -173,18 +175,15 @@ export interface User {
  */
 export interface Media {
   id: number;
-  alt: string;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
+  alt?: string | null;
+  url: string;
   filename?: string | null;
   mimeType?: string | null;
   filesize?: number | null;
   width?: number | null;
   height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -229,6 +228,16 @@ export interface Amenity {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "house-rules".
+ */
+export interface HouseRule {
+  id: number;
+  name: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "properties".
  */
 export interface Property {
@@ -239,8 +248,17 @@ export interface Property {
   pmsPropertyId?: string | null;
   pricePerNight: number;
   cleaningFee?: number | null;
+  description?: string | null;
+  shortDescription?: string | null;
+  sizeM2?: number | null;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  maxGuests?: number | null;
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
   location?: (number | null) | Location;
   amenities?: (number | Amenity)[] | null;
+  houseRules?: (number | HouseRule)[] | null;
   media?:
     | {
         image?: (number | null) | Media;
@@ -375,6 +393,10 @@ export interface PayloadLockedDocument {
         value: number | Amenity;
       } | null)
     | ({
+        relationTo: 'house-rules';
+        value: number | HouseRule;
+      } | null)
+    | ({
         relationTo: 'properties';
         value: number | Property;
       } | null)
@@ -465,17 +487,14 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
   url?: T;
-  thumbnailURL?: T;
   filename?: T;
   mimeType?: T;
   filesize?: T;
   width?: T;
   height?: T;
-  focalX?: T;
-  focalY?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -506,6 +525,15 @@ export interface AmenitiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "house-rules_select".
+ */
+export interface HouseRulesSelect<T extends boolean = true> {
+  name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "properties_select".
  */
 export interface PropertiesSelect<T extends boolean = true> {
@@ -515,8 +543,17 @@ export interface PropertiesSelect<T extends boolean = true> {
   pmsPropertyId?: T;
   pricePerNight?: T;
   cleaningFee?: T;
+  description?: T;
+  shortDescription?: T;
+  sizeM2?: T;
+  bedrooms?: T;
+  bathrooms?: T;
+  maxGuests?: T;
+  checkInTime?: T;
+  checkOutTime?: T;
   location?: T;
   amenities?: T;
+  houseRules?: T;
   media?:
     | T
     | {

@@ -9,8 +9,32 @@ export const Media: CollectionConfig = {
     {
       name: 'alt',
       type: 'text',
+      required: false,
+    },
+    {
+      name: 'url',
+      type: 'text',
       required: true,
     },
+    {
+      name: 'filename',
+      type: 'text',
+    },
+    {
+      name: 'mimeType',
+      type: 'text',
+    },
+    {
+      name: 'filesize',
+      type: 'number',
+    },
+    {
+      name: 'width',
+      type: 'number',
+    },
+    {
+      name: 'height',
+      type: 'number',
+    },
   ],
-  upload: true,
 }

@@ -54,6 +54,41 @@ export const Properties: CollectionConfig = {
       type: 'number',
     },
     {
+      name: 'description',
+      type: 'textarea',
+    },
+    {
+      name: 'shortDescription',
+      type: 'textarea',
+      maxLength: 300,
+    },
+    {
+      name: 'sizeM2',
+      type: 'number',
+    },
+    {
+      name: 'bedrooms',
+      type: 'number',
+    },
+    {
+      name: 'bathrooms',
+      type: 'number',
+    },
+    {
+      name: 'maxGuests',
+      type: 'number',
+    },
+    {
+      name: 'checkInTime',
+      type: 'text',
+      defaultValue: '15:00',
+    },
+    {
+      name: 'checkOutTime',
+      type: 'text',
+      defaultValue: '11:00',
+    },
+    {
       name: 'location',
       type: 'relationship',
       relationTo: 'locations',
@@ -62,6 +97,12 @@ export const Properties: CollectionConfig = {
       name: 'amenities',
       type: 'relationship',
       relationTo: 'amenities',
+      hasMany: true,
+    },
+    {
+      name: 'houseRules',
+      type: 'relationship',
+      relationTo: 'house-rules',
       hasMany: true,
     },
     {
