@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
-import BookingSearchSheet, { nextWeekend, toISODate } from './BookingSearchSheet'
+import BookingDrawer from './BookingDrawer'
+import { nextWeekend } from './BookingSearchSheet'
 
 const ESCAPE_CARD_URL = 'https://app.madeirabook.com/api/escape-card'
 const BOOKINGS_URL = 'https://app.madeirabook.com/api/stats/bookings-count'
@@ -95,12 +96,7 @@ export default function EscapeCard() {
         </span>
       </div>
 
-      <BookingSearchSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        initialArrival={weekend ? toISODate(weekend.arrival) : undefined}
-        initialDeparture={weekend ? toISODate(weekend.departure) : undefined}
-      />
+      <BookingDrawer open={sheetOpen} onOpenChange={setSheetOpen} />
     </>
   )
 }

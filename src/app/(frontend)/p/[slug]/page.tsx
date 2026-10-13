@@ -7,6 +7,7 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Amenity, HouseRule, Media } from '@/payload-types'
+import BookingDrawer from '../../components/BookingDrawer'
 import PropertyMap from '../../components/PropertyMapLoader'
 
 export const revalidate = 60
@@ -262,12 +263,18 @@ export default async function PropertyPage({
           >
             ← Back to all stays
           </Link>
-          <Link
-            href="#"
-            className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
-          >
-            Book this stay →
-          </Link>
+          <BookingDrawer
+            propertySlug={p.slug}
+            propertyTitle={p.title}
+            trigger={
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+              >
+                Book this stay →
+              </button>
+            }
+          />
         </div>
       </div>
 
