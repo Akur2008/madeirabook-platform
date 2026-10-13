@@ -25,7 +25,28 @@ async function main() {
   console.log('OK canico coords -> 32.64636, -16.82803')
 
   await payload.update({ collection: 'locations', id: funchal.id, data: {
-    description: 'Rua da Quinta Calaça 3, São Martinho — quiet residential area west of Funchal, walking distance to Lido promenade and oceanfront.',
+    description: {
+      root: {
+        type: 'root',
+        children: [
+          {
+            type: 'paragraph',
+            version: 1,
+            children: [
+              {
+                type: 'text',
+                text: 'Rua da Quinta Calaça 3, São Martinho — quiet residential area west of Funchal, walking distance to Lido promenade and oceanfront.',
+                version: 1,
+              },
+            ],
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        version: 1,
+      },
+    },
   } })
   console.log('OK funchal description updated')
   process.exit(0)

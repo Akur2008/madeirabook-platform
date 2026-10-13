@@ -7,6 +7,7 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Amenity, HouseRule, Media } from '@/payload-types'
+import PropertyMap from '../../components/PropertyMapLoader'
 
 export const revalidate = 60
 
@@ -158,6 +159,16 @@ export default async function PropertyPage({
         {locationName && (
           <p className="mt-3 text-base text-white/60">Located in {locationName}</p>
         )}
+
+        {typeof p.location === 'object' &&
+          p.location?.geoCoordinates?.lat &&
+          p.location?.geoCoordinates?.lng && (
+            <PropertyMap
+              latitude={p.location.geoCoordinates.lat}
+              longitude={p.location.geoCoordinates.lng}
+              title={p.title}
+            />
+          )}
 
         {images.length > 0 && (
           <div className="mt-10">
