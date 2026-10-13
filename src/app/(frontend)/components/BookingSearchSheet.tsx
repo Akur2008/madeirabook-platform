@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAudioEngine } from '@/audio/useAudioEngine'
@@ -282,10 +283,11 @@ export default function BookingSearchSheet({
                     className="group flex items-center gap-4 rounded-xl border border-white/15 bg-white/5 p-3 transition-colors hover:bg-white/10"
                   >
                     {img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={img}
                         alt={item.name}
+                        width={64}
+                        height={64}
                         className="h-16 w-16 shrink-0 rounded-lg object-cover"
                       />
                     ) : (

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
@@ -23,10 +24,11 @@ export default function GatewayCard({ page }: { page: SluicePage }) {
       className="group relative block aspect-[3/4] overflow-hidden rounded-2xl border border-white/10"
     >
       {page.posterUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={page.posterUrl}
           alt={page.title}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       )}

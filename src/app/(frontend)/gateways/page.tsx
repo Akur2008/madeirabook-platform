@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import React from 'react'
@@ -63,10 +64,11 @@ export default async function GatewaysPage() {
                 className="group relative block aspect-[3/4] overflow-hidden rounded-lg bg-white/5"
               >
                 {page.posterUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={page.posterUrl}
                     alt={page.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 )}

@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import React from 'react'
@@ -117,10 +118,12 @@ export default async function HomePage() {
 
       {/* 2. Hero: Madeira image + always-visible escape card */}
       <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-6 py-16">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={HERO_IMAGE}
           alt="Madeira ocean view from a balcony"
+          fill
+          priority
+          sizes="100vw"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-[#0a1420]" />
@@ -162,11 +165,12 @@ export default async function HomePage() {
                   className="group block overflow-hidden rounded-2xl border border-white/10 transition-colors hover:border-white/25"
                 >
                   {coverUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={coverUrl}
                       alt={p.title}
-                      loading="lazy"
+                      width={800}
+                      height={600}
+                      sizes="(max-width: 768px) 100vw, 33vw"
                       className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   )}
@@ -206,7 +210,6 @@ export default async function HomePage() {
             <iframe
               src="https://www.meteoblue.com/en/weather/maps/widget/funchal_portugal_2267827?windAnimation=1&gust=0&satellite=1&cloudsAndPrecipitation=0&temperature=0&sunshine=0&extremeForecastIndex=0&geoloc=fixed&tempunit=C&lengthunit=metric&windunit=m%252Fs&zoom=9&autowidth=auto&user_key=341c1d820f9b092c&embed_key=53ce891855e5d876&sig=91a5f1d457090096cef4c482c287a7724642523963efe45f3edd0dbbf4c635ee"
               scrolling="no"
-              allowtransparency="true"
               sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox"
               style={{
                 width: '100%',

@@ -13,6 +13,25 @@ const nextConfig: NextConfig = {
         pathname: '/api/media/file/**',
       },
     ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'gzu76sbajt7s2dfg.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.madeirabook.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'app.madeirabook.com',
+      },
+    ],
   },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {

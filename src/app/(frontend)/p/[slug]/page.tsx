@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
@@ -70,24 +71,31 @@ export default async function PropertyPage({
 
         {images.length > 0 && (
           <div className="mt-10">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={images[0].url}
-              alt={p.title}
-              loading="lazy"
-              className="h-96 w-full rounded-2xl object-cover"
-            />
+            <div className="relative h-96 w-full overflow-hidden rounded-2xl">
+              <Image
+                src={images[0].url}
+                alt={p.title}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover"
+              />
+            </div>
             {images.length > 1 && (
               <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
                 {images.slice(1).map((img) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <div
                     key={img.id}
-                    src={img.url}
-                    alt={p.title}
-                    loading="lazy"
-                    className="h-48 w-full rounded-xl object-cover"
-                  />
+                    className="relative h-48 w-full overflow-hidden rounded-xl"
+                  >
+                    <Image
+                      src={img.url}
+                      alt={p.title}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
                 ))}
               </div>
             )}
