@@ -160,16 +160,6 @@ export default async function PropertyPage({
           <p className="mt-3 text-base text-white/60">Located in {locationName}</p>
         )}
 
-        {typeof p.location === 'object' &&
-          p.location?.geoCoordinates?.lat &&
-          p.location?.geoCoordinates?.lng && (
-            <PropertyMap
-              latitude={p.location.geoCoordinates.lat}
-              longitude={p.location.geoCoordinates.lng}
-              title={p.title}
-            />
-          )}
-
         {images.length > 0 && (
           <div className="mt-10">
             <div className="relative h-96 w-full overflow-hidden rounded-2xl">
@@ -247,6 +237,23 @@ export default async function PropertyPage({
             </ul>
           </section>
         )}
+
+        {typeof p.location === 'object' &&
+          p.location?.geoCoordinates?.lat &&
+          p.location?.geoCoordinates?.lng && (
+            <section className="mt-12">
+              <h2 className="text-2xl font-light text-white/90" style={SERIF}>
+                Location
+              </h2>
+              <div className="mt-4">
+                <PropertyMap
+                  latitude={p.location.geoCoordinates.lat}
+                  longitude={p.location.geoCoordinates.lng}
+                  title={p.title}
+                />
+              </div>
+            </section>
+          )}
 
         <div className="mt-14 flex flex-wrap items-center gap-4">
           <Link
