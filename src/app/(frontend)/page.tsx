@@ -206,7 +206,7 @@ export default async function HomePage() {
             <iframe
               src="https://www.meteoblue.com/en/weather/maps/widget/funchal_portugal_2267827?windAnimation=1&gust=0&satellite=1&cloudsAndPrecipitation=0&temperature=0&sunshine=0&extremeForecastIndex=0&geoloc=fixed&tempunit=C&lengthunit=metric&windunit=m%252Fs&zoom=9&autowidth=auto&user_key=341c1d820f9b092c&embed_key=53ce891855e5d876&sig=91a5f1d457090096cef4c482c287a7724642523963efe45f3edd0dbbf4c635ee"
               scrolling="no"
-              allowTransparency={true}
+              allowtransparency="true"
               sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox"
               style={{
                 width: '100%',
