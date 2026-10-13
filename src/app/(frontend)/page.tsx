@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
@@ -10,9 +11,40 @@ import GatewayCard from './components/GatewayCard'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata: Metadata = {
+  title: 'Madeirabook — rare places to stay in Madeira',
+  description:
+    'Curated stays in Madeira — direct booking, honest prices, no mass tourism.',
+  openGraph: {
+    title: 'Madeirabook',
+    description:
+      'Curated stays in Madeira — direct booking, honest prices.',
+    type: 'website',
+    url: 'https://madeirabook-platform.vercel.app/',
+  },
+  alternates: {
+    canonical: 'https://madeirabook-platform.vercel.app/',
+  },
+}
+
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
 const HERO_IMAGE = 'https://www.madeirabook.com/images/madeira-cover-balcony.jpg'
+
+const WEBSITE_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Madeirabook',
+  url: 'https://madeirabook-platform.vercel.app/',
+  description:
+    'Curated stays in Madeira — direct booking, honest prices.',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target:
+      'https://madeirabook-platform.vercel.app/?q={search_term_string}',
+    'query-input': 'required name=search_term_string',
+  },
+}
 
 const NAV_LINKS = [
   { label: 'Stays', href: 'https://www.madeirabook.com/madeira-apartment-rentals.html' },
@@ -299,6 +331,11 @@ export default async function HomePage() {
           </a>
         </nav>
       </footer>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSONLD) }}
+      />
     </div>
   )
 }

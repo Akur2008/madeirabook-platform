@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -10,6 +11,41 @@ import type { Amenity, HouseRule, Media } from '@/payload-types'
 export const revalidate = 60
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const payload = await getPayload({ config: await config })
+  const { docs } = await payload.find({
+    collection: 'properties',
+    where: { slug: { equals: slug }, status: { equals: 'published' } },
+    limit: 1,
+    depth: 2,
+  })
+  if (!docs.length) return { title: 'Not found' }
+  const p = docs[0]
+  const cover = p.media?.[0]?.image
+  const image = cover && typeof cover === 'object' ? cover.url : undefined
+  const desc =
+    p.shortDescription || p.description || `Stay at ${p.title} in Madeira.`
+  return {
+    title: `${p.title} — Madeirabook`,
+    description: desc,
+    openGraph: {
+      title: p.title,
+      description: desc,
+      images: image ? [{ url: image }] : [],
+      type: 'website',
+      url: `https://madeirabook-platform.vercel.app/p/${p.slug}`,
+    },
+    alternates: {
+      canonical: `https://madeirabook-platform.vercel.app/p/${p.slug}`,
+    },
+  }
+}
 
 export default async function PropertyPage({
   params,
@@ -51,6 +87,60 @@ export default async function PropertyPage({
     p.checkInTime ? `Check-in after ${p.checkInTime}` : null,
     p.checkOutTime ? `Check-out before ${p.checkOutTime}` : null,
   ].filter((s): s is string => Boolean(s))
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'VacationRental',
+    name: p.title,
+    description: p.description || p.shortDescription || '',
+    image: images.map((img) => img.url),
+    identifier: p.slug,
+    ...(p.pricePerNight && {
+      priceRange: `From €${p.pricePerNight} per night`,
+    }),
+    ...(p.sizeM2 && {
+      floorSize: {
+        '@type': 'QuantitativeValue',
+        value: p.sizeM2,
+        unitCode: 'MTK',
+      },
+    }),
+    ...(p.bedrooms && { numberOfBedrooms: p.bedrooms }),
+    ...(p.bathrooms && { numberOfBathroomsTotal: p.bathrooms }),
+    ...(p.maxGuests && {
+      occupancy: { '@type': 'QuantitativeValue', maxValue: p.maxGuests },
+    }),
+    ...(p.location &&
+      typeof p.location === 'object' && {
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: p.location.name,
+          addressCountry: 'PT',
+        },
+        ...(p.location.geoCoordinates && {
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: p.location.geoCoordinates.lat,
+            longitude: p.location.geoCoordinates.lng,
+          },
+        }),
+      }),
+    ...(amenities.length > 0 && {
+      amenityFeature: amenities.map((a) => ({
+        '@type': 'LocationFeatureSpecification',
+        name: a.name,
+      })),
+    }),
+    ...(p.pricePerNight && {
+      offers: {
+        '@type': 'Offer',
+        price: p.pricePerNight,
+        priceCurrency: 'EUR',
+        availability: 'https://schema.org/InStock',
+        url: `https://madeirabook-platform.vercel.app/p/${p.slug}`,
+      },
+    }),
+  }
 
   return (
     <div className="min-h-dvh bg-[#0a1420] text-white">
@@ -162,6 +252,11 @@ export default async function PropertyPage({
           </Link>
         </div>
       </div>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     </div>
   )
 }
