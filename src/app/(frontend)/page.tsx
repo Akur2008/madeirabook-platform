@@ -55,6 +55,13 @@ export default async function HomePage() {
     depth: 0,
   })
 
+  const { docs: properties } = await payload.find({
+    collection: 'properties',
+    where: { status: { equals: 'published' } },
+    limit: 12,
+    depth: 2,
+  })
+
   return (
     <div className="min-h-dvh bg-[#0a1420] text-white">
       {/* Cormorant Garamond for headings; falls back to serif if the CDN is unreachable */}
@@ -131,6 +138,56 @@ export default async function HomePage() {
             <EscapeCard />
           </div>
         </div>
+      </section>
+
+      {/* 2.5. Stays grid — published properties */}
+      <section className="mx-auto max-w-6xl px-6 py-20 md:py-24">
+        <h2
+          className="mb-12 text-center text-3xl font-light text-white/90 md:text-4xl"
+          style={SERIF}
+        >
+          Our stays in Madeira
+        </h2>
+        {properties.length === 0 ? (
+          <p className="text-center text-white/50">New stays coming soon.</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {properties.map((p) => {
+              const cover = p.media?.[0]?.image
+              const coverUrl = cover && typeof cover === 'object' ? cover.url : null
+              return (
+                <Link
+                  key={p.id}
+                  href={`/p/${p.slug}`}
+                  className="group block overflow-hidden rounded-2xl border border-white/10 transition-colors hover:border-white/25"
+                >
+                  {coverUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={coverUrl}
+                      alt={p.title}
+                      loading="lazy"
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  )}
+                  <div className="p-5">
+                    <h3
+                      className="text-xl font-light leading-tight text-white/95"
+                      style={SERIF}
+                    >
+                      {p.title}
+                    </h3>
+                    {p.pricePerNight && (
+                      <p className="mb-0 mt-2 text-sm text-white/60">
+                        From €{p.pricePerNight} / night
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {/* 3. Weather widget (meteoblue) */}
