@@ -4,6 +4,7 @@ import * as migration_20261013_170112_media_url_fields from './20261013_170112_m
 import * as migration_20261014_182443_add_is_platform_and_commission from './20261014_182443_add_is_platform_and_commission';
 import * as migration_20261014_184836_add_webhook_events_collection from './20261014_184836_add_webhook_events_collection';
 import * as migration_20261014_184907_add_bookings_collection from './20261014_184907_add_bookings_collection';
+import * as migration_20261014_192739_add_email_queue_collection from './20261014_192739_add_email_queue_collection';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261014_184907_add_bookings_collection.up,
     down: migration_20261014_184907_add_bookings_collection.down,
-    name: '20261014_184907_add_bookings_collection'
+    name: '20261014_184907_add_bookings_collection',
+  },
+  {
+    up: migration_20261014_192739_add_email_queue_collection.up,
+    down: migration_20261014_192739_add_email_queue_collection.down,
+    name: '20261014_192739_add_email_queue_collection'
   },
 ];

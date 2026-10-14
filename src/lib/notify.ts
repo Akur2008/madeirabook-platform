@@ -49,11 +49,18 @@ export interface BookingPaidEmailOptions {
   platformFeeCents?: number
 }
 
-async function sendResendEmail(
+export interface ResendEmailOptions {
+  to: string
+  subject: string
+  html: string
+  text?: string
+  replyTo?: string
+  headers?: Record<string, string>
+}
+
+export async function sendResendEmail(
   apiKey: string,
-  to: string,
-  subject: string,
-  html: string,
+  opts: ResendEmailOptions,
 ): Promise<void> {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -63,9 +70,12 @@ async function sendResendEmail(
     },
     body: JSON.stringify({
       from: 'Madeirabook <hello@madeirabook.com>',
-      to,
-      subject,
-      html,
+      to: opts.to,
+      subject: opts.subject,
+      html: opts.html,
+      ...(opts.text ? { text: opts.text } : {}),
+      ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
+      ...(opts.headers ? { headers: opts.headers } : {}),
     }),
     signal: AbortSignal.timeout(10000),
   })
@@ -97,12 +107,11 @@ export async function sendBookingPaidEmail(
       '<p>If you have questions, reply to this email.</p>' +
       '<p style="color:#6b7280;font-size:14px;">- The Madeirabook team</p>' +
       '</div>'
-    await sendResendEmail(
-      apiKey,
-      opts.guestEmail,
-      `Booking confirmed - ${title}`,
-      guestHtml,
-    )
+    await sendResendEmail(apiKey, {
+      to: opts.guestEmail,
+      subject: `Booking confirmed - ${title}`,
+      html: guestHtml,
+    })
     results.guest = true
   }
 
@@ -119,12 +128,11 @@ export async function sendBookingPaidEmail(
       `<b>Net to you:</b> ${fmtEuro(netCents)}</p>` +
       '<p style="color:#6b7280;font-size:14px;">- Madeirabook</p>' +
       '</div>'
-    await sendResendEmail(
-      apiKey,
-      opts.ownerEmail,
-      `New booking - ${title}`,
-      ownerHtml,
-    )
+    await sendResendEmail(apiKey, {
+      to: opts.ownerEmail,
+      subject: `New booking - ${title}`,
+      html: ownerHtml,
+    })
     results.owner = true
   }
 

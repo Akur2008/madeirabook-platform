@@ -77,6 +77,7 @@ export interface Config {
     'sluice-pages': SluicePage;
     cities: City;
     subscribers: Subscriber;
+    'email-queue': EmailQueue;
     'webhook-events': WebhookEvent;
     bookings: Booking;
     'payload-kv': PayloadKv;
@@ -96,6 +97,7 @@ export interface Config {
     'sluice-pages': SluicePagesSelect<false> | SluicePagesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
+    'email-queue': EmailQueueSelect<false> | EmailQueueSelect<true>;
     'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
     bookings: BookingsSelect<false> | BookingsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -373,6 +375,41 @@ export interface Subscriber {
   email: string;
   source?: string | null;
   status?: ('active' | 'unsubscribed') | null;
+  /**
+   * Token for /api/unsubscribe/:token links in emails.
+   */
+  unsubscribeToken?: string | null;
+  /**
+   * Set when the subscriber opted out. Pending queue emails are skipped.
+   */
+  unsubscribedAt?: string | null;
+  telegramId?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-queue".
+ */
+export interface EmailQueue {
+  id: number;
+  subscriber: number | Subscriber;
+  /**
+   * Template name from src/lib/emails/templates.ts.
+   */
+  template: string;
+  /**
+   * Earliest time the email may be sent.
+   */
+  sendAt: string;
+  /**
+   * Set when the job was picked up by the cron. NULL = pending.
+   */
+  sentAt?: string | null;
+  /**
+   * Last send error, or "unsubscribed" when skipped.
+   */
+  error?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -503,6 +540,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'subscribers';
         value: number | Subscriber;
+      } | null)
+    | ({
+        relationTo: 'email-queue';
+        value: number | EmailQueue;
       } | null)
     | ({
         relationTo: 'webhook-events';
@@ -741,6 +782,22 @@ export interface SubscribersSelect<T extends boolean = true> {
   email?: T;
   source?: T;
   status?: T;
+  unsubscribeToken?: T;
+  unsubscribedAt?: T;
+  telegramId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-queue_select".
+ */
+export interface EmailQueueSelect<T extends boolean = true> {
+  subscriber?: T;
+  template?: T;
+  sendAt?: T;
+  sentAt?: T;
+  error?: T;
   updatedAt?: T;
   createdAt?: T;
 }

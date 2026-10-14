@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import Stripe from 'stripe'
 
@@ -8,9 +9,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const APP_URL = process.env.APP_URL || 'https://madeirabook-platform.vercel.app'
-const SEARCH_AVAILABILITY_URL =
-  process.env.SEARCH_AVAILABILITY_URL ||
-  'https://app.madeirabook.com/api/search-availability'
+const SEARCH_AVAILABILITY_PATH = '/api/search-availability'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const DEFAULT_COMMISSION_PERCENT = 12
@@ -48,7 +47,7 @@ interface AvailabilityOffer {
   currency?: string
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     let body: unknown
     try {
@@ -93,7 +92,8 @@ export async function POST(req: Request) {
     // endpoint. Smoobu remains the source of truth for the total.
     let offer: AvailabilityOffer | undefined
     try {
-      const availRes = await fetch(SEARCH_AVAILABILITY_URL, {
+      const origin = req.nextUrl.origin
+      const availRes = await fetch(`${origin}${SEARCH_AVAILABILITY_PATH}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

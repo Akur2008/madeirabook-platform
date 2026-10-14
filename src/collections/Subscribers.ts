@@ -24,5 +24,23 @@ export const Subscribers: CollectionConfig = {
         { label: 'Unsubscribed', value: 'unsubscribed' },
       ],
     },
+    {
+      name: 'unsubscribeToken',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        description: 'Token for /api/unsubscribe/:token links in emails.',
+      },
+    },
+    {
+      name: 'unsubscribedAt',
+      type: 'date',
+      index: true,
+      admin: {
+        description: 'Set when the subscriber opted out. Pending queue emails are skipped.',
+      },
+    },
+    { name: 'telegramId', type: 'number' },
   ],
 }
