@@ -77,16 +77,14 @@ export const templates: Record<
     subject: 'Your Madeira Travel Guide 🌴',
     text:
       'Thanks for subscribing! Your Madeira travel guide is attached.\n\n' +
-      'Get restaurant discounts and insider tips in Telegram: https://t.me/Madeirabookbot?start=pdf_guide\n\n' +
+      'Follow us on Instagram @madeirabook\n\n' +
       'Unsubscribe: ' +
       unsubscribeUrl(subscriber.unsubscribeToken),
     html:
       '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">' +
       '<h2 style="color: #064e3b;">Thanks for subscribing!</h2>' +
       '<p>Your Madeira travel guide is attached to this email.</p>' +
-      '<p style="margin: 24px 0;"><a href="https://t.me/Madeirabookbot?start=pdf_guide" style="' +
-      BTN +
-      '">Open Telegram bot</a></p>' +
+      '<p style="margin: 24px 0;">Follow us on Instagram @madeirabook</p>' +
       '<p style="color: #6b7280; font-size: 14px;">Inside you\'ll find restaurant discounts of 30–50%, flight price alerts, and other useful guides for your trip to Madeira.</p>' +
       '<p style="color: #6b7280; font-size: 14px;">— The Madeirabook team</p>' +
       unsubscribeFooter(subscriber.unsubscribeToken) +

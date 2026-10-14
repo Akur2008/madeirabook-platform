@@ -1,24 +1,6 @@
-// Notifications for the Stripe webhook: Telegram (Bot API) and Resend.
-// Both go through plain fetch — no extra dependencies. Missing env vars
-// degrade to a skipped send, never to a thrown error in the caller path.
-
-export async function sendTelegramMessage(
-  chatId: string,
-  text: string,
-): Promise<{ ok: boolean }> {
-  const token = process.env.TELEGRAM_BOT_TOKEN
-  if (!token) return { ok: false }
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
-    signal: AbortSignal.timeout(10000),
-  })
-  if (!res.ok) {
-    throw new Error(`Telegram ${res.status}: ${(await res.text()).slice(0, 200)}`)
-  }
-  return { ok: true }
-}
+// Notifications for the Stripe webhook and subscribe flow via Resend.
+// Plain fetch — no extra dependencies. Missing env vars degrade to a
+// skipped send, never to a thrown error in the caller path.
 
 function escHtml(s: unknown): string {
   if (s == null) return ''
@@ -83,6 +65,26 @@ export async function sendResendEmail(
   })
   if (!res.ok) {
     throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  }
+}
+
+// Admin alert over email (replaces the Telegram admin channel, dropped
+// 14.10.2026). Never throws — failures are logged only.
+export async function sendAdminAlert(
+  subject: string,
+  body: string,
+): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL
+  if (!adminEmail || !process.env.RESEND_API_KEY) return
+  try {
+    await sendResendEmail(process.env.RESEND_API_KEY, {
+      to: adminEmail,
+      subject: `[Madeirabook Admin] ${subject}`,
+      html: `<pre style="font-family: monospace; white-space: pre-wrap;">${body}</pre>`,
+    })
+    console.log(`sendAdminAlert: sent to ${adminEmail} — ${subject}`)
+  } catch (e) {
+    console.error('sendAdminAlert failed:', e)
   }
 }
 

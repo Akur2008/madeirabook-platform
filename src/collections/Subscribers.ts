@@ -41,6 +41,7 @@ export const Subscribers: CollectionConfig = {
         description: 'Set when the subscriber opted out. Pending queue emails are skipped.',
       },
     },
+    // Deprecated: Telegram отменён 14.10.2026, поле оставлено для совместимости
     { name: 'telegramId', type: 'number' },
   ],
 }

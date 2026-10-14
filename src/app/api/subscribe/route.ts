@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
-import { sendResendEmail, sendTelegramMessage } from '@/lib/notify'
+import { sendAdminAlert, sendResendEmail } from '@/lib/notify'
 import { templates, unsubscribeUrl } from '@/lib/emails/templates'
 import type { Subscriber } from '@/payload-types'
 
@@ -184,17 +184,10 @@ export async function POST(req: Request) {
     console.error('subscribe: welcome email failed', e)
   }
 
-  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
-  if (adminChatId) {
-    try {
-      await sendTelegramMessage(
-        adminChatId,
-        `New subscriber: ${normalizedEmail}${normalizedSource ? ` (${normalizedSource})` : ''}`,
-      )
-    } catch (e) {
-      console.error('subscribe: telegram notify failed', e)
-    }
-  }
+  await sendAdminAlert(
+    'New subscriber',
+    `Email: ${normalizedEmail}\nSource: ${normalizedSource || 'unknown'}\nDate: ${new Date().toISOString()}`,
+  )
 
   return NextResponse.json({ ok: true, existed: !isNew })
 }

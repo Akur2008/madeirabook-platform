@@ -59,6 +59,7 @@ export const Bookings: CollectionConfig = {
       name: 'guestName',
       type: 'text',
     },
+    // Deprecated: Telegram отменён 14.10.2026, поле оставлено для совместимости
     {
       name: 'guestTelegramId',
       type: 'number',

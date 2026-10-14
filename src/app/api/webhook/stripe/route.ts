@@ -4,7 +4,7 @@ import type { Payload } from 'payload'
 import Stripe from 'stripe'
 
 import config from '@payload-config'
-import { sendBookingPaidEmail, sendTelegramMessage } from '@/lib/notify'
+import { sendAdminAlert, sendBookingPaidEmail } from '@/lib/notify'
 import { createReservation, markPaid } from '@/lib/smoobu'
 
 export const runtime = 'nodejs'
@@ -162,22 +162,10 @@ async function handleCheckoutCompleted(
       `webhook: SMOOBU CREATE FAILED — paid but no PMS booking `
         + `(session ${session.id}, booking ${bookingId}, smoobu ${smoobuId}): ${reason}`,
     )
-    const adminChat = process.env.TELEGRAM_ADMIN_CHAT_ID
-    if (adminChat) {
-      try {
-        await sendTelegramMessage(
-          adminChat,
-          'ПРОБЛЕМА: оплата прошла, но Smoobu отказал.\n'
-            + `Session: ${session.id}\n`
-            + `Booking ID: ${bookingId ?? '-'}\n`
-            + `Smoobu ID: ${smoobuId ?? '-'}\n`
-            + `Даты: ${arrival} - ${departure}\n`
-            + `Причина: ${reason}`,
-        )
-      } catch (tgErr) {
-        console.error('webhook: admin telegram notify failed', tgErr)
-      }
-    }
+    await sendAdminAlert(
+      `Booking paid but PMS failed: ${propertySlug}`,
+      `Session: ${session.id}\nAmount: ${session.amount_total} ${session.currency}\nArrival: ${arrival}\nDeparture: ${departure}\nGuest: ${session.customer_details?.email}\nReason: ${reason}\n\nNeed manual PMS booking.`,
+    )
   }
 
   // Confirmation emails (guest + owner). Failures are logged, not fatal —
