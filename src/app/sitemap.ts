@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const baseUrl = 'https://madeirabook-platform.vercel.app'
+const baseUrl = 'https://www.madeirabook.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
