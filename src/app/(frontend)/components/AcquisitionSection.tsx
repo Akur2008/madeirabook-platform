@@ -18,8 +18,8 @@ export default function AcquisitionSection() {
             Trust your property to Madeira's best hands
           </h3>
           <p className="mt-4 leading-relaxed text-white/60">
-            88% дохода напрямую на ваш счёт через Stripe Connect Express.
-            Прозрачная аналитика, отсутствие рутины, персональный уход.
+            88% of income goes directly to your account via Stripe Connect
+            Express. Transparent analytics, no routine, personal care.
           </p>
           <span className="mt-6 inline-block text-sm font-medium text-[#d4af37]">
             Become a partner →
@@ -37,9 +37,9 @@ export default function AcquisitionSection() {
             Create content, earn from your recommendations
           </h3>
           <p className="mt-4 leading-relaxed text-white/60">
-            Официальная амбассадорская программа для фотографов, блогеров,
-            авторов. Получайте 2% с каждого бронирования по вашей реферальной
-            ссылке.
+            Official ambassador program for photographers, bloggers and
+            creators. Earn 2% from every booking made through your referral
+            link.
           </p>
           <span className="mt-6 inline-block text-sm font-medium text-[#10b981]">
             Apply now →
