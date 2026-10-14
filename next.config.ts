@@ -64,6 +64,7 @@ const nextConfig: NextConfig = {
       { source: '/lisbon-to-madeira', destination: '/lisbon-to-madeira.html' },
       { source: '/liverpool-to-madeira', destination: '/liverpool-to-madeira.html' },
       { source: '/london-to-madeira', destination: '/london-to-madeira.html' },
+      { source: '/lido-funchal', destination: '/lido-funchal.html' },
       { source: '/madeira-apartment-rentals', destination: '/madeira-apartment-rentals.html' },
       { source: '/madeira-christmas-swimming', destination: '/madeira-christmas-swimming.html' },
       { source: '/madeira-events-calendar', destination: '/madeira-events-calendar.html' },
