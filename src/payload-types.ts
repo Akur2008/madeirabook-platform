@@ -77,6 +77,8 @@ export interface Config {
     'sluice-pages': SluicePage;
     cities: City;
     subscribers: Subscriber;
+    'webhook-events': WebhookEvent;
+    bookings: Booking;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +96,8 @@ export interface Config {
     'sluice-pages': SluicePagesSelect<false> | SluicePagesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
+    'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
+    bookings: BookingsSelect<false> | BookingsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -374,6 +378,70 @@ export interface Subscriber {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "webhook-events".
+ */
+export interface WebhookEvent {
+  id: number;
+  /**
+   * Stripe event ID (evt_...). Used for webhook idempotency.
+   */
+  eventId: string;
+  eventType: string;
+  /**
+   * Full Stripe event object (debug).
+   */
+  payload?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  processedAt: string;
+  status: 'processed' | 'failed';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bookings".
+ */
+export interface Booking {
+  id: number;
+  /**
+   * Stripe Checkout Session ID (cs_...).
+   */
+  stripeSessionId?: string | null;
+  /**
+   * Stripe PaymentIntent ID (pi_...). Used to match charge.refunded events.
+   */
+  stripePaymentIntent?: string | null;
+  property?: (number | null) | Property;
+  propertySlug?: string | null;
+  arrival?: string | null;
+  departure?: string | null;
+  guestEmail?: string | null;
+  guestName?: string | null;
+  guestTelegramId?: number | null;
+  /**
+   * Total amount in cents.
+   */
+  amountTotal?: number | null;
+  /**
+   * Platform commission in cents (0 for platform-owned properties).
+   */
+  platformFeeCents?: number | null;
+  currency?: string | null;
+  status: 'pending' | 'paid' | 'paid_no_pms' | 'cancelled' | 'refunded';
+  source?: ('booking_channel' | 'direct' | 'owner_manual') | null;
+  smoobuBookingId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -435,6 +503,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'subscribers';
         value: number | Subscriber;
+      } | null)
+    | ({
+        relationTo: 'webhook-events';
+        value: number | WebhookEvent;
+      } | null)
+    | ({
+        relationTo: 'bookings';
+        value: number | Booking;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -665,6 +741,42 @@ export interface SubscribersSelect<T extends boolean = true> {
   email?: T;
   source?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "webhook-events_select".
+ */
+export interface WebhookEventsSelect<T extends boolean = true> {
+  eventId?: T;
+  eventType?: T;
+  payload?: T;
+  processedAt?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bookings_select".
+ */
+export interface BookingsSelect<T extends boolean = true> {
+  stripeSessionId?: T;
+  stripePaymentIntent?: T;
+  property?: T;
+  propertySlug?: T;
+  arrival?: T;
+  departure?: T;
+  guestEmail?: T;
+  guestName?: T;
+  guestTelegramId?: T;
+  amountTotal?: T;
+  platformFeeCents?: T;
+  currency?: T;
+  status?: T;
+  source?: T;
+  smoobuBookingId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

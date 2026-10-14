@@ -15,6 +15,8 @@ import { Gateways } from './collections/Gateways'
 import { SluicePages } from './collections/SluicePages'
 import { Cities } from './collections/Cities'
 import { Subscribers } from './collections/Subscribers'
+import { WebhookEvents } from './collections/WebhookEvents'
+import { Bookings } from './collections/Bookings'
 import { PrivacyPolicy } from './globals/PrivacyPolicy'
 import { TermsOfService } from './globals/TermsOfService'
 import { CookiePolicy } from './globals/CookiePolicy'
@@ -41,6 +43,8 @@ export default buildConfig({
     SluicePages,
     Cities,
     Subscribers,
+    WebhookEvents,
+    Bookings,
   ],
   globals: [PrivacyPolicy, TermsOfService, CookiePolicy, LegalInfo],
   editor: lexicalEditor(),

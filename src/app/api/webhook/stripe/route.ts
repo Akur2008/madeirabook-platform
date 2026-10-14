@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import pg from 'pg'
+import type { Payload } from 'payload'
 import Stripe from 'stripe'
 
 import config from '@payload-config'
@@ -23,48 +23,6 @@ function getStripe(): Stripe {
   return stripeClient
 }
 
-let legacyPool: pg.Pool | null = null
-
-// Booking records and webhook dedupe still live in the legacy core DB
-// (same tables the old core webhook used). Returns null when
-// LEGACY_DATABASE_URL is not set — the webhook then only logs.
-async function legacyQuery(
-  text: string,
-  params: unknown[],
-): Promise<pg.QueryResult | null> {
-  const url = process.env.LEGACY_DATABASE_URL
-  if (!url) return null
-  if (!legacyPool) legacyPool = new pg.Pool({ connectionString: url })
-  return legacyPool.query(text, params)
-}
-
-interface LegacyProperty {
-  id: number
-  isPlatform: boolean
-  commissionPercent: number | null
-  ownerEmail: string | null
-}
-
-async function getLegacyProperty(
-  smoobuId: string,
-): Promise<LegacyProperty | null> {
-  const res = await legacyQuery(
-    'SELECT p.id, p.is_platform, p.commission_percent, u.email AS owner_email '
-      + 'FROM properties p LEFT JOIN users u ON u.id = p.owner_id '
-      + 'WHERE p.smoobu_id = $1 LIMIT 1',
-    [smoobuId],
-  )
-  const row = res?.rows?.[0]
-  if (!row) return null
-  return {
-    id: row.id,
-    isPlatform: row.is_platform === true,
-    commissionPercent:
-      row.commission_percent == null ? null : Number(row.commission_percent),
-    ownerEmail: row.owner_email || null,
-  }
-}
-
 function calcFee(amountCents: number, percent: number): number {
   return Math.round(amountCents * (percent / 100))
 }
@@ -76,7 +34,17 @@ function paymentIntentId(
   return typeof pi === 'string' ? pi : pi.id
 }
 
+function ownerEmailOf(property: { owner?: unknown } | undefined): string | null {
+  const owner = property?.owner
+  if (owner && typeof owner === 'object' && 'email' in owner) {
+    const email = (owner as { email?: unknown }).email
+    return typeof email === 'string' && email ? email : null
+  }
+  return null
+}
+
 async function handleCheckoutCompleted(
+  payload: Payload,
   session: Stripe.Checkout.Session,
 ): Promise<void> {
   const meta = session.metadata || {}
@@ -92,11 +60,11 @@ async function handleCheckoutCompleted(
     session.customer_details?.email ?? session.customer_email ?? null
   const amountCents = session.amount_total ?? 0
 
-  const payload = await getPayload({ config: await config })
   const found = await payload.find({
     collection: 'properties',
     where: { slug: { equals: propertySlug } },
     limit: 1,
+    depth: 1,
   })
   const property = found.docs[0]
   if (!property) {
@@ -109,39 +77,39 @@ async function handleCheckoutCompleted(
     ? String(property.pmsPropertyId)
     : null
 
-  const legacy = smoobuId ? await getLegacyProperty(smoobuId) : null
-  // A Payload-only property has no onboarded owner → platform-owned.
-  const isPlatform = legacy?.isPlatform !== false
+  // Split fields live on the Payload property; owner email via the
+  // owner relationship (replaces the legacy properties/users JOIN).
+  const isPlatform = property?.isPlatform !== false
   const platformFeeCents = isPlatform
     ? 0
     : calcFee(
         amountCents,
-        legacy?.commissionPercent ?? DEFAULT_COMMISSION_PERCENT,
+        property?.commissionPercent ?? DEFAULT_COMMISSION_PERCENT,
       )
+  const ownerEmail = ownerEmailOf(property)
 
-  // Record the paid booking in the legacy bookings table — the same row
-  // the old core webhook would have updated.
+  // Record the paid booking.
   let bookingId: number | null = null
   try {
-    const ins = await legacyQuery(
-      'INSERT INTO bookings '
-        + '(property_id, guest_email, arrival_date, departure_date, status, '
-        + 'source, amount_cents, platform_fee_cents, stripe_session_id, '
-        + 'stripe_payment_intent, created_at, updated_at) '
-        + "VALUES ($1,$2,$3,$4,'paid','direct',$5,$6,$7,$8,NOW(),NOW()) "
-        + 'RETURNING id',
-      [
-        legacy?.id ?? null,
-        guestEmail,
+    const booking = await payload.create({
+      collection: 'bookings',
+      data: {
+        stripeSessionId: session.id,
+        stripePaymentIntent: paymentIntentId(session.payment_intent),
+        property: property?.id ?? null,
+        propertySlug,
         arrival,
         departure,
-        amountCents,
+        guestEmail,
+        guestName: session.customer_details?.name ?? null,
+        amountTotal: amountCents,
         platformFeeCents,
-        session.id,
-        paymentIntentId(session.payment_intent),
-      ],
-    )
-    bookingId = ins?.rows?.[0]?.id ?? null
+        currency: session.currency ?? 'eur',
+        status: 'paid',
+        source: 'direct',
+      },
+    })
+    bookingId = booking.id
   } catch (err) {
     console.error('webhook: failed to record booking', err)
   }
@@ -163,11 +131,11 @@ async function handleCheckoutCompleted(
           : '15:00',
     })
     if (bookingId) {
-      await legacyQuery(
-        'UPDATE bookings SET smoobu_booking_id = $1, updated_at = NOW() '
-          + 'WHERE id = $2',
-        [String(smoobuBookingId), bookingId],
-      )
+      await payload.update({
+        collection: 'bookings',
+        id: bookingId,
+        data: { smoobuBookingId: String(smoobuBookingId) },
+      })
     }
     console.log(
       `webhook: Smoobu reservation ${smoobuBookingId} created for booking ${bookingId} (session ${session.id})`,
@@ -183,11 +151,11 @@ async function handleCheckoutCompleted(
   } catch (err) {
     // Payment succeeded but PMS rejected — flag for manual handling.
     if (bookingId) {
-      await legacyQuery(
-        "UPDATE bookings SET status = 'paid_no_pms', updated_at = NOW() "
-          + 'WHERE id = $1',
-        [bookingId],
-      )
+      await payload.update({
+        collection: 'bookings',
+        id: bookingId,
+        data: { status: 'paid_no_pms' },
+      })
     }
     const reason = err instanceof Error ? err.message : String(err)
     console.error(
@@ -214,11 +182,11 @@ async function handleCheckoutCompleted(
 
   // Confirmation emails (guest + owner). Failures are logged, not fatal —
   // Stripe must still see a 200 for a paid session.
-  if (guestEmail || legacy?.ownerEmail) {
+  if (guestEmail || ownerEmail) {
     try {
       await sendBookingPaidEmail({
         guestEmail,
-        ownerEmail: legacy?.ownerEmail ?? null,
+        ownerEmail,
         propertyTitle,
         arrivalDate: arrival,
         departureDate: departure,
@@ -231,6 +199,21 @@ async function handleCheckoutCompleted(
         err,
       )
     }
+  }
+}
+
+async function deleteWebhookEvent(
+  payload: Payload,
+  eventId: string,
+): Promise<void> {
+  const found = await payload.find({
+    collection: 'webhook-events',
+    where: { eventId: { equals: eventId } },
+    limit: 1,
+    depth: 0,
+  })
+  if (found.docs[0]) {
+    await payload.delete({ collection: 'webhook-events', id: found.docs[0].id })
   }
 }
 
@@ -250,17 +233,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_signature' }, { status: 400 })
   }
 
-  // Idempotency via the shared webhook_events table (same as core).
+  const payload = await getPayload({ config: await config })
+
+  // Idempotency via the webhook-events collection (replaces legacy table).
   try {
-    const ins = await legacyQuery(
-      'INSERT INTO webhook_events (id, type) VALUES ($1, $2) '
-        + 'ON CONFLICT (id) DO NOTHING',
-      [event.id, event.type],
-    )
-    if (ins && ins.rowCount === 0) {
+    const existing = await payload.find({
+      collection: 'webhook-events',
+      where: { eventId: { equals: event.id } },
+      limit: 1,
+      depth: 0,
+    })
+    if (existing.totalDocs > 0) {
       console.log(`webhook: duplicate event ${event.id}, skip`)
       return NextResponse.json({ received: true, duplicate: true })
     }
+    await payload.create({
+      collection: 'webhook-events',
+      data: {
+        eventId: event.id,
+        eventType: event.type,
+        payload: JSON.parse(JSON.stringify(event)) as Record<string, unknown>,
+        processedAt: new Date().toISOString(),
+        status: 'processed',
+      },
+    })
   } catch (err) {
     console.error('webhook: dedupe check failed, continuing anyway', err)
   }
@@ -268,34 +264,40 @@ export async function POST(req: Request) {
   try {
     if (event.type === 'checkout.session.completed') {
       await handleCheckoutCompleted(
+        payload,
         event.data.object as Stripe.Checkout.Session,
       )
     } else if (event.type === 'checkout.session.expired') {
       const s = event.data.object as Stripe.Checkout.Session
       console.log(`webhook: checkout session expired: ${s.id}`)
-      await legacyQuery(
-        "UPDATE bookings SET status = 'cancelled', updated_at = NOW() "
-          + "WHERE stripe_session_id = $1 AND status = 'pending'",
-        [s.id],
-      )
+      await payload.update({
+        collection: 'bookings',
+        where: {
+          and: [
+            { stripeSessionId: { equals: s.id } },
+            { status: { equals: 'pending' } },
+          ],
+        },
+        data: { status: 'cancelled' },
+      })
     } else if (event.type === 'charge.refunded') {
       const ch = event.data.object as Stripe.Charge
-      console.log(
-        `webhook: charge refunded ${ch.id} `
-          + `(payment_intent=${paymentIntentId(ch.payment_intent)})`,
-      )
-      await legacyQuery(
-        "UPDATE bookings SET status = 'refunded', updated_at = NOW() "
-          + 'WHERE stripe_payment_intent = $1',
-        [paymentIntentId(ch.payment_intent)],
-      )
+      const pi = paymentIntentId(ch.payment_intent)
+      console.log(`webhook: charge refunded ${ch.id} (payment_intent=${pi})`)
+      if (pi) {
+        await payload.update({
+          collection: 'bookings',
+          where: { stripePaymentIntent: { equals: pi } },
+          data: { status: 'refunded' },
+        })
+      }
     } else {
       console.log(`webhook: unhandled event type ${event.type}`)
     }
   } catch (err) {
     console.error(`webhook: handler error for ${event.id} (${event.type})`, err)
     try {
-      await legacyQuery('DELETE FROM webhook_events WHERE id = $1', [event.id])
+      await deleteWebhookEvent(payload, event.id)
     } catch {
       // best effort — allows Stripe retry on transient dedupe failures
     }
