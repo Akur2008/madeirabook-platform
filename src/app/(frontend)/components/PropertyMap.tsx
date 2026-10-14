@@ -21,7 +21,7 @@ const customIcon = L.icon({
   shadowSize: [41, 41],
 })
 
-const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/dark'
+const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 
 interface PropertyMapProps {
   latitude: number

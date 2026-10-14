@@ -231,5 +231,5 @@ svg {
 
 /* MapLibre тёмная карта — синий оттенок, оживает при hover */
 .maplibregl-canvas {
-  filter: brightness(1.3) saturate(1.3) hue-rotate(210deg);
+  filter: none;
 }
