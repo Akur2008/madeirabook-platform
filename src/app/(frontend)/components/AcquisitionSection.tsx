@@ -15,14 +15,14 @@ export default function AcquisitionSection() {
             Madeira Property Management
           </p>
           <h3 className="mt-3 text-2xl" style={SERIF}>
-            Доверьте управление вашей недвижимостью на Мадейре
+            Trust your property to Madeira's best hands
           </h3>
           <p className="mt-4 leading-relaxed text-white/60">
             88% дохода напрямую на ваш счёт через Stripe Connect Express.
             Прозрачная аналитика, отсутствие рутины, персональный уход.
           </p>
           <span className="mt-6 inline-block text-sm font-medium text-[#d4af37]">
-            Стать партнёром →
+            Become a partner →
           </span>
         </Link>
 
@@ -34,7 +34,7 @@ export default function AcquisitionSection() {
             Creators & Ambassadors
           </p>
           <h3 className="mt-3 text-2xl" style={SERIF}>
-            Создавайте контент и зарабатывайте на рекомендациях
+            Create content, earn from your recommendations
           </h3>
           <p className="mt-4 leading-relaxed text-white/60">
             Официальная амбассадорская программа для фотографов, блогеров,
@@ -42,7 +42,7 @@ export default function AcquisitionSection() {
             ссылке.
           </p>
           <span className="mt-6 inline-block text-sm font-medium text-[#10b981]">
-            Подать заявку →
+            Apply now →
           </span>
         </a>
       </div>
