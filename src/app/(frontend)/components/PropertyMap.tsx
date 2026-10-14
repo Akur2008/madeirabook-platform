@@ -27,9 +27,10 @@ interface PropertyMapProps {
   latitude: number
   longitude: number
   title: string
+  imageUrl?: string
 }
 
-export default function PropertyMap({ latitude, longitude, title }: PropertyMapProps) {
+export default function PropertyMap({ latitude, longitude, title, imageUrl }: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
 
@@ -45,9 +46,16 @@ export default function PropertyMap({ latitude, longitude, title }: PropertyMapP
     // OpenFreeMap via MapLibre GL (vector tiles)
     maplibreGL({ style: OPENFREEMAP_STYLE }).addTo(map)
 
+    const popupHtml = imageUrl
+      ? `<div style="font-family: 'Cormorant Garamond', serif; font-size: 15px; text-align: center;">
+           <img src="${imageUrl}" alt="${title}" style="width: 180px; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; display: block;" />
+           <div style="color: #111827; font-weight: 500;">${title}</div>
+         </div>`
+      : `<div style="font-family: 'Cormorant Garamond', serif; font-size: 15px; color: #111827;">${title}</div>`
+
     L.marker([latitude, longitude], { icon: customIcon })
       .addTo(map)
-      .bindPopup(title)
+      .bindPopup(popupHtml, { maxWidth: 220 })
 
     mapRef.current = map
 

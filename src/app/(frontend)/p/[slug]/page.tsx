@@ -251,6 +251,12 @@ export default async function PropertyPage({
                   latitude={p.location.geoCoordinates.lat}
                   longitude={p.location.geoCoordinates.lng}
                   title={p.title}
+                  imageUrl={
+                    Array.isArray(p.media) && p.media[0]?.image &&
+                    typeof p.media[0].image === 'object'
+                      ? (p.media[0].image as { url: string }).url
+                      : undefined
+                  }
                 />
               </div>
             </section>
