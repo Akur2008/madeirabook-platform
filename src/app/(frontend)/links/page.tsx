@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 
+import WhatsAppButton from './WhatsAppButton'
+
 export const metadata: Metadata = {
   title: 'Madeirabook — Links',
   description: 'All Madeirabook links in one place.',
@@ -50,14 +52,7 @@ export default function LinksPage() {
           <Link href="/" className={SECONDARY_BTN}>
             For Property Owners &amp; Creators
           </Link>
-          <a
-            href="https://wa.me/351919304028?text=Hi%20Madeirabook"
-            target="_blank"
-            rel="noopener"
-            className={SECONDARY_BTN}
-          >
-            💬 WhatsApp Concierge
-          </a>
+          <WhatsAppButton className={SECONDARY_BTN} />
         </div>
 
         <footer className="mt-12 text-center text-xs text-white/30">

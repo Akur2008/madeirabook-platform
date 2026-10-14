@@ -5,6 +5,7 @@ import * as migration_20261014_182443_add_is_platform_and_commission from './202
 import * as migration_20261014_184836_add_webhook_events_collection from './20261014_184836_add_webhook_events_collection';
 import * as migration_20261014_184907_add_bookings_collection from './20261014_184907_add_bookings_collection';
 import * as migration_20261014_192739_add_email_queue_collection from './20261014_192739_add_email_queue_collection';
+import * as migration_20261014_202707_add_referrals_and_affiliate_payouts from './20261014_202707_add_referrals_and_affiliate_payouts';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20261014_192739_add_email_queue_collection.up,
     down: migration_20261014_192739_add_email_queue_collection.down,
-    name: '20261014_192739_add_email_queue_collection'
+    name: '20261014_192739_add_email_queue_collection',
+  },
+  {
+    up: migration_20261014_202707_add_referrals_and_affiliate_payouts.up,
+    down: migration_20261014_202707_add_referrals_and_affiliate_payouts.down,
+    name: '20261014_202707_add_referrals_and_affiliate_payouts'
   },
 ];

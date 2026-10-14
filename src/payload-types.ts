@@ -80,6 +80,8 @@ export interface Config {
     'email-queue': EmailQueue;
     'webhook-events': WebhookEvent;
     bookings: Booking;
+    referrals: Referral;
+    'affiliate-payouts': AffiliatePayout;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +102,8 @@ export interface Config {
     'email-queue': EmailQueueSelect<false> | EmailQueueSelect<true>;
     'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
     bookings: BookingsSelect<false> | BookingsSelect<true>;
+    referrals: ReferralsSelect<false> | ReferralsSelect<true>;
+    'affiliate-payouts': AffiliatePayoutsSelect<false> | AffiliatePayoutsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -479,6 +483,53 @@ export interface Booking {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrals".
+ */
+export interface Referral {
+  id: number;
+  /**
+   * Canonical referral code used in ?ref= links.
+   */
+  code: string;
+  /**
+   * Extra codes resolving to the same creator (e.g. sxtraveler + sergio). Commission is accrued once, under the canonical code.
+   */
+  aliases?: string[] | null;
+  /**
+   * Creator name or Instagram handle.
+   */
+  creatorName: string;
+  creatorEmail: string;
+  /**
+   * Creator commission in % of the booking total. Paid out of the platform fee, not on top.
+   */
+  commissionRate: number;
+  status: 'active' | 'paused';
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "affiliate-payouts".
+ */
+export interface AffiliatePayout {
+  id: number;
+  referral: number | Referral;
+  booking: number | Booking;
+  /**
+   * Creator payout in cents.
+   */
+  amountCents: number;
+  currency?: string | null;
+  status: 'pending' | 'paid' | 'cancelled';
+  paidAt?: string | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -552,6 +603,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bookings';
         value: number | Booking;
+      } | null)
+    | ({
+        relationTo: 'referrals';
+        value: number | Referral;
+      } | null)
+    | ({
+        relationTo: 'affiliate-payouts';
+        value: number | AffiliatePayout;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -834,6 +893,36 @@ export interface BookingsSelect<T extends boolean = true> {
   status?: T;
   source?: T;
   smoobuBookingId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrals_select".
+ */
+export interface ReferralsSelect<T extends boolean = true> {
+  code?: T;
+  aliases?: T;
+  creatorName?: T;
+  creatorEmail?: T;
+  commissionRate?: T;
+  status?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "affiliate-payouts_select".
+ */
+export interface AffiliatePayoutsSelect<T extends boolean = true> {
+  referral?: T;
+  booking?: T;
+  amountCents?: T;
+  currency?: T;
+  status?: T;
+  paidAt?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

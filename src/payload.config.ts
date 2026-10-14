@@ -18,6 +18,8 @@ import { Subscribers } from './collections/Subscribers'
 import { EmailQueue } from './collections/EmailQueue'
 import { WebhookEvents } from './collections/WebhookEvents'
 import { Bookings } from './collections/Bookings'
+import { Referrals } from './collections/Referrals'
+import { AffiliatePayouts } from './collections/AffiliatePayouts'
 import { PrivacyPolicy } from './globals/PrivacyPolicy'
 import { TermsOfService } from './globals/TermsOfService'
 import { CookiePolicy } from './globals/CookiePolicy'
@@ -47,6 +49,8 @@ export default buildConfig({
     EmailQueue,
     WebhookEvents,
     Bookings,
+    Referrals,
+    AffiliatePayouts,
   ],
   globals: [PrivacyPolicy, TermsOfService, CookiePolicy, LegalInfo],
   editor: lexicalEditor(),

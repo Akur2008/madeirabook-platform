@@ -13,6 +13,8 @@ const SEARCH_AVAILABILITY_PATH = '/api/search-availability'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const DEFAULT_COMMISSION_PERCENT = 12
+const REF_COOKIE = 'madeirabook_ref'
+const REF_RE = /^[a-z0-9_-]{2,50}$/
 
 let stripeClient: Stripe | null = null
 
@@ -39,6 +41,35 @@ function calcFee(amountCents: number, percent: number): number {
     throw new Error(`Invalid commission percent: ${percent}`)
   }
   return Math.round(amountCents * (percent / 100))
+}
+
+async function resolveRefCode(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  refCode: string | undefined,
+): Promise<string | null> {
+  if (!refCode || !REF_RE.test(refCode)) return null
+  try {
+    const found = await payload.find({
+      collection: 'referrals',
+      where: {
+        and: [
+          { status: { equals: 'active' } },
+          {
+            or: [
+              { code: { equals: refCode } },
+              { aliases: { contains: refCode } },
+            ],
+          },
+        ],
+      },
+      limit: 1,
+      depth: 0,
+    })
+    return found.docs[0]?.code ?? null
+  } catch (err) {
+    console.warn('checkout: referral lookup failed (non-fatal)', err)
+    return null
+  }
 }
 
 interface AvailabilityOffer {
@@ -191,7 +222,12 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const metadata = { propertySlug, arrival, departure }
+    const refCode = await resolveRefCode(
+      payload,
+      req.cookies.get(REF_COOKIE)?.value,
+    )
+    const metadata: Record<string, string> = { propertySlug, arrival, departure }
+    if (refCode) metadata.ref_code = refCode
     const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData =
       { metadata }
     if (!isPlatform && owner?.stripeAccountId) {

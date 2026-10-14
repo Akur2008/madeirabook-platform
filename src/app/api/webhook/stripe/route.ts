@@ -114,6 +114,42 @@ async function handleCheckoutCompleted(
     console.error('webhook: failed to record booking', err)
   }
 
+  // Affiliate accrual: paid out of the platform fee — the owner split
+  // (88/12) is unchanged; this only records what we owe the creator.
+  const refCode = meta.ref_code
+  if (refCode && bookingId) {
+    try {
+      const foundRef = await payload.find({
+        collection: 'referrals',
+        where: { code: { equals: refCode } },
+        limit: 1,
+        depth: 0,
+      })
+      const referral = foundRef.docs[0]
+      if (referral) {
+        const payoutCents = calcFee(
+          amountCents,
+          referral.commissionRate ?? 0,
+        )
+        await payload.create({
+          collection: 'affiliate-payouts',
+          data: {
+            referral: referral.id,
+            booking: bookingId,
+            amountCents: payoutCents,
+            currency: (session.currency ?? 'eur').toUpperCase(),
+            status: 'pending',
+          },
+        })
+        console.log(`webhook: affiliate payout: ${refCode} ${payoutCents} cents`)
+      } else {
+        console.warn(`webhook: referral '${refCode}' not found (session ${session.id})`)
+      }
+    } catch (err) {
+      console.error('webhook: affiliate payout failed', err)
+    }
+  }
+
   // Create the Smoobu reservation (payment-first flow, same as core).
   let smoobuBookingId: number | null = null
   try {
