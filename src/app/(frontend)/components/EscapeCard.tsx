@@ -5,8 +5,7 @@ import { useEffect, useState } from 'react'
 import BookingDrawer from './BookingDrawer'
 import { nextWeekend } from './BookingSearchSheet'
 
-const ESCAPE_CARD_URL = 'https://app.madeirabook.com/api/escape-card'
-const BOOKINGS_URL = 'https://app.madeirabook.com/api/stats/bookings-count'
+const ESCAPE_CARD_URL = '/api/escape-card'
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
 const FALLBACK_CITY = 'Lisbon'
@@ -14,20 +13,37 @@ const FALLBACK_CITY = 'Lisbon'
 type EscapeCardData = {
   city?: string
   country?: string
-  minPrice?: number
+  cheapestPrice?: number
+  cheapestDate?: string
   currency?: string
+  fromTemp?: number | null
+  fromWeatherCode?: number | null
+  toTemp?: number | null
+  toWeatherCode?: number | null
   fallback?: boolean
 }
 
-function formatPrice(data: EscapeCardData): string | null {
-  if (typeof data.minPrice !== 'number') return null
-  if (data.currency === 'EUR') return `from €${data.minPrice}`
-  return data.currency ? `from ${data.minPrice} ${data.currency}` : `from ${data.minPrice}`
+function formatDate(iso: string): string {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+}
+
+function weatherIcon(code: number | null | undefined): string {
+  if (code === null || code === undefined) return '🌤️'
+  if (code <= 1) return '☀️'
+  if (code <= 3) return '⛅'
+  if (code === 45 || code === 48) return '🌫️'
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return '🌧️'
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '❄️'
+  if (code >= 95 && code <= 99) return '⛈️'
+  return '🌤️'
 }
 
 export default function EscapeCard() {
   const [escapeCard, setEscapeCard] = useState<EscapeCardData | null>(null)
-  const [bookingsCount, setBookingsCount] = useState<number | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   // Dates come from the client clock — compute after mount to avoid
   // server/client timezone mismatches during hydration.
@@ -38,18 +54,19 @@ export default function EscapeCard() {
 
     fetch(ESCAPE_CARD_URL)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setEscapeCard(d))
+      .then((d) => {
+        if (d?.fallback === true) {
+          console.info('escape-card: showing fallback data', d)
+        }
+        setEscapeCard(d)
+      })
       .catch(() => setEscapeCard(null))
-    fetch(BOOKINGS_URL)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setBookingsCount(typeof d?.count === 'number' ? d.count : null))
-      .catch(() => setBookingsCount(null))
 
     return () => clearTimeout(t)
   }, [])
 
   const city = escapeCard?.city || FALLBACK_CITY
-  const price = escapeCard ? formatPrice(escapeCard) : null
+  const hasPrice = typeof escapeCard?.cheapestPrice === 'number'
   const weekendLabel = weekend
     ? `${weekend.arrival.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${weekend.departure.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
     : null
@@ -76,20 +93,34 @@ export default function EscapeCard() {
           Next weekend{weekendLabel ? ` · ${weekendLabel}` : ''}
         </p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-          {price && (
-            <span className="text-lg font-medium text-white/90">{price}</span>
-          )}
-          {bookingsCount !== null && bookingsCount > 0 && (
-            <span className="flex items-center gap-2 text-xs text-white/60">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-              </span>
-              {bookingsCount} booked this month
-            </span>
-          )}
-        </div>
+        {hasPrice && (
+          <p className="mt-4 text-lg text-white/90">
+            Cheapest:{' '}
+            {escapeCard!.fallback === true || !escapeCard!.cheapestDate ? (
+              <>
+                <span className="font-medium">€{escapeCard!.cheapestPrice}</span> (next weekend)
+              </>
+            ) : (
+              <>
+                <span className="font-medium">{formatDate(escapeCard!.cheapestDate!)}</span>
+                {' — '}
+                <span className="font-medium">€{escapeCard!.cheapestPrice}</span>
+              </>
+            )}
+          </p>
+        )}
+        {hasPrice && (
+          <p className="text-xs text-white/60">
+            🔥 Prices rise closer to Friday
+          </p>
+        )}
+        {typeof escapeCard?.fromTemp === 'number' && typeof escapeCard?.toTemp === 'number' && (
+          <p className="text-sm text-white/70 mt-2">
+            {weatherIcon(escapeCard.fromWeatherCode)} {city} {escapeCard.fromTemp}°C
+            <span className="mx-2">➔</span>
+            {weatherIcon(escapeCard.toWeatherCode)} Madeira {escapeCard.toTemp}°C
+          </p>
+        )}
 
         <span className="mt-6 block w-full rounded-full border border-white/30 bg-white/10 py-3 text-center text-sm uppercase tracking-widest text-white transition-colors group-hover:bg-white/20">
           Find your dates →

@@ -15,7 +15,7 @@ export default function AcquisitionSection() {
             Madeira Property Management
           </p>
           <h3 className="mt-3 text-2xl" style={SERIF}>
-            Trust your property to Madeira's best hands
+            Trust your property to Madeira&rsquo;s best hands
           </h3>
           <p className="mt-4 leading-relaxed text-white/60">
             88% of income goes directly to your account via Stripe Connect
