@@ -1,11 +1,21 @@
 'use client'
 
 import { format } from 'date-fns'
-import { useCallback, useState } from 'react'
+import Image from 'next/image'
+import { useCallback, useRef, useState } from 'react'
 import { DayPicker, type DateRange } from 'react-day-picker'
 import { Drawer } from 'vaul'
 
 import { useAudioEngine } from '@/audio/useAudioEngine'
+
+import {
+  SEARCH_URL,
+  STAY_BASE_URL,
+  formatMoney,
+  normalizeImage,
+  toISODate,
+  type SearchResult,
+} from './BookingSearchSheet'
 
 import 'react-day-picker/style.css'
 
@@ -13,6 +23,7 @@ const SHEET_MS = 400
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
 type Tab = 'stay' | 'flights'
+type Status = 'idle' | 'loading' | 'results' | 'empty' | 'error'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'stay', label: 'Stay' },
@@ -28,7 +39,6 @@ export interface BookingDrawerProps {
 }
 
 export default function BookingDrawer({
-  propertySlug,
   propertyTitle,
   trigger,
   open,
@@ -38,6 +48,14 @@ export default function BookingDrawer({
   const [internalOpen, setInternalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('stay')
   const [range, setRange] = useState<DateRange | undefined>()
+  const [status, setStatus] = useState<Status>('idle')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [searchedDates, setSearchedDates] = useState<{
+    arrival: string
+    departure: string
+    nights: number
+  } | null>(null)
+  const searchSeq = useRef(0)
 
   const isControlled = open !== undefined
   const isOpen = isControlled ? open : internalOpen
@@ -46,7 +64,11 @@ export default function BookingDrawer({
     (next: boolean) => {
       if (next) {
         engine.duckToBackground(SHEET_MS)
+        searchSeq.current += 1
         setActiveTab('stay')
+        setStatus('idle')
+        setResults([])
+        setSearchedDates(null)
       } else {
         engine.restoreFromBackground(SHEET_MS)
       }
@@ -63,14 +85,45 @@ export default function BookingDrawer({
         ? `${format(range.from, 'd MMM')} — select check-out`
         : 'Select check-in date'
 
-  const handleSearch = useCallback(() => {
-    console.log('[BookingDrawer] search availability (Phase 2)', {
-      propertySlug,
-      from: range?.from,
-      to: range?.to,
+  const handleRangeSelect = useCallback((next: DateRange | undefined) => {
+    searchSeq.current += 1
+    setRange(next)
+    setStatus('idle')
+    setResults([])
+    setSearchedDates(null)
+  }, [])
+
+  const handleSearch = useCallback(async () => {
+    if (!range?.from || !range?.to || range.from >= range.to) return
+    const seq = ++searchSeq.current
+    const arrival = toISODate(range.from)
+    const departure = toISODate(range.to)
+    setStatus('loading')
+    setResults([])
+    setSearchedDates({
+      arrival,
+      departure,
+      nights: Math.round((range.to.getTime() - range.from.getTime()) / 86400000),
     })
-    alert('Phase 2')
-  }, [propertySlug, range])
+    try {
+      const res = await fetch(SEARCH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ arrivalDate: arrival, departureDate: departure }),
+      })
+      if (!res.ok) throw new Error(`search ${res.status}`)
+      const data = (await res.json()) as SearchResult[]
+      if (seq !== searchSeq.current) return
+      if (Array.isArray(data) && data.length > 0) {
+        setResults(data.slice(0, 3))
+        setStatus('results')
+      } else {
+        setStatus('empty')
+      }
+    } catch {
+      if (seq === searchSeq.current) setStatus('error')
+    }
+  }, [range])
 
   return (
     <Drawer.Root open={isOpen} onOpenChange={handleOpenChange}>
@@ -138,7 +191,7 @@ export default function BookingDrawer({
                   <DayPicker
                     mode="range"
                     selected={range}
-                    onSelect={setRange}
+                    onSelect={handleRangeSelect}
                     numberOfMonths={1}
                     disabled={{ before: new Date() }}
                     className="madeirabook-calendar"
@@ -152,11 +205,72 @@ export default function BookingDrawer({
                 <button
                   type="button"
                   onClick={handleSearch}
-                  disabled={!range?.from || !range?.to}
+                  disabled={
+                    !range?.from ||
+                    !range?.to ||
+                    range.from >= range.to ||
+                    status === 'loading'
+                  }
                   className="mt-5 block w-full rounded-full border border-white/30 bg-white/10 py-3 text-sm uppercase tracking-widest text-white transition-colors hover:bg-white/20 disabled:opacity-40"
                 >
-                  Search availability
+                  {status === 'loading' ? 'Searching…' : 'Search availability'}
                 </button>
+
+                {status === 'empty' && (
+                  <p className="mb-0 mt-6 text-center text-sm text-white/60">
+                    No availability. Try other dates.
+                  </p>
+                )}
+
+                {status === 'error' && (
+                  <p className="mb-0 mt-6 text-center text-sm text-red-400">
+                    Something went wrong. Try again.
+                  </p>
+                )}
+
+                {status === 'results' && searchedDates && (
+                  <div className="mt-6 flex flex-col gap-3">
+                    {results.map((item) => {
+                      const img = normalizeImage(item.coverImage)
+                      const href = `${STAY_BASE_URL}/p/${item.slug}?arrival=${searchedDates.arrival}&departure=${searchedDates.departure}`
+                      return (
+                        <a
+                          key={item.slug}
+                          href={href}
+                          className="group flex items-center gap-4 rounded-xl border border-white/15 bg-white/5 p-3 transition-colors hover:bg-white/10"
+                        >
+                          {img ? (
+                            <Image
+                              src={img}
+                              alt={item.name}
+                              width={64}
+                              height={64}
+                              className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-white/10 text-xs text-white/40">
+                              no photo
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="mb-0 truncate text-sm font-medium text-white/90">
+                              {item.name}
+                            </p>
+                            <p className="mb-0 mt-1 text-sm text-white/60">
+                              <span className="font-semibold text-white/90">
+                                {formatMoney(item.price, item.currency)}
+                              </span>
+                              {` total · ${searchedDates.nights} nights`}
+                            </p>
+                          </div>
+                          <span className="text-white/40 transition-transform group-hover:translate-x-1">
+                            →
+                          </span>
+                        </a>
+                      )
+                    })}
+                  </div>
+                )}
               </>
             ) : (
               <>
