@@ -71,6 +71,28 @@ export const templates: Record<
   string,
   (subscriber: EmailQueueSubscriber) => RenderedEmail
 > = {
+  // Sent immediately on subscribe (not via email-queue). The PDF guide is
+  // attached by the caller — 1:1 port of core routes/subscribe.js.
+  welcome: (subscriber) => ({
+    subject: 'Your Madeira Travel Guide 🌴',
+    text:
+      'Thanks for subscribing! Your Madeira travel guide is attached.\n\n' +
+      'Get restaurant discounts and insider tips in Telegram: https://t.me/Madeirabookbot?start=pdf_guide\n\n' +
+      'Unsubscribe: ' +
+      unsubscribeUrl(subscriber.unsubscribeToken),
+    html:
+      '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">' +
+      '<h2 style="color: #064e3b;">Thanks for subscribing!</h2>' +
+      '<p>Your Madeira travel guide is attached to this email.</p>' +
+      '<p style="margin: 24px 0;"><a href="https://t.me/Madeirabookbot?start=pdf_guide" style="' +
+      BTN +
+      '">Open Telegram bot</a></p>' +
+      '<p style="color: #6b7280; font-size: 14px;">Inside you\'ll find restaurant discounts of 30–50%, flight price alerts, and other useful guides for your trip to Madeira.</p>' +
+      '<p style="color: #6b7280; font-size: 14px;">— The Madeirabook team</p>' +
+      unsubscribeFooter(subscriber.unsubscribeToken) +
+      '</div>',
+  }),
+
   gateway_ocean_reactivation: (subscriber) => ({
     subject: 'We saved you a way in',
     text: "You left us your email a while back. We haven't forgotten. Here's the entrance to four elements of Madeira: https://app.madeirabook.com/gateway/ocean",

@@ -56,6 +56,7 @@ export interface ResendEmailOptions {
   text?: string
   replyTo?: string
   headers?: Record<string, string>
+  attachments?: { filename: string; content: string }[]
 }
 
 export async function sendResendEmail(
@@ -76,6 +77,7 @@ export async function sendResendEmail(
       ...(opts.text ? { text: opts.text } : {}),
       ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
       ...(opts.headers ? { headers: opts.headers } : {}),
+      ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
     }),
     signal: AbortSignal.timeout(10000),
   })
