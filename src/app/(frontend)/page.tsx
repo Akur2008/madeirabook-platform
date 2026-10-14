@@ -6,6 +6,7 @@ import React from 'react'
 
 import config from '@/payload.config'
 import SubscribeForm from '@/components/SubscribeForm'
+import AcquisitionSection from './components/AcquisitionSection'
 import EscapeCard from './components/EscapeCard'
 import GatewayCard from './components/GatewayCard'
 
@@ -313,6 +314,9 @@ export default async function HomePage() {
       <section className="flex justify-center px-6 py-16 md:py-20">
         <SubscribeForm />
       </section>
+
+      {/* 6.5. Acquisition: owners + creators */}
+      <AcquisitionSection />
 
       {/* 7. Minimal footer — 3 links only */}
       <footer className="border-t border-white/10 px-6 py-10">
