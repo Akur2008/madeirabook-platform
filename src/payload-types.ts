@@ -149,6 +149,14 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  /**
+   * Stripe Connect Express account id (acct_...) for split payouts.
+   */
+  stripeAccountId?: string | null;
+  /**
+   * Whether the connected Stripe account can receive charges.
+   */
+  chargesEnabled?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -246,6 +254,18 @@ export interface Property {
   slug: string;
   brand: 'madeirabook' | 'madeiraoasis' | 'both';
   pmsPropertyId?: string | null;
+  /**
+   * Platform-owned property (direct charge). Unchecked = external owner via Stripe Connect Express.
+   */
+  isPlatform?: boolean | null;
+  /**
+   * Platform commission percent, applied when isPlatform is unchecked.
+   */
+  commissionPercent?: number | null;
+  /**
+   * External owner for the split payout (stripeAccountId is taken from the user).
+   */
+  owner?: (number | null) | User;
   pricePerNight: number;
   cleaningFee?: number | null;
   description?: string | null;
@@ -463,6 +483,8 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  stripeAccountId?: T;
+  chargesEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -541,6 +563,9 @@ export interface PropertiesSelect<T extends boolean = true> {
   slug?: T;
   brand?: T;
   pmsPropertyId?: T;
+  isPlatform?: T;
+  commissionPercent?: T;
+  owner?: T;
   pricePerNight?: T;
   cleaningFee?: T;
   description?: T;

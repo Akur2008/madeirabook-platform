@@ -45,6 +45,33 @@ export const Properties: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'isPlatform',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description:
+          'Platform-owned property (direct charge). Unchecked = external owner via Stripe Connect Express.',
+      },
+    },
+    {
+      name: 'commissionPercent',
+      type: 'number',
+      defaultValue: 12,
+      min: 0,
+      max: 100,
+      admin: {
+        description: 'Platform commission percent, applied when isPlatform is unchecked.',
+      },
+    },
+    {
+      name: 'owner',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: {
+        description: 'External owner for the split payout (stripeAccountId is taken from the user).',
+      },
+    },
+    {
       name: 'pricePerNight',
       type: 'number',
       required: true,

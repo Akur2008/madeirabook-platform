@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import pg from 'pg'
 import Stripe from 'stripe'
 
 import config from '@payload-config'
@@ -27,38 +26,13 @@ function getStripe(): Stripe {
   return stripeClient
 }
 
-interface SplitData {
-  isPlatform: boolean
-  commissionPercent: number | null
-  stripeAccountId: string | null
-  chargesEnabled: boolean
+type OwnerUser = {
+  stripeAccountId?: string | null
+  chargesEnabled?: boolean | null
 }
 
-let legacyPool: pg.Pool | null = null
-
-// Split data (is_platform, commission, owner Stripe account) still lives in
-// the legacy core DB. Read-only lookup by Smoobu id until owners migrate
-// to Payload.
-async function getSplitData(smoobuId: string): Promise<SplitData | null> {
-  const url = process.env.LEGACY_DATABASE_URL
-  if (!url) return null
-  if (!legacyPool) legacyPool = new pg.Pool({ connectionString: url })
-  const res = await legacyPool.query(
-    'SELECT p.is_platform, p.commission_percent, p.charges_enabled, '
-      + 'o.stripe_account_id '
-      + 'FROM properties p LEFT JOIN users o ON o.id = p.owner_id '
-      + 'WHERE p.smoobu_id = $1 LIMIT 1',
-    [smoobuId],
-  )
-  const row = res.rows[0]
-  if (!row) return null
-  return {
-    isPlatform: row.is_platform === true,
-    commissionPercent:
-      row.commission_percent == null ? null : Number(row.commission_percent),
-    stripeAccountId: row.stripe_account_id || null,
-    chargesEnabled: row.charges_enabled === true,
-  }
+function resolveOwner(owner: unknown): OwnerUser | null {
+  return owner && typeof owner === 'object' ? (owner as OwnerUser) : null
 }
 
 function calcFee(amountCents: number, percent: number): number {
@@ -159,12 +133,10 @@ export async function POST(req: Request) {
       )
     }
 
-    const split = property.pmsPropertyId
-      ? await getSplitData(String(property.pmsPropertyId))
-      : null
-    // A Payload-only property has no onboarded owner → platform-owned.
-    const isPlatform = split?.isPlatform !== false
-    if (!isPlatform && (!split?.stripeAccountId || !split.chargesEnabled)) {
+    // Split fields live on the Payload property + its owner user.
+    const isPlatform = property.isPlatform !== false
+    const owner = resolveOwner(property.owner)
+    if (!isPlatform && (!owner?.stripeAccountId || !owner.chargesEnabled)) {
       return NextResponse.json(
         { error: 'owner_stripe_not_verified' },
         { status: 400 },
@@ -174,7 +146,7 @@ export async function POST(req: Request) {
       ? 0
       : calcFee(
           amountCents,
-          split?.commissionPercent ?? DEFAULT_COMMISSION_PERCENT,
+          property.commissionPercent ?? DEFAULT_COMMISSION_PERCENT,
         )
 
     const nights = Math.round(
@@ -222,9 +194,9 @@ export async function POST(req: Request) {
     const metadata = { propertySlug, arrival, departure }
     const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData =
       { metadata }
-    if (!isPlatform && split?.stripeAccountId) {
-      paymentIntentData.transfer_data = { destination: split.stripeAccountId }
-      paymentIntentData.on_behalf_of = split.stripeAccountId
+    if (!isPlatform && owner?.stripeAccountId) {
+      paymentIntentData.transfer_data = { destination: owner.stripeAccountId }
+      paymentIntentData.on_behalf_of = owner.stripeAccountId
       if (platformFeeCents > 0) {
         paymentIntentData.application_fee_amount = platformFeeCents
       }
