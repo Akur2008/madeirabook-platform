@@ -1,23 +1,57 @@
 # Madeirabook
 
-> Madeirabook is not a hotel catalogue. It is an editorial portal of rare
-> Atlantic places — curated escapes to Madeira for guests who seek honest
-> natural luxury, silence, and a clean ocean instead of mass tourism.
-> Two-minute emotional gateways lead to three bookable stays.
+> Madeirabook is a local booking platform for Madeira, Portugal: ocean-view apartments, villas and holiday homes booked directly from local hosts. The platform charges 10% commission instead of the 15–20% charged by global platforms, and returning guests get −10% forever. The site also publishes data-driven travel guides: real flight prices from 17 European cities, where to stay, what to eat, and island safety facts.
 
-## Pages
+- [Home](https://www.madeirabook.com/): Book ocean-view apartments in Madeira directly from local hosts. Best price guaranteed, no platform fees.
 
-- https://madeirabook-platform.vercel.app/ — Portal home
-- https://madeirabook-platform.vercel.app/gateways — Gallery of emotional
-  gateways grouped by element (ocean, terra, forest, sun, wild)
-- https://madeirabook-platform.vercel.app/gateway/dolphins — Gateway: dolphins
-- https://madeirabook-platform.vercel.app/gateway/above-clouds — Gateway:
-  above the clouds
-- https://madeirabook-platform.vercel.app/gateway/levada-drone — Gateway:
-  levada drone
-- https://madeirabook-platform.vercel.app/sluice-test — Two-minute escape
-  prototype (intro, video, breath, immersion)
+## Flights
 
-## Sister site
+- [Cheap flights to Madeira — all cities](https://www.madeirabook.com/flights-to-madeira): Every European route to Madeira with real Google Flights prices, from €15.
+- [Book flights to Madeira](https://www.madeirabook.com/book-flights): Live flight price search to Funchal (FNC) from any city, powered by Aviasales.
+- [Amsterdam to Madeira](https://www.madeirabook.com/amsterdam-to-madeira): Direct easyJet from €205, via Lisbon TAP from €66. Cheapest weeks by month.
+- [Barcelona to Madeira](https://www.madeirabook.com/barcelona-to-madeira): No direct flights — via Lisbon with TAP from €59. Real prices by month.
+- [Berlin to Madeira](https://www.madeirabook.com/berlin-to-madeira): Direct easyJet from €162, via Lisbon TAP from €47. Cheapest weeks by month.
+- [Brussels to Madeira](https://www.madeirabook.com/brussels-to-madeira): Direct Ryanair from Charleroi from €85, via Lisbon TAP from €20.
+- [Dublin to Madeira](https://www.madeirabook.com/dublin-to-madeira): Direct Ryanair from €32, cheapest from €15 in October. Real Google Flights data.
+- [Edinburgh to Madeira](https://www.madeirabook.com/edinburgh-to-madeira): Direct Jet2.com from €76, cheapest from €30 in October.
+- [Frankfurt to Madeira](https://www.madeirabook.com/frankfurt-to-madeira): Cheapest from €86. Book 6+ months ahead — prices quadruple in the last 2 weeks.
+- [Lisbon to Madeira](https://www.madeirabook.com/lisbon-to-madeira): Cheapest from €17, 1h 45min direct with TAP and Ryanair.
+- [Liverpool to Madeira](https://www.madeirabook.com/liverpool-to-madeira): Direct Jet2.com from €135, cheapest from €18 in October.
+- [London to Madeira](https://www.madeirabook.com/london-to-madeira): Cheapest from €27. Direct 3h 55min from Stansted, Luton and Gatwick.
+- [Madrid to Madeira](https://www.madeirabook.com/madrid-to-madeira): Direct Iberia from €423, via Lisbon TAP from €60.
+- [Manchester to Madeira](https://www.madeirabook.com/manchester-to-madeira): Cheapest from €18. Book 6+ months ahead.
+- [Munich to Madeira](https://www.madeirabook.com/munich-to-madeira): Cheapest from €57. Real prices by month and week.
+- [Paris to Madeira](https://www.madeirabook.com/paris-to-madeira): Cheapest from €34. Book 6+ months ahead — prices triple near departure.
+- [Porto to Madeira](https://www.madeirabook.com/porto-to-madeira): Direct Ryanair from €81, cheapest weeks from €17.
+- [Vienna to Madeira](https://www.madeirabook.com/vienna-to-madeira): Direct Austrian from €450, cheapest via Manchester or Lisbon from €121.
+- [Zurich to Madeira](https://www.madeirabook.com/zurich-to-madeira): Direct Edelweiss from €341, via Lisbon TAP from €101.
 
-- https://www.madeirabook.com — Original landing and booking content
+## Stays
+
+- [Madeira apartment rentals](https://www.madeirabook.com/madeira-apartment-rentals): Ocean-view apartments from local hosts, direct booking, no Airbnb fees.
+- [Apartamentos do Mar, Lido](https://www.madeirabook.com/apartamentos-do-mar): Ocean-front apartments in Lido, Funchal — same promenade as 5-star hotels, half the price.
+- [Penthouse View Ocean, Caniço](https://www.madeirabook.com/penthouse-view-ocean-canico): 3-bedroom penthouse, 120 m², sleeps 9. Direct from local host.
+- [Madeira ocean-view apartments](https://www.madeirabook.com/madeira-ocean-view-apartments): Balconies facing the Atlantic, direct from local hosts.
+- [Madeira villa rentals](https://www.madeirabook.com/madeira-villa-rentals): Private villas with pool and ocean view — Calheta, Ponta do Sol.
+- [Madeira holiday homes](https://www.madeirabook.com/madeira-holiday-homes): Family-friendly holiday homes, direct booking, no platform fees.
+- [Madeira hotel deals](https://www.madeirabook.com/madeira-hotel-deals): Independent and chain hotels in Funchal, Lido and Calheta with local recommendations.
+- [Funchal short-term rentals](https://www.madeirabook.com/funchal-short-term-rentals): Best areas for tourists — Lido, Old Town, São Gonçalo. Prices, pros and cons.
+- [Caniço self-catering](https://www.madeirabook.com/canico-self-catering): Apartments with full kitchens and ocean views on the quiet coast.
+- [Lido, Funchal](https://www.madeirabook.com/lido-funchal): 10 km ocean promenade, heated ocean pools, 5-star hotels — the best area to stay.
+- [Where to stay in Madeira](https://www.madeirabook.com/where-to-stay-madeira): Best areas for tourists compared — Funchal, Lido, Caniço, Calheta.
+
+## Guides
+
+- [Madeira travel guide 2027](https://www.madeirabook.com/madeira-guide): Complete trip planner — cheapest weeks to fly, where to stay, what to eat.
+- [Best time to visit Madeira](https://www.madeirabook.com/best-time-to-visit-madeira): Weather, water temperature, crowds and prices month by month.
+- [Do you need a guide in Madeira?](https://www.madeirabook.com/madeira-guide-replacement): Probably not — rent a car from €30/day and see 10x more.
+- [Madeira events calendar](https://www.madeirabook.com/madeira-events-calendar): Carnival, Flower Festival, Atlantic Festival, Wine Week, New Year fireworks.
+- [Christmas swimming in Madeira](https://www.madeirabook.com/madeira-christmas-swimming): Swim in the Atlantic in December — +22°C while Europe freezes.
+- [Is Madeira safe?](https://www.madeirabook.com/madeira-safety): The safest island in Europe — no snakes, scorpions, venomous spiders or dangerous sharks.
+- [Madeira history](https://www.madeirabook.com/madeira-history): Timeline from the 1419 discovery through the sugar trade to 1976 autonomy.
+- [Madeira tours & experiences](https://www.madeirabook.com/madeira-tours): Curated food, wine and 4x4 tours with real reviews, from €52.
+- [Madeira food guide](https://www.madeirabook.com/madeira-food-guide): Espetada, espada, bolo do caco, limpets, poncha and Madeira wine.
+- [Where to eat in Madeira](https://www.madeirabook.com/where-to-eat-madeira): Michelin-starred William and Il Gallo d'Oro plus TheFork deals 30–50% off.
+- [Espetada](https://www.madeirabook.com/espetada): Madeira's signature beef skewer on bay laurel — history, recipe, where to try.
+- [Poncha](https://www.madeirabook.com/poncha): The national drink — sugarcane rum, honey and lemon. Recipe and history.
+- [Madeira wine tasting](https://www.madeirabook.com/madeira-wine-tasting): Sercial, Verdelho, Bual, Malmsey — vineyards, cellars and tours.

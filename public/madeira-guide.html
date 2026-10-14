@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Madeira Travel Guide 2027 | Madeirabook</title>
+<style>
+  @page { size: A4; margin: 20mm 15mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+    color: #0f172a;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    background: #fff;
+  }
+  h1 { font-size: 42px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 12px; }
+  h2 { font-size: 26px; font-weight: 800; margin-top: 48px; margin-bottom: 16px; color: #0f172a; page-break-after: avoid; }
+  h3 { font-size: 18px; font-weight: 700; margin-top: 24px; margin-bottom: 8px; }
+  p { margin-bottom: 14px; color: #334155; }
+  .cover {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url('images/madeira-cover-balcony.jpg') center/cover no-repeat;
+    color: #fff;
+    padding: 80px 40px;
+    border-radius: 20px;
+    margin-bottom: 48px;
+    page-break-after: always;
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .cover h1 { color: #fff; font-size: 56px; }
+  .cover p { color: #d1fae5; font-size: 20px; }
+  .cover .label { text-transform: uppercase; font-weight: 700; font-size: 14px; letter-spacing: 0.1em; color: #a7f3d0; margin-bottom: 20px; }
+  .cover .footer { font-size: 14px; color: #d1fae5; margin-top: 40px; }
+  .toc { background: #f8fafc; padding: 32px; border-radius: 16px; margin-bottom: 48px; page-break-after: always; }
+  .toc h2 { margin-top: 0; }
+  .toc ol { list-style: none; counter-reset: item; }
+  .toc li { counter-increment: item; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 16px; }
+  .toc li:before { content: counter(item) ". "; font-weight: 700; color: #10b981; margin-right: 8px; }
+  .toc li:last-child { border-bottom: none; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; page-break-inside: avoid; }
+  th { background: #0f172a; color: #fff; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; }
+  td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .highlight { background: #ecfdf5; border-left: 4px solid #10b981; padding: 16px 20px; border-radius: 8px; margin: 20px 0; }
+  .warning { background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px 20px; border-radius: 8px; margin: 20px 0; }
+  .warning strong { color: #991b1b; }
+  .three-circles { display: flex; gap: 24px; justify-content: center; align-items: flex-end; margin: 32px 0; page-break-inside: avoid; }
+  .circle-item { text-align: center; }
+  .circle {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 900;
+    margin: 0 auto 8px;
+  }
+  .circle.small { width: 70px; height: 70px; background: #10b981; font-size: 18px; }
+  .circle.medium { width: 100px; height: 100px; background: #f59e0b; font-size: 22px; }
+  .circle.large { width: 130px; height: 130px; background: #ef4444; font-size: 28px; }
+  .circle-label { font-size: 13px; font-weight: 700; color: #475569; }
+  .cta {
+    background: #0f172a;
+    color: #fff;
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+    margin: 32px 0;
+    page-break-inside: avoid;
+  }
+  .cta h3 { color: #fff; font-size: 22px; margin-bottom: 12px; }
+  .cta p { color: #cbd5e1; margin-bottom: 20px; }
+  .cta a { color: #10b981; font-weight: 700; text-decoration: none; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+  .fact { background: #f8fafc; padding: 20px; border-radius: 12px; }
+  .fact .num { font-size: 28px; font-weight: 900; color: #10b981; }
+  .fact .label { font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 600; letter-spacing: 0.05em; }
+  .page-break { page-break-after: always; }
+  ul, ol { margin-left: 24px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; color: #334155; }
+  a { color: #10b981; font-weight: 600; text-decoration: none; }
+  .badge { display: inline-block; background: #10b981; color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .footer-page { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 48px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+
+    .guide-img { width: 100%; max-width: 800px; height: auto; border-radius: 16px; margin: 32px auto; display: block; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+
+</style>
+<link rel="canonical" href="https://www.madeirabook.com/madeira-guide">
+<meta property="og:type" content="article">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "Article", "headline": "Madeira Travel Guide 2027", "description": "Everything you need to plan a Madeira trip — the cheapest weeks to fly, where to stay, what to eat, and why this island is unlike anywhere else in Europe.", "author": {"@type": "Organization", "name": "Madeirabook"}, "datePublished": "2026-09-23", "dateModified": "2026-10-08"}
+</script>
+</head>
+<body>
+
+<!-- ОБЛОЖКА -->
+<div class="cover">
+  <div>
+    <p class="label">Madeira Travel Guide · 2027 Edition</p>
+    <h1>Madeira,<br>done right.</h1>
+    <p style="margin-top: 24px; max-width: 500px;">Everything you need to plan your trip — the cheapest weeks to fly, where to stay, what to eat, and why this island is unlike anywhere else in Europe.</p>
+  </div>
+
+  <div style="margin-top: 40px; display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; max-width: 500px;">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Ft.me%2FMadeirabookbot%3Fstart%3Dpdf_guide&color=064e3b&bgcolor=ffffff" alt="QR" style="width: 100px; height: 100px; background: #fff; padding: 6px; border-radius: 8px;">
+    <div>
+      <p style="color: #fff; font-weight: 700; font-size: 16px; margin-bottom: 4px;">Scan to join our Telegram bot</p>
+      <p style="color: #d1fae5; font-size: 13px; margin: 0;">Get restaurant discounts, price alerts, and free guides</p>
+    </div>
+  </div>
+
+<div class="footer">
+    <p><strong>madeirabook.com</strong> · Local community for Madeira stays</p>
+  </div>
+</div>
+
+<!-- СОДЕРЖАНИЕ -->
+<div class="toc">
+
+<h2>What's inside</h2>
+  <ol>
+    <li>Madeira at a glance</li>
+    <li>The 10 cheapest weeks to fly</li>
+    <li>Ticket prices by city — all 17 routes</li>
+    <li>Why Madeira is the safest island in Europe</li>
+    <li>Winter sun: +22°C in December</li>
+    <li>Where to stay — Lido & Caniço</li>
+    <li>Where to eat — 50% off with TheFork</li>
+    <li>Getting around the island</li>
+    <li>Best time to visit</li>
+    <li>Ready to book?</li>
+  </ol>
+</div>
+
+<!-- 1 -->
+
+<img src="images/madeira-beach-05.jpg" alt="Madeira travel guide photo" class="guide-img">
+<h2>1. Madeira at a glance</h2>
+<div class="facts">
+  <div class="fact"><div class="num">+22°C</div><div class="label">Average winter temp</div></div>
+  <div class="fact"><div class="num">€27</div><div class="label">Flights from London</div></div>
+  <div class="fact"><div class="num">0</div><div class="label">Venomous animals on the island</div></div>
+  <div class="fact"><div class="num">3h 55min</div><div class="label">Flight from London</div></div>
+</div>
+<p>Madeira is a Portuguese island 1000 km southwest of Lisbon. It's warm year-round, safe for families, and offers some of the best-value flights in Europe.</p>
+<p>Most visitors come in summer — but the island is arguably better in winter, when you get 22°C sunshine, empty trails, and prices that are a fraction of summer rates.</p>
+
+<!-- 2 -->
+<div class="page-break"></div>
+<h2>2. The 10 cheapest weeks to fly</h2>
+<p>Real Google Flights data, one-way, cheapest city per week. <strong>Book 6+ months ahead</strong> — prices quadruple in the last two weeks.</p>
+
+<div class="three-circles">
+  <div class="circle-item">
+    <div class="circle small">€27</div>
+    <div class="circle-label">6+ months<br>ahead</div>
+  </div>
+  <div class="circle-item">
+    <div class="circle medium">€120</div>
+    <div class="circle-label">3 months<br>ahead</div>
+  </div>
+  <div class="circle-item">
+    <div class="circle large">€280</div>
+    <div class="circle-label">2 weeks<br>ahead</div>
+  </div>
+</div>
+<p style="text-align: center; font-size: 13px; color: #64748b; margin-bottom: 32px;">Same flight. Same airline. Same seat. Only the booking window changed.</p>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Week</th><th>From</th><th>City</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>30 Sep – 7 Oct 2026</td><td><strong>€27</strong></td><td>London</td></tr>
+    <tr><td>2</td><td>9 – 16 Nov 2026</td><td><strong>€27</strong></td><td>London</td></tr>
+    <tr><td>3</td><td>16 – 23 Nov 2026</td><td><strong>€27</strong></td><td>London</td></tr>
+    <tr><td>4</td><td>23 – 30 Nov 2026</td><td><strong>€27</strong></td><td>London</td></tr>
+    <tr><td>5</td><td>7 – 14 Dec 2026</td><td>€31</td><td>London</td></tr>
+    <tr><td>6</td><td>30 Nov – 7 Dec 2026</td><td>€36</td><td>London</td></tr>
+    <tr><td>7</td><td>2 – 9 Nov 2026</td><td>€38</td><td>London</td></tr>
+    <tr><td>8</td><td>12 – 19 Oct 2026</td><td>€40</td><td>London</td></tr>
+    <tr><td>9</td><td>4 – 11 Jan 2027</td><td>€45</td><td>London</td></tr>
+    <tr><td>10</td><td>11 – 18 Jan 2027</td><td>€45</td><td>London</td></tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <strong>⚠️ Warning: Christmas</strong>
+  <p style="margin: 4px 0 0;">Avoid 19–25 December. Prices jump to €187–245. Fly on 30–31 December i
+<img src="images/madeira-beach-12.jpg" alt="Madeira travel guide photo" class="guide-img">
+nstead, or book for January from €45.</p>
+</div>
+
+<!-- 3 -->
+<div class="page-break"></div>
+<h2>3. Ticket prices by city — all 17 routes</h2>
+<p>Cheapest found in a 12-month window (Sep 2026 – Aug 2027). One-way, direct where available.</p>
+
+<table>
+  <thead>
+    <tr><th>From</th><th>Cheapest</th><th>Flight time</th><th>Route</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Dublin</strong></td><td><strong>€15</strong></td><td>3h 45min</td><td>Direct Ryanair</td></tr>
+    <tr><td><strong>Lisbon</strong></td><td><strong>€17</strong></td><td>1h 45min</td><td>Direct TAP, Ryanair</td></tr>
+    <tr><td><strong>Porto</strong></td><td><strong>€17</strong></td><td>2h 5min</td><td>Direct Ryanair</td></tr>
+    <tr><td><strong>Liverpool</strong></td><td><strong>€18</strong></td><td>4h</td><td>Direct Jet2</td></tr>
+    <tr><td><strong>Manchester</strong></td><td><strong>€18</strong></td><td>3h 55min</td><td>Direct Ryanair</td></tr>
+    <tr><td><strong>Brussels</strong></td><td><strong>€20</strong></td><td>4h – 6h</td><td>Via LIS / Charleroi</td></tr>
+    <tr><td><strong>London</strong></td><td><strong>€27</strong></td><td>3h 55min</td><td>Direct easyJet, Ryanair</td></tr>
+    <tr><td><strong>Edinburgh</strong></td><td><strong>€30</strong></td><td>4h 15min</td><td>Direct Jet2</td></tr>
+    <tr><td><strong>Paris</strong></td><td><strong>€34</strong></td><td>3h 50min</td><td>Direct easyJet</td></tr>
+    <tr><td><strong>Berlin</strong></td><td><strong>€47</strong></td><td>5h – 6h</td><td>Via LIS / Direct easyJet</td></tr>
+    <tr><td><strong>Munich</strong></td><td><strong>€57</strong></td><td>4h 20min</td><td>Direct TUIfly, Condor</td></tr>
+    <tr><td><strong>Madrid</strong></td><td><strong>€59</strong></td><td>2h 40min</td><td>Direct Iberia / Via LIS</td></tr>
+    <tr><td><strong>Barcelona</strong></td><td><strong>€59</strong></td><td>4h – 5h</td><td>Via LIS / Direct Vueling (summer)</td></tr>
+    <tr><td><strong>Amsterdam</strong></td><td><strong>€66</strong></td><td>4h 15min</td><td>Direct easyJet / Via LIS</td></tr>
+    <tr><td><strong>Frankfurt</strong></td><td><strong>€86</strong></td><td>4h 15min</td><td>Direct Condor, Discover</td></tr>
+    <tr><td><strong>Zurich</strong></td><td><strong>€101</strong></td><td>4h</td><td>Direct Edelweiss / Via LIS</td></tr>
+    <tr><td><strong>Vienna</strong></td><td><strong>€121</strong></td><td>4h 45min</td><td>Direct Austrian / Via LIS</td></tr>
+  </tbody>
+</table>
+
+<p style="font-size: 13px; color: #64748b;">Real prices, updated monthly. Full breakdown by month on each city page at <a href="https://www.madeirabook.com/flights-to-madeira">madeirabook.com/flights-to-madeira</a>.</p>
+
+<!-- 4 -->
+<div class="page-break"></div>
+<h2>4. Why Madeira is the safest island in Europe</h2>
+
+<p>This isn't marketing — it's a biological fact. Madeira has <strong>no venomous snakes, no dangerous spiders, and no scorpions</strong>. This makes it unique among Europe's warm-weather destinations.</p>
+
+<table>
+  <thead>
+    <tr><th>Destination</th><th>Snakes</th><th>Spiders</th><th>Scorpions</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Madeira</strong></td><td style="color:#10b981;font-weight:700;">None</td><td style="color:#10b981;font-weight:700;">None</td><td style="color:#10b981;font-weight:700;">None</td></tr>
+    <tr><td>Canary Islands</td><td style="color:#ef4444;">None</td><td style="color:#ef4444;">Venomous species</td><td style="color:#ef4444;">Present</td></tr>
+    <tr><td>Cyprus</td><td style="color:#ef4444;">Venomous species</td><td style="color:#ef4444;">Venomous species</td><td style="color:#ef4444;">Present</td></tr>
+    <tr><td>Greece</td><td style="color:#ef4444;">Venomous species</td><td style="color:#ef4444;">Venomous species</td><td style="color:#ef4444;">Present</td></tr>
+    <tr><td>Malta</td><td style="color:#ef4444;">None</td><td style="color:#ef4444;">Venomous species</td><td style="color:#f59e0b;">Rare</td></tr>
+    <tr><td>Italy (Sicily)</td><td style="color:#ef4444;">Venomous species</td><td style="color:#ef4444;">Venomous species</td><td style="color:#ef4444;">Present</td></tr>
+  </tbody>
+</table>
+
+<div class="highlight">
+  <strong>Perfect for families with kids.</strong> You can hike through laurel forests, swim in natural pools, and explore the island without worrying about what's hiding in the grass.
+</div>
+
+<img src="images/madeira-beach-18.jpg" alt="Madeira travel guide photo" class="guide-img">
+
+<p>Madeira also has one of the lowest crime rates in Portugal. Locals are welcoming, English is widely spoken, and the island's infrastructure is modern and reliable.</p>
+
+<!-- 5 -->
+<h2>5. Winter sun: +22°C in December</h2>
+
+<p>While northern Europe sits at 0–5°C with grey skies, Madeira stays warm and sunny. December averages +19–22°C during the day, and the ocean stays around +18°C.</p>
+
+<div class="facts">
+  <div class="fact"><div class="num">+22°C</div><div class="label">December day temp</div></div>
+  <div class="fact"><div class="num">+18°C</div><div class="label">Ocean temp</div></div>
+  <div class="fact"><div class="num">6h</div><div class="label">Sunshine per day</div></div>
+  <div class="fact"><div class="num">€27</div><div class="label">Flight from London</div></div>
+</div>
+
+<p>You can genuinely swim in the ocean on Christmas Day. Locals do it every year. Restaurants serve dinner outside. Flowers are still blooming.</p>
+
+<div class="highlight">
+  <strong>Ideal for returning visitors.</strong> If you've been to Madeira in summer, coming back in winter is a completely different experience — quieter, cheaper, and arguably better.
+</div>
+
+<!-- 6 -->
+<div class="page-break"></div>
+<h2>6. Where to stay — Lido & Caniço</h2>
+
+<p>Not all parts of Madeira are equal. Two areas concentrate the best of the island:</p>
+
+<h3>Lido (Funchal)</h3>
+<p>The beachfront zone of Funchal. Ocean-view apartments, promenade walks, restaurants within 5 minutes. The most popular area for visitors — but you can still find quiet corners if you know where to look.</p>
+
+<h3>Caniço de Baixo</h3>
+<p>A short drive east of Funchal. Quieter, cheaper, with some of the best natural pools on the island. Popular with returning visitors who want to escape the crowds.</p>
+
+<div class="cta">
+  <h3>Ocean-view apartments in Lido</h3>
+  <p>Direct booking. No platform fees. −10% for returning guests.</p>
+  <a href="https://app.madeirabook.com/">Book on Madeirabook →</a>
+</div>
+
+<!-- 7 -->
+<h2>7. Where to eat — up to 50% off</h2>
+
+<p>Madeira's restaurant scene is genuinely excellent — and affordable, if you know how to book.</p>
+
+<div class="highlight">
+  <strong>TheFork partner restaurants offer 30–50% off the total bill.</strong> You book through the app, show the reservation at the table, and pay half. No hidden conditions.
+</div>
+
+<p>We've collected a curated list of Madeira's best restaurants with active TheFork discounts. You'll receive it as a separate PDF after signing up.</p>
+
+<p><strong>Preview — what you'll find in the restaurant guide:</strong></p>
+<ul>
+  <li>Best fresh seafood in Funchal (30–40% off)</li>
+  <li>Traditional Madeiran cuisine — espetada, bolo do caco (40% off)</li>
+  <li>Fine dining with ocean views (30% off)</li>
+  <li>Family-friendly spots with kids' menus</li>
+  <li>Wine bars and poncha stops</li>
+  <li>Where NOT to eat (tourist traps to skip)</li>
+</ul>
+
+<div class="cta">
+  <h3>Get the restaurant guide</h3>
+  <p>15+ restaurants, active discounts, updated monthly.</p>
+  <a href="https://madeirabook.com">Sign up at madeirabook.com →</a>
+</div>
+
+<!-- 8 -->
+<div class="page-break"></div>
+<h2>8. Getting around the island</h2>
+
+<h3>Car rental</h3>
+<p>Highly recommended if you want to explore beyond Funchal. Madeira's best spots — Pico do Arieiro, Porto Moniz, Ponta de São Lourenço — require a car. From €15/day, book early for peak season.</p>
+
+<h3>Airport transfer</h3>
+<p>Funchal airport is 20 minutes from the city center. Taxi: €25. Uber works. Aerobus: €5, 40 min.</p>
+
+<h3>Public transport</h3>
+<p>Buses connect Funchal to most towns but are slow. Fine for a day trip to Câmara de Lobos. Not ideal for the full island.</p>
+
+<!-- 9 -->
+<h2>9. Best time to visit</h2>
+
+<table>
+  <thead>
+    <tr><th>Season</th><th>Weather</th><th>Crowds</th><th>Prices</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Spring (Mar–May)</strong></td><td>+20°C, flowers</td><td>Medium</td><td>Mid</td></tr>
+    <tr><td><strong>Summer (Jun–Aug)</strong></td><td>+25°C, sunny</td><td>High</td><td>High</td></tr>
+    <tr><td><strong>Autumn (Sep–Nov)</strong></td><td>+22°C, warm</td><td>Low</td><td><strong>Best value</strong></td></tr>
+    <tr><td><strong>Winter (Dec–Feb)</strong></td><td>+20°C, mixed</td><td>Low</td><td>Low (except NY)</td></tr>
+  </tbody>
+</table>
+
+<div class="highlight">
+  <strong>Our pick: late September to mid-November.</strong> Warm weather, low crowds, cheapest flights, and the ocean is still swimmable.
+</div>
+
+<!-- 10 -->
+<div class="cta">
+  <h2 style="color:#fff; margin-top:0;">Ready to book?</h2>
+  <p style="color:#cbd5e1;">Ocean-view apartments in Madeira. Direct from local hosts. No platform fees. −10% for returning guests.</p>
+  <a href="https://app.madeirabook.com/" style="font-size:18px;">Book a stay on Madeirabook →</a>
+</div>
+
+<section style="margin-top:48px;padding-top:32px;border-top:1px solid #e2e8f0;">
+<h2>Quick answers</h2>
+<div itemscope itemtype="https://schema.org/FAQPage">
+<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:24px;">
+<h3 itemprop="name">How cheap are flights to Madeira?</h3>
+<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><p itemprop="text">From €15 one-way (Dublin). Book 6+ months ahead — the same seat rises from €27 to €280 in the last two weeks.</p></div>
+</div>
+<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:24px;">
+<h3 itemprop="name">When is the best time to visit Madeira?</h3>
+<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><p itemprop="text">April–June and September–October for the best mix of weather and value; November is cheapest. Winter brings 22°C sun with empty trails.</p></div>
+</div>
+<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:24px;">
+<h3 itemprop="name">Is Madeira safe?</h3>
+<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><p itemprop="text">Yes — one of the safest islands in Europe, with zero venomous animals on land or in the water.</p></div>
+</div>
+<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom:24px;">
+<h3 itemprop="name">Where should I stay in Madeira?</h3>
+<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><p itemprop="text">Lido in Funchal for the ocean promenade, or Caniço de Baixo for a quieter, better-value base on the south coast.</p></div>
+</div>
+</div>
+</section>
+
+<div class="footer-page">
+  <p><strong>Madeirabook</strong> · Local community for Madeira stays</p>
+  <p>madeirabook.com · @madeirabook_bot · WhatsApp +351 919 304 028</p>
+  <p style="margin-top: 16px;">Prices and data updated September 2026. Real Google Flights data.</p>
+</div>
+
+<div class="cta" style="background: #064e3b; margin-top: 40px;">
+  <h3 style="color: #fff; margin-bottom: 12px;">Get the restaurant guide in Telegram</h3>
+  <p style="color: #a7f3d0;">Scan the QR or tap the link. We'll send you 15+ Madeira restaurants with 30–50% off, updated monthly.</p>
+  <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Ft.me%2FMadeirabookbot%3Fstart%3Dpdf_guide&color=064e3b&bgcolor=ffffff" alt="QR" style="width: 130px; height: 130px; background: #fff; padding: 8px; border-radius: 10px;">
+    <div style="text-align: left;">
+      <p style="color: #fff; font-weight: 700; font-size: 16px; margin-bottom: 6px;">Or tap this link:</p>
+      <a href="https://t.me/Madeirabookbot?start=pdf_guide" style="color: #10b981; font-weight: 700; font-size: 15px;">t.me/Madeirabookbot</a>
+    </div>
+  </div>
+</div>
+
+
+<a href="https://t.me/Madeirabookbot" target="_blank" rel="noopener" aria-label="Telegram" class="fixed top-20 right-3 md:top-6 md:right-4 z-50 w-11 h-11 md:w-14 md:h-14 bg-sky-500 hover:bg-sky-600 text-white rounded-full shadow-lg flex items-center justify-center transition">
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+</a>
+<a href="https://wa.me/79626854685?text=I%20want%20to%20have%20a%20holiday%20in%20Madeira" target="_blank" rel="noopener" aria-label="WhatsApp" class="fixed bottom-4 right-3 md:bottom-6 md:right-4 z-50 w-11 h-11 md:w-14 md:h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center transition">
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+  <p><a href="/" class="hover:text-white">Home</a> · <a href="/madeira-apartment-rentals" class="hover:text-white">Stays</a> · <a href="/flights-to-madeira" class="hover:text-white">Flights</a> · <a href="/madeira-guide" class="hover:text-white">Guides</a> · <a href="/best-time-to-visit-madeira" class="hover:text-white">Weather</a> · <a href="https://wa.me/79626854685" class="hover:text-white">Contact</a></p>
+
+<section style="max-width: 900px; margin: 0 auto; padding: 64px 24px;">
+  <div style="background: linear-gradient(135deg, #0a0a0a 0%, #0f3d52 100%); border-radius: 24px; padding: 48px 32px; text-align: center; color: #f5f5f7;">
+    <p style="font-size: 13px; letter-spacing: 3px; opacity: 0.65; margin: 0 0 14px 0; font-family: system-ui, sans-serif;">MADEIRA &middot; FOUR ELEMENTS</p>
+    <h2 style="font-family: Georgia, serif; font-size: 32px; font-weight: 800; margin: 0 0 16px 0; line-height: 1.2; color: #f5f5f7;">Ready to escape?</h2>
+    <p style="font-size: 16px; opacity: 0.85; margin: 0 auto 32px auto; max-width: 480px; line-height: 1.5; font-family: system-ui, sans-serif;">Two questions. Then we show you the sea, the forest, the sun, or the wild north. Find your element of Madeira.</p>
+    <a href="https://app.madeirabook.com/gateway/ocean?utm_source=landing&amp;utm_medium=city_page" style="display: inline-block; padding: 16px 32px; background: #D4AF37; color: #0a0a0a; font-weight: 800; text-decoration: none; border-radius: 12px; font-size: 16px; font-family: system-ui, sans-serif;">Find your element &rarr;</a>
+  </div>
+</section>
+
+<script src="https://app.madeirabook.com/sounds.js" defer></script>
+</body>
+</html>
