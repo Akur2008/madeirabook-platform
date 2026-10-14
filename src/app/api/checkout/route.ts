@@ -238,7 +238,7 @@ export async function POST(req: Request) {
         payment_intent_data: paymentIntentData,
         metadata,
         success_url: `${APP_URL}/booking-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${APP_URL}/p/${propertySlug}`,
+        cancel_url: `${APP_URL}/booking-cancel?slug=${propertySlug}`,
       })
     } catch (err) {
       console.error('checkout: stripe session failed', err)

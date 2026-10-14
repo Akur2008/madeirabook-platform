@@ -10,7 +10,6 @@ import { useAudioEngine } from '@/audio/useAudioEngine'
 
 import {
   SEARCH_URL,
-  STAY_BASE_URL,
   formatMoney,
   normalizeImage,
   toISODate,
@@ -55,6 +54,8 @@ export default function BookingDrawer({
     departure: string
     nights: number
   } | null>(null)
+  const [creatingSlug, setCreatingSlug] = useState<string | null>(null)
+  const [checkoutError, setCheckoutError] = useState(false)
   const searchSeq = useRef(0)
 
   const isControlled = open !== undefined
@@ -69,6 +70,8 @@ export default function BookingDrawer({
         setStatus('idle')
         setResults([])
         setSearchedDates(null)
+        setCreatingSlug(null)
+        setCheckoutError(false)
       } else {
         engine.restoreFromBackground(SHEET_MS)
       }
@@ -91,6 +94,8 @@ export default function BookingDrawer({
     setStatus('idle')
     setResults([])
     setSearchedDates(null)
+    setCreatingSlug(null)
+    setCheckoutError(false)
   }, [])
 
   const handleSearch = useCallback(async () => {
@@ -124,6 +129,36 @@ export default function BookingDrawer({
       if (seq === searchSeq.current) setStatus('error')
     }
   }, [range])
+
+  const handleBook = useCallback(
+    async (slug: string) => {
+      if (!searchedDates || creatingSlug) return
+      setCreatingSlug(slug)
+      setCheckoutError(false)
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            propertySlug: slug,
+            arrival: searchedDates.arrival,
+            departure: searchedDates.departure,
+          }),
+        })
+        const data = (await res.json().catch(() => null)) as {
+          url?: string
+        } | null
+        if (!res.ok || typeof data?.url !== 'string' || !data.url) {
+          throw new Error(`checkout ${res.status}`)
+        }
+        window.location.href = data.url
+      } catch {
+        setCreatingSlug(null)
+        setCheckoutError(true)
+      }
+    },
+    [searchedDates, creatingSlug],
+  )
 
   return (
     <Drawer.Root open={isOpen} onOpenChange={handleOpenChange}>
@@ -232,12 +267,15 @@ export default function BookingDrawer({
                   <div className="mt-6 flex flex-col gap-3">
                     {results.map((item) => {
                       const img = normalizeImage(item.coverImage)
-                      const href = `${STAY_BASE_URL}/p/${item.slug}?arrival=${searchedDates.arrival}&departure=${searchedDates.departure}`
+                      const isCreating = creatingSlug === item.slug
                       return (
-                        <a
+                        <button
                           key={item.slug}
-                          href={href}
-                          className="group flex items-center gap-4 rounded-xl border border-white/15 bg-white/5 p-3 transition-colors hover:bg-white/10"
+                          type="button"
+                          onClick={() => handleBook(item.slug)}
+                          disabled={creatingSlug !== null}
+                          aria-busy={isCreating}
+                          className="group flex w-full items-center gap-4 rounded-xl border border-white/15 bg-white/5 p-3 text-left transition-colors hover:bg-white/10 disabled:opacity-60 disabled:hover:bg-white/5"
                         >
                           {img ? (
                             <Image
@@ -257,18 +295,33 @@ export default function BookingDrawer({
                               {item.name}
                             </p>
                             <p className="mb-0 mt-1 text-sm text-white/60">
-                              <span className="font-semibold text-white/90">
-                                {formatMoney(item.price, item.currency)}
-                              </span>
-                              {` total · ${searchedDates.nights} nights`}
+                              {isCreating ? (
+                                'Opening checkout…'
+                              ) : (
+                                <>
+                                  <span className="font-semibold text-white/90">
+                                    {formatMoney(item.price, item.currency)}
+                                  </span>
+                                  {` total · ${searchedDates.nights} nights`}
+                                </>
+                              )}
                             </p>
                           </div>
-                          <span className="text-white/40 transition-transform group-hover:translate-x-1">
-                            →
-                          </span>
-                        </a>
+                          {isCreating ? (
+                            <span className="h-4 w-4 shrink-0 animate-spin rounded-full border border-white/30 border-t-white" />
+                          ) : (
+                            <span className="text-white/40 transition-transform group-hover:translate-x-1">
+                              →
+                            </span>
+                          )}
+                        </button>
                       )
                     })}
+                    {checkoutError && (
+                      <p className="mb-0 mt-1 text-center text-sm text-red-400">
+                        Could not start checkout. Try again.
+                      </p>
+                    )}
                   </div>
                 )}
               </>
