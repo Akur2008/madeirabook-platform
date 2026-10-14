@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAudioEngine } from '@/audio/useAudioEngine'
 
-export const SEARCH_URL = 'https://app.madeirabook.com/api/search-availability'
+export const SEARCH_URL = '/api/search-availability'
 export const STAY_BASE_URL = 'https://app.madeirabook.com'
 const SHEET_MS = 400
 const SHEET_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'

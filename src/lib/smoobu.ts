@@ -1,4 +1,7 @@
 import crypto from 'crypto'
+import { getPayload } from 'payload'
+
+import config from '@payload-config'
 
 // Direct Smoobu API client, ported from madeirabook-core
 // (src/services/pms/smoobu.js). Requests are signed with HMAC-SHA256:
@@ -129,4 +132,111 @@ export async function markPaid(
   return smoobuRequest('PUT', `/api/reservations/${smoobuBookingId}`, {
     paid: true,
   })
+}
+
+interface SmoobuAvailabilityEntry {
+  available: boolean
+  price?: number
+  currency?: string
+  reason?: unknown
+}
+
+// Bulk availability + prices for a list of apartments, ported 1:1 from
+// madeirabook-core smoobu.js checkAvailability.
+// Returns { [apartmentId]: { available, price?, currency? } }.
+async function checkApartmentAvailability(
+  apartmentIds: number[],
+  arrivalDate: string,
+  departureDate: string,
+): Promise<Record<number, SmoobuAvailabilityEntry>> {
+  const customerId = Number(process.env.SMOOBU_USER_ID)
+  const ids = (apartmentIds || []).map(Number).filter(Number.isFinite)
+  if (!ids.length) return {}
+  const body = { arrivalDate, departureDate, apartments: ids, customerId }
+  const res = await smoobuRequest(
+    'POST',
+    '/booking/checkApartmentAvailability',
+    body,
+  )
+  const prices = ((res && res.prices) || {}) as Record<
+    string,
+    { price?: unknown; currency?: string }
+  >
+  const errors = ((res && res.errorMessages) || {}) as Record<string, unknown>
+  const result: Record<number, SmoobuAvailabilityEntry> = {}
+  for (const id of ids) {
+    const key = String(id)
+    const entry = prices[key]
+    if (entry && Number.isFinite(Number(entry.price))) {
+      result[id] = {
+        available: true,
+        price: Number(entry.price),
+        currency: entry.currency || 'EUR',
+      }
+    } else {
+      result[id] = { available: false, reason: errors[key] ?? null }
+    }
+  }
+  return result
+}
+
+export interface AvailabilityItem {
+  slug: string
+  name: string
+  price: number
+  currency: string
+  coverImage: string | null
+}
+
+// Availability search across all published properties that have a Smoobu id
+// (pmsPropertyId). Ported from core routes/search.js: Smoobu ids are joined
+// with Payload properties, first media image becomes coverImage, result is
+// sorted by price asc.
+export async function checkAvailability({
+  arrivalDate,
+  departureDate,
+}: {
+  arrivalDate: string
+  departureDate: string
+}): Promise<AvailabilityItem[]> {
+  const payload = await getPayload({ config: await config })
+  const found = await payload.find({
+    collection: 'properties',
+    where: {
+      and: [
+        { pmsPropertyId: { exists: true } },
+        { status: { equals: 'published' } },
+      ],
+    },
+    limit: 100,
+    depth: 1,
+  })
+
+  const ids = found.docs
+    .map((doc) => Number(doc.pmsPropertyId))
+    .filter(Number.isFinite)
+  if (!ids.length) return []
+
+  const avail = await checkApartmentAvailability(ids, arrivalDate, departureDate)
+
+  const items: AvailabilityItem[] = []
+  for (const doc of found.docs) {
+    const id = Number(doc.pmsPropertyId)
+    const entry = avail[id]
+    if (!entry || !entry.available) continue
+    const firstImage = doc.media?.[0]?.image
+    const coverImage =
+      firstImage && typeof firstImage === 'object' && firstImage.url
+        ? firstImage.url
+        : null
+    items.push({
+      slug: doc.slug,
+      name: doc.title,
+      price: Number(entry.price),
+      currency: entry.currency === '€' ? 'EUR' : entry.currency || 'EUR',
+      coverImage,
+    })
+  }
+  items.sort((a, b) => a.price - b.price)
+  return items
 }
