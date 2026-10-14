@@ -38,7 +38,7 @@ export default async function GatewaysPage() {
   })).filter((group) => group.pages.length > 0)
 
   return (
-    <div className="min-h-dvh bg-black px-5 py-6 text-white sm:px-8">
+    <div className="min-h-dvh bg-[#0a1420] px-5 py-6 text-white sm:px-8">
       <Link
         href="/"
         className="mb-8 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-black/70"

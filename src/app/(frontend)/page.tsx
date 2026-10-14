@@ -274,7 +274,7 @@ export default async function HomePage() {
         >
           Three paths into silence
         </h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {gateways.map((page) => (
             <GatewayCard key={page.id} page={page} />
           ))}

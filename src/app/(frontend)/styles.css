@@ -12,7 +12,7 @@ html {
   font-size: 18px;
   line-height: 32px;
 
-  background: rgb(0, 0, 0);
+  background: #0a1420;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -225,4 +225,15 @@ svg {
 .madeirabook-calendar .rdp-selected {
   font-weight: 500;
   font-size: inherit;
+}
+
+
+
+/* MapLibre тёмная карта — синий оттенок, оживает при hover */
+.maplibregl-canvas {
+  filter: brightness(1.2) saturate(0.65) hue-rotate(190deg);
+  transition: filter 400ms ease;
+}
+.leaflet-container:hover .maplibregl-canvas {
+  filter: brightness(1.35) saturate(1.1) hue-rotate(180deg);
 }
