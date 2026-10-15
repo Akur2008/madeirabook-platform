@@ -83,6 +83,7 @@ export interface Config {
     bookings: Booking;
     referrals: Referral;
     'affiliate-payouts': AffiliatePayout;
+    applications: Application;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -106,6 +107,7 @@ export interface Config {
     bookings: BookingsSelect<false> | BookingsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'affiliate-payouts': AffiliatePayoutsSelect<false> | AffiliatePayoutsSelect<true>;
+    applications: ApplicationsSelect<false> | ApplicationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -537,7 +539,74 @@ export interface Referral {
    */
   commissionRate: number;
   status: 'active' | 'paused';
+  /**
+   * Token from the invitation email. Used once to claim the guide page.
+   */
+  invitationToken?: string | null;
+  /**
+   * Invitation link expiry.
+   */
+  invitationExpiresAt?: string | null;
+  /**
+   * When the invitation was accepted.
+   */
+  invitationUsedAt?: string | null;
+  /**
+   * Creator avatar image URL.
+   */
+  avatarUrl?: string | null;
+  /**
+   * Short creator bio shown on their guide page.
+   */
+  bio?: string | null;
+  /**
+   * Accent color for the creator map page.
+   */
+  accentColor?: string | null;
+  /**
+   * Beaches featured on the creator map.
+   */
+  selectedBeaches?: (number | Beach)[] | null;
+  /**
+   * Public title of the creator guide, e.g. "Sergio's Madeira Guide".
+   */
+  displayName?: string | null;
+  /**
+   * Ambassador application this referral was created from.
+   */
+  sourceApplication?: (number | null) | Application;
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "applications".
+ */
+export interface Application {
+  id: number;
+  name: string;
+  instagramHandle: string;
+  email: string;
+  audienceSize: '5k-10k' | '10k-30k' | '30k-100k' | '100k+';
+  niche: 'travel' | 'lifestyle' | 'portugal-madeira' | 'other';
+  /**
+   * Main audience city, for targeting.
+   */
+  mainCity?: string | null;
+  /**
+   * Link to one Reel the creator is proud of.
+   */
+  sampleReelUrl?: string | null;
+  /**
+   * Comment from the creator.
+   */
+  message?: string | null;
+  status: 'new' | 'reviewing' | 'approved' | 'rejected';
+  /**
+   * Internal notes — never shown to the applicant.
+   */
+  reviewNotes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -647,6 +716,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'affiliate-payouts';
         value: number | AffiliatePayout;
+      } | null)
+    | ({
+        relationTo: 'applications';
+        value: number | Application;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -968,6 +1041,15 @@ export interface ReferralsSelect<T extends boolean = true> {
   creatorEmail?: T;
   commissionRate?: T;
   status?: T;
+  invitationToken?: T;
+  invitationExpiresAt?: T;
+  invitationUsedAt?: T;
+  avatarUrl?: T;
+  bio?: T;
+  accentColor?: T;
+  selectedBeaches?: T;
+  displayName?: T;
+  sourceApplication?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -984,6 +1066,24 @@ export interface AffiliatePayoutsSelect<T extends boolean = true> {
   status?: T;
   paidAt?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "applications_select".
+ */
+export interface ApplicationsSelect<T extends boolean = true> {
+  name?: T;
+  instagramHandle?: T;
+  email?: T;
+  audienceSize?: T;
+  niche?: T;
+  mainCity?: T;
+  sampleReelUrl?: T;
+  message?: T;
+  status?: T;
+  reviewNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

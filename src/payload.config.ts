@@ -21,6 +21,7 @@ import { WebhookEvents } from './collections/WebhookEvents'
 import { Bookings } from './collections/Bookings'
 import { Referrals } from './collections/Referrals'
 import { AffiliatePayouts } from './collections/AffiliatePayouts'
+import { Applications } from './collections/Applications'
 import { PrivacyPolicy } from './globals/PrivacyPolicy'
 import { TermsOfService } from './globals/TermsOfService'
 import { CookiePolicy } from './globals/CookiePolicy'
@@ -53,6 +54,7 @@ export default buildConfig({
     Bookings,
     Referrals,
     AffiliatePayouts,
+    Applications,
   ],
   globals: [PrivacyPolicy, TermsOfService, CookiePolicy, LegalInfo],
   editor: lexicalEditor(),

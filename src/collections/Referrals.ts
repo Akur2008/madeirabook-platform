@@ -72,6 +72,75 @@ export const Referrals: CollectionConfig = {
       ],
     },
     {
+      name: 'invitationToken',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        description: 'Token from the invitation email. Used once to claim the guide page.',
+      },
+    },
+    {
+      name: 'invitationExpiresAt',
+      type: 'date',
+      admin: {
+        description: 'Invitation link expiry.',
+      },
+    },
+    {
+      name: 'invitationUsedAt',
+      type: 'date',
+      admin: {
+        description: 'When the invitation was accepted.',
+      },
+    },
+    {
+      name: 'avatarUrl',
+      type: 'text',
+      admin: {
+        description: 'Creator avatar image URL.',
+      },
+    },
+    {
+      name: 'bio',
+      type: 'textarea',
+      admin: {
+        description: 'Short creator bio shown on their guide page.',
+      },
+    },
+    {
+      name: 'accentColor',
+      type: 'text',
+      defaultValue: '#d4af37',
+      admin: {
+        description: 'Accent color for the creator map page.',
+      },
+    },
+    {
+      name: 'selectedBeaches',
+      type: 'relationship',
+      relationTo: 'beaches',
+      hasMany: true,
+      admin: {
+        description: 'Beaches featured on the creator map.',
+      },
+    },
+    {
+      name: 'displayName',
+      type: 'text',
+      admin: {
+        description: 'Public title of the creator guide, e.g. "Sergio\'s Madeira Guide".',
+      },
+    },
+    {
+      name: 'sourceApplication',
+      type: 'relationship',
+      relationTo: 'applications',
+      admin: {
+        description: 'Ambassador application this referral was created from.',
+      },
+    },
+    {
       name: 'notes',
       type: 'textarea',
     },
