@@ -77,6 +77,7 @@ export interface Config {
     'sluice-pages': SluicePage;
     cities: City;
     beaches: Beach;
+    restaurants: Restaurant;
     subscribers: Subscriber;
     'email-queue': EmailQueue;
     'webhook-events': WebhookEvent;
@@ -101,6 +102,7 @@ export interface Config {
     'sluice-pages': SluicePagesSelect<false> | SluicePagesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
     beaches: BeachesSelect<false> | BeachesSelect<true>;
+    restaurants: RestaurantsSelect<false> | RestaurantsSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     'email-queue': EmailQueueSelect<false> | EmailQueueSelect<true>;
     'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
@@ -406,6 +408,54 @@ export interface Beach {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "restaurants".
+ */
+export interface Restaurant {
+  id: number;
+  name: string;
+  slug: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  location?: (number | null) | Location;
+  address?: string | null;
+  geoCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  cuisine?: string | null;
+  /**
+   * Average price per person in EUR.
+   */
+  averagePrice?: number | null;
+  /**
+   * Rating on a 0–5 scale (TheFork score / 2).
+   */
+  googleRating?: number | null;
+  michelinStars?: number | null;
+  michelinGreenStar?: boolean | null;
+  michelinRecommended?: boolean | null;
+  chef?: string | null;
+  tier: 'michelin' | 'luxury' | 'modern' | 'heritage';
+  /**
+   * External booking link (TheFork affiliate etc).
+   */
+  bookingUrl?: string | null;
+  /**
+   * Image URL from Wikimedia Commons (CC-licensed only).
+   */
+  heroImage?: string | null;
+  /**
+   * Author and license, e.g. "Photo by John Doe, CC-BY-SA 4.0, via Wikimedia Commons".
+   */
+  imageAttribution?: string | null;
+  highlights?: string[] | null;
+  status: 'draft' | 'published';
+  featured?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "subscribers".
  */
 export interface Subscriber {
@@ -694,6 +744,10 @@ export interface PayloadLockedDocument {
         value: number | Beach;
       } | null)
     | ({
+        relationTo: 'restaurants';
+        value: number | Restaurant;
+      } | null)
+    | ({
         relationTo: 'subscribers';
         value: number | Subscriber;
       } | null)
@@ -962,6 +1016,40 @@ export interface BeachesSelect<T extends boolean = true> {
   imageAttribution?: T;
   highlights?: T;
   bestTimeToVisit?: T;
+  status?: T;
+  featured?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "restaurants_select".
+ */
+export interface RestaurantsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  shortDescription?: T;
+  description?: T;
+  location?: T;
+  address?: T;
+  geoCoordinates?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+      };
+  cuisine?: T;
+  averagePrice?: T;
+  googleRating?: T;
+  michelinStars?: T;
+  michelinGreenStar?: T;
+  michelinRecommended?: T;
+  chef?: T;
+  tier?: T;
+  bookingUrl?: T;
+  heroImage?: T;
+  imageAttribution?: T;
+  highlights?: T;
   status?: T;
   featured?: T;
   updatedAt?: T;

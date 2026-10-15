@@ -15,6 +15,7 @@ import { Gateways } from './collections/Gateways'
 import { SluicePages } from './collections/SluicePages'
 import { Cities } from './collections/Cities'
 import { Beaches } from './collections/Beaches'
+import { Restaurants } from './collections/Restaurants'
 import { Subscribers } from './collections/Subscribers'
 import { EmailQueue } from './collections/EmailQueue'
 import { WebhookEvents } from './collections/WebhookEvents'
@@ -48,6 +49,7 @@ export default buildConfig({
     SluicePages,
     Cities,
     Beaches,
+    Restaurants,
     Subscribers,
     EmailQueue,
     WebhookEvents,
