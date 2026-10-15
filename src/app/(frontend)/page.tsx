@@ -7,8 +7,8 @@ import React from 'react'
 import config from '@/payload.config'
 import SubscribeForm from '@/components/SubscribeForm'
 import AcquisitionSection from './components/AcquisitionSection'
+import EscapeCard from './components/EscapeCard'
 import ExploreMap from './components/ExploreMap'
-import HeroSearchArea from './components/HeroSearchArea'
 import GatewayCard from './components/GatewayCard'
 
 export const dynamic = 'force-dynamic'
@@ -239,8 +239,9 @@ export default async function HomePage() {
           <p className="mt-5 text-base text-white/70 md:text-lg">
             A two-minute escape from the city noise.
           </p>
-          <div id="search" className="w-full scroll-mt-24">
-            <HeroSearchArea />
+          <div id="search" className="scroll-mt-24" />
+          <div className="mt-8 flex w-full justify-center">
+            <EscapeCard />
           </div>
         </div>
       </section>

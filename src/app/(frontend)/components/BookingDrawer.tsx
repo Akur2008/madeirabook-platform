@@ -166,8 +166,8 @@ export default function BookingDrawer({
       <Drawer.Portal>
         {/* z-[1200] to stay above Leaflet map panes/controls (z-index up to 1000) */}
         <Drawer.Overlay className="fixed inset-0 z-[1200] bg-black/60 backdrop-blur-sm" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-[1200] mx-auto flex max-h-[85dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/15 border-b-0 bg-[#0a1420] outline-none">
-          <Drawer.Handle className="mx-auto mb-4 mt-4 h-1 w-10 shrink-0 rounded-full bg-white/20" />
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-[1200] mx-auto flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/15 border-b-0 bg-[#0a1420] outline-none">
+          <Drawer.Handle className="mx-auto mb-2 mt-2 h-1 w-10 shrink-0 rounded-full bg-white/20" />
           <Drawer.Close
             aria-label="Close"
             className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white/90"
@@ -212,17 +212,17 @@ export default function BookingDrawer({
             </div>
           </div>
 
-          <div className="overflow-y-auto px-6 pb-10">
+          <div className="overflow-y-auto px-6 pb-6">
             {activeTab === 'stay' ? (
               <>
                 <p
-                  className="mb-0 mt-6 text-2xl font-light text-white/95"
+                  className="mb-0 mt-3 text-2xl font-light text-white/95"
                   style={SERIF}
                 >
                   When are you escaping?
                 </p>
 
-                <div className="mt-5 flex justify-center">
+                <div className="mt-3 flex justify-center">
                   <DayPicker
                     mode="range"
                     selected={range}
@@ -233,7 +233,7 @@ export default function BookingDrawer({
                   />
                 </div>
 
-                <p className="mb-0 mt-4 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-center text-sm text-white/80">
+                <p className="mb-0 mt-3 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-center text-sm text-white/80">
                   {rangeLabel}
                 </p>
 
@@ -246,7 +246,7 @@ export default function BookingDrawer({
                     range.from >= range.to ||
                     status === 'loading'
                   }
-                  className="mt-5 block w-full rounded-full border border-white/30 bg-white/10 py-3 text-sm uppercase tracking-widest text-white transition-colors hover:bg-white/20 disabled:opacity-40"
+                  className="mt-4 block w-full rounded-full border border-white/30 bg-white/10 py-3 text-sm uppercase tracking-widest text-white transition-colors hover:bg-white/20 disabled:opacity-40"
                 >
                   {status === 'loading' ? 'Searching…' : 'Search availability'}
                 </button>
