@@ -319,3 +319,244 @@ export default function BookingSearchSheet({
     </div>
   )
 }
+
+function formatShortDate(iso: string): string {
+  return new Date(`${iso}T12:00:00`).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+  })
+}
+
+// Compact inline variant rendered inside the hero on the home page.
+// Search results appear above the form so they stay in the first viewport.
+export function BookingSearchInline({
+  onResultsVisible,
+}: {
+  onResultsVisible?: (visible: boolean) => void
+}) {
+  const [arrival, setArrival] = useState('')
+  const [departure, setDeparture] = useState('')
+  const [status, setStatus] = useState<Status>('idle')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [error, setError] = useState('')
+  const [searched, setSearched] = useState<{
+    arrival: string
+    departure: string
+    nights: number
+  } | null>(null)
+  const searchSeq = useRef(0)
+
+  const todayISO = toISODate(new Date())
+
+  // Dates come from the client clock — compute after mount to avoid
+  // server/client timezone mismatches during hydration.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const weekend = nextWeekend()
+      setArrival(toISODate(weekend.arrival))
+      setDeparture(toISODate(weekend.departure))
+    }, 0)
+    return () => clearTimeout(t)
+  }, [])
+
+  // Let the parent hide heavy hero blocks while results occupy the viewport.
+  useEffect(() => {
+    onResultsVisible?.(status === 'results')
+  }, [status, onResultsVisible])
+
+  const resetSearch = useCallback(() => {
+    searchSeq.current += 1
+    setStatus('idle')
+    setResults([])
+    setSearched(null)
+    setError('')
+  }, [])
+
+  const handleArrivalChange = useCallback(
+    (value: string) => {
+      resetSearch()
+      setArrival(value)
+      setDeparture((prev) => {
+        if (prev && prev > value) return prev
+        const d = new Date(`${value}T12:00:00`)
+        d.setDate(d.getDate() + 2)
+        return toISODate(d)
+      })
+    },
+    [resetSearch],
+  )
+
+  const handleDepartureChange = useCallback(
+    (value: string) => {
+      resetSearch()
+      setDeparture(value)
+    },
+    [resetSearch],
+  )
+
+  const handleClose = useCallback(() => {
+    resetSearch()
+    const weekend = nextWeekend()
+    setArrival(toISODate(weekend.arrival))
+    setDeparture(toISODate(weekend.departure))
+  }, [resetSearch])
+
+  const handleSearch = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      setError('')
+      if (!DATE_RE.test(arrival) || !DATE_RE.test(departure) || arrival >= departure) {
+        setError('Pick valid arrival and departure dates.')
+        return
+      }
+      const seq = ++searchSeq.current
+      setStatus('loading')
+      setResults([])
+      try {
+        const res = await fetch(SEARCH_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ arrivalDate: arrival, departureDate: departure }),
+        })
+        if (!res.ok) throw new Error(`search ${res.status}`)
+        const data = (await res.json()) as SearchResult[]
+        if (seq !== searchSeq.current) return
+        setSearched({
+          arrival,
+          departure,
+          nights: Math.round(
+            (new Date(`${departure}T12:00:00`).getTime() -
+              new Date(`${arrival}T12:00:00`).getTime()) /
+              86400000,
+          ),
+        })
+        if (Array.isArray(data) && data.length > 0) {
+          setResults(data.slice(0, 3))
+          setStatus('results')
+        } else {
+          setStatus('empty')
+        }
+      } catch {
+        if (seq === searchSeq.current) setStatus('error')
+      }
+    },
+    [arrival, departure],
+  )
+
+  return (
+    <div className="w-full max-w-3xl">
+      {status === 'results' && searched && (
+        <div
+          className="relative mb-3 rounded-2xl border border-white/15 p-4 text-left backdrop-blur-xl"
+          style={{ background: 'rgba(10, 20, 32, 0.75)' }}
+        >
+          <button
+            type="button"
+            onClick={handleClose}
+            aria-label="Close"
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white/90"
+          >
+            ✕
+          </button>
+          <div
+            className="pr-10 text-lg font-light text-white/95"
+            style={SERIF}
+          >
+            Available: {formatShortDate(searched.arrival)} —{' '}
+            {formatShortDate(searched.departure)}
+          </div>
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {results.map((item) => {
+              const img = normalizeImage(item.coverImage)
+              const href = `${STAY_BASE_URL}/p/${item.slug}?arrival=${searched.arrival}&departure=${searched.departure}`
+              return (
+                <a
+                  key={item.slug}
+                  href={href}
+                  className="group flex flex-col rounded-xl border border-white/15 bg-white/5 p-3 transition-colors hover:bg-white/10"
+                >
+                  {img ? (
+                    <Image
+                      src={img}
+                      alt={item.name}
+                      width={320}
+                      height={107}
+                      className="aspect-[3/1] w-full rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="flex aspect-[3/1] w-full items-center justify-center rounded-lg bg-white/10 text-xs text-white/40">
+                      no photo
+                    </div>
+                  )}
+                  <div className="mt-2 truncate text-sm font-medium text-white/90">
+                    {item.name}
+                  </div>
+                  <div className="mt-0.5 text-sm font-semibold text-white/90">
+                    {formatMoney(item.price, item.currency)} · {searched.nights}{' '}
+                    nights
+                  </div>
+                  <span className="mt-2 block w-full rounded-full border border-white/30 bg-white/10 py-1.5 text-center text-xs uppercase tracking-widest text-white transition-colors group-hover:bg-white/20">
+                    Book →
+                  </span>
+                </a>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {status === 'empty' && (
+        <div className="mb-3 text-sm text-white/60">
+          No availability. Try other dates.
+        </div>
+      )}
+      {status === 'error' && (
+        <div className="mb-3 text-sm text-red-400">
+          Something went wrong. Try again.
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSearch}
+        className="grid grid-cols-1 gap-3 text-left sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+      >
+        <label className="block">
+          <span className="mb-1.5 block text-xs uppercase tracking-wider text-white/50">
+            Arrival
+          </span>
+          <input
+            type="date"
+            required
+            min={todayISO}
+            value={arrival}
+            onChange={(e) => handleArrivalChange(e.target.value)}
+            className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-white/50"
+            style={{ colorScheme: 'dark' }}
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-xs uppercase tracking-wider text-white/50">
+            Departure
+          </span>
+          <input
+            type="date"
+            required
+            min={arrival || todayISO}
+            value={departure}
+            onChange={(e) => handleDepartureChange(e.target.value)}
+            className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-white/50"
+            style={{ colorScheme: 'dark' }}
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={status === 'loading'}
+          className="w-full rounded-full border border-white/30 bg-white/10 px-6 py-2.5 text-sm uppercase tracking-widest text-white transition-colors hover:bg-white/20 disabled:opacity-50 sm:w-auto"
+        >
+          {status === 'loading' ? 'Searching…' : 'Search →'}
+        </button>
+      </form>
+      {error && <div className="mt-3 text-sm text-red-400">{error}</div>}
+    </div>
+  )
+}
