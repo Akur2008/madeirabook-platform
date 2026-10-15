@@ -7,6 +7,7 @@ import React from 'react'
 import config from '@/payload.config'
 import SubscribeForm from '@/components/SubscribeForm'
 import AcquisitionSection from './components/AcquisitionSection'
+import ExploreMap from './components/ExploreMap'
 import HeroSearchArea from './components/HeroSearchArea'
 import GatewayCard from './components/GatewayCard'
 
@@ -96,6 +97,74 @@ export default async function HomePage() {
     depth: 2,
   })
 
+  const { docs: mapProperties } = await payload.find({
+    collection: 'properties',
+    where: { status: { equals: 'published' } },
+    limit: 50,
+    depth: 1,
+  })
+
+  const { docs: beaches } = await payload.find({
+    collection: 'beaches',
+    where: { status: { equals: 'published' } },
+    limit: 50,
+    depth: 1,
+  })
+
+  const { docs: restaurants } = await payload.find({
+    collection: 'restaurants',
+    where: { status: { equals: 'published' } },
+    limit: 50,
+    depth: 1,
+  })
+
+  const mapStays = mapProperties.flatMap((p) => {
+    const loc = typeof p.location === 'object' ? p.location : null
+    if (loc?.geoCoordinates?.lat == null || loc?.geoCoordinates?.lng == null) return []
+    const cover = p.media?.[0]?.image
+    return [
+      {
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        lat: loc.geoCoordinates.lat,
+        lng: loc.geoCoordinates.lng,
+        pricePerNight: p.pricePerNight,
+        coverImage: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+      },
+    ]
+  })
+
+  const mapBeaches = beaches.flatMap((b) => {
+    if (b.geoCoordinates?.lat == null || b.geoCoordinates?.lng == null) return []
+    return [
+      {
+        id: b.id,
+        slug: b.slug,
+        name: b.name,
+        lat: b.geoCoordinates.lat,
+        lng: b.geoCoordinates.lng,
+        heroImage: b.heroImage,
+      },
+    ]
+  })
+
+  const mapRestaurants = restaurants.flatMap((r) => {
+    if (r.geoCoordinates?.lat == null || r.geoCoordinates?.lng == null) return []
+    return [
+      {
+        id: r.id,
+        slug: r.slug,
+        name: r.name,
+        lat: r.geoCoordinates.lat,
+        lng: r.geoCoordinates.lng,
+        cuisine: r.cuisine,
+        averagePrice: r.averagePrice,
+        heroImage: r.heroImage,
+      },
+    ]
+  })
+
   return (
     <div className="min-h-dvh bg-[#0a1420] text-white">
       {/* Cormorant Garamond for headings; falls back to serif if the CDN is unreachable */}
@@ -170,7 +239,30 @@ export default async function HomePage() {
           <p className="mt-5 text-base text-white/70 md:text-lg">
             A two-minute escape from the city noise.
           </p>
-          <HeroSearchArea />
+          <div id="search" className="w-full scroll-mt-24">
+            <HeroSearchArea />
+          </div>
+        </div>
+      </section>
+
+      {/* 2.25. Explore map — stays, beaches, restaurants */}
+      <section id="map" className="mx-auto mt-16 max-w-6xl scroll-mt-24 px-6">
+        <h2
+          className="text-center text-3xl font-light text-white/90 md:text-4xl"
+          style={SERIF}
+        >
+          Explore Madeira
+        </h2>
+        <p className="mx-auto mb-8 mt-3 max-w-2xl text-center text-white/60">
+          {mapStays.length} curated stays · {mapBeaches.length} beaches ·{' '}
+          {mapRestaurants.length} restaurants. Tap any pin.
+        </p>
+        <div className="h-[400px] overflow-hidden rounded-xl border border-white/10 md:h-[600px]">
+          <ExploreMap
+            properties={mapStays}
+            beaches={mapBeaches}
+            restaurants={mapRestaurants}
+          />
         </div>
       </section>
 
