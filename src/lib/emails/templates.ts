@@ -166,3 +166,50 @@ export const templates: Record<
     ),
   }),
 }
+
+// Private invitation for an approved ambassador. Sent directly (not via the
+// email queue) from the Applications afterChange hook.
+export function ambassadorInvitation(opts: {
+  displayName: string
+  token: string
+}): RenderedEmail {
+  const name = opts.displayName.split(/['\s]/)[0] || opts.displayName
+  const nameHtml = name.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
+  const inviteUrl = `https://www.madeirabook.com/ambassadors/welcome/${opts.token}`
+
+  const text =
+    `Hi ${name},\n\n` +
+    'Thanks for applying. We reviewed your profile and would love to have you onboard as one of our 10 launch ambassadors.\n\n' +
+    `Your private invitation link (expires in 7 days):\n${inviteUrl}\n\n` +
+    "Here's what's inside:\n" +
+    '- Your branded Madeira map (with your name, your accent color)\n' +
+    '- Curated beaches, restaurants, viewpoints\n' +
+    '- 2% commission from every booking through your link\n' +
+    '- Ready-made banners for Reels/Stories\n\n' +
+    'After you accept, we build your map within 24 hours.\n\n' +
+    'Welcome aboard,\nAndrei\nMadeirabook'
+
+  const html =
+    '<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#1f2937;background:#fff;padding:20px;">' +
+    '<h2 style="color:#064e3b;font-size:24px;margin:0 0 16px 0;">You\'re invited to Madeirabook Ambassadors</h2>' +
+    `<p>Hi ${nameHtml},</p>` +
+    '<p>Thanks for applying. We reviewed your profile and would love to have you onboard as one of our 10 launch ambassadors.</p>' +
+    '<p>Your private invitation link (expires in 7 days):</p>' +
+    `<p style="margin:24px 0;"><a href="${inviteUrl}" style="${BTN}">Accept your invitation →</a></p>` +
+    '<p>Here\'s what\'s inside:</p>' +
+    '<ul style="padding-left:20px;line-height:1.7;">' +
+    '<li>Your branded Madeira map (with your name, your accent color)</li>' +
+    '<li>Curated beaches, restaurants, viewpoints</li>' +
+    '<li>2% commission from every booking through your link</li>' +
+    '<li>Ready-made banners for Reels/Stories</li>' +
+    '</ul>' +
+    '<p>After you accept, we build your map within 24 hours.</p>' +
+    '<p>Welcome aboard,<br>Andrei<br>Madeirabook</p>' +
+    '<p style="color:#9ca3af;font-size:12px;margin-top:32px;border-top:1px solid #e5e7eb;padding-top:16px;">' +
+    'Madeirabook · <a href="https://www.madeirabook.com" style="color:#9ca3af;">madeirabook.com</a><br>' +
+    'You are receiving this because you applied to the ambassador program.' +
+    '</p>' +
+    '</div>'
+
+  return { subject: "You're invited to Madeirabook Ambassadors", html, text }
+}
