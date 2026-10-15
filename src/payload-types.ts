@@ -76,6 +76,7 @@ export interface Config {
     gateways: Gateway;
     'sluice-pages': SluicePage;
     cities: City;
+    beaches: Beach;
     subscribers: Subscriber;
     'email-queue': EmailQueue;
     'webhook-events': WebhookEvent;
@@ -98,6 +99,7 @@ export interface Config {
     gateways: GatewaysSelect<false> | GatewaysSelect<true>;
     'sluice-pages': SluicePagesSelect<false> | SluicePagesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
+    beaches: BeachesSelect<false> | BeachesSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     'email-queue': EmailQueueSelect<false> | EmailQueueSelect<true>;
     'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
@@ -372,6 +374,36 @@ export interface City {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "beaches".
+ */
+export interface Beach {
+  id: number;
+  name: string;
+  slug: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  location?: (number | null) | Location;
+  geoCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  /**
+   * Image URL from Wikimedia Commons (CC-licensed only).
+   */
+  heroImage?: string | null;
+  /**
+   * Author and license, e.g. "Photo by John Doe, CC-BY-SA 4.0, via Wikimedia Commons".
+   */
+  imageAttribution?: string | null;
+  highlights?: string[] | null;
+  bestTimeToVisit?: string | null;
+  status: 'draft' | 'published';
+  featured?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "subscribers".
  */
 export interface Subscriber {
@@ -587,6 +619,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'cities';
         value: number | City;
+      } | null)
+    | ({
+        relationTo: 'beaches';
+        value: number | Beach;
       } | null)
     | ({
         relationTo: 'subscribers';
@@ -830,6 +866,31 @@ export interface CitiesSelect<T extends boolean = true> {
         id?: T;
       };
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "beaches_select".
+ */
+export interface BeachesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  shortDescription?: T;
+  description?: T;
+  location?: T;
+  geoCoordinates?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+      };
+  heroImage?: T;
+  imageAttribution?: T;
+  highlights?: T;
+  bestTimeToVisit?: T;
+  status?: T;
+  featured?: T;
   updatedAt?: T;
   createdAt?: T;
 }

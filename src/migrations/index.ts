@@ -6,6 +6,7 @@ import * as migration_20261014_184836_add_webhook_events_collection from './2026
 import * as migration_20261014_184907_add_bookings_collection from './20261014_184907_add_bookings_collection';
 import * as migration_20261014_192739_add_email_queue_collection from './20261014_192739_add_email_queue_collection';
 import * as migration_20261014_202707_add_referrals_and_affiliate_payouts from './20261014_202707_add_referrals_and_affiliate_payouts';
+import * as migration_20261015_144234_add_beaches_collection from './20261015_144234_add_beaches_collection';
 
 export const migrations = [
   {
@@ -46,6 +47,11 @@ export const migrations = [
   {
     up: migration_20261014_202707_add_referrals_and_affiliate_payouts.up,
     down: migration_20261014_202707_add_referrals_and_affiliate_payouts.down,
-    name: '20261014_202707_add_referrals_and_affiliate_payouts'
+    name: '20261014_202707_add_referrals_and_affiliate_payouts',
+  },
+  {
+    up: migration_20261015_144234_add_beaches_collection.up,
+    down: migration_20261015_144234_add_beaches_collection.down,
+    name: '20261015_144234_add_beaches_collection'
   },
 ];
