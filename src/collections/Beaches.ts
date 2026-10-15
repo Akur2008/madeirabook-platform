@@ -74,6 +74,29 @@ export const Beaches: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'media',
+      type: 'array',
+      fields: [
+        {
+          name: 'image',
+          type: 'relationship',
+          relationTo: 'uploads',
+        },
+      ],
+    },
+    {
+      name: 'videoFile',
+      type: 'relationship',
+      relationTo: 'uploads',
+    },
+    {
+      name: 'posterUrl',
+      type: 'text',
+      admin: {
+        description: 'Fallback превью если videoFile не задан',
+      },
+    },
+    {
       name: 'status',
       type: 'select',
       options: [

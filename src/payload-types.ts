@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    uploads: Upload;
     locations: Location;
     amenities: Amenity;
     'house-rules': HouseRule;
@@ -94,6 +95,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    uploads: UploadsSelect<false> | UploadsSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     amenities: AmenitiesSelect<false> | AmenitiesSelect<true>;
     'house-rules': HouseRulesSelect<false> | HouseRulesSelect<true>;
@@ -208,6 +210,28 @@ export interface Media {
   height?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "uploads".
+ */
+export interface Upload {
+  id: number;
+  alt?: string | null;
+  caption?: string | null;
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -401,6 +425,17 @@ export interface Beach {
   imageAttribution?: string | null;
   highlights?: string[] | null;
   bestTimeToVisit?: string | null;
+  media?:
+    | {
+        image?: (number | null) | Upload;
+        id?: string | null;
+      }[]
+    | null;
+  videoFile?: (number | null) | Upload;
+  /**
+   * Fallback превью если videoFile не задан
+   */
+  posterUrl?: string | null;
   status: 'draft' | 'published';
   featured?: boolean | null;
   updatedAt: string;
@@ -449,6 +484,17 @@ export interface Restaurant {
    */
   imageAttribution?: string | null;
   highlights?: string[] | null;
+  media?:
+    | {
+        image?: (number | null) | Upload;
+        id?: string | null;
+      }[]
+    | null;
+  videoFile?: (number | null) | Upload;
+  /**
+   * Fallback превью если videoFile не задан
+   */
+  posterUrl?: string | null;
   status: 'draft' | 'published';
   featured?: boolean | null;
   updatedAt: string;
@@ -712,6 +758,10 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'uploads';
+        value: number | Upload;
+      } | null)
+    | ({
         relationTo: 'locations';
         value: number | Location;
       } | null)
@@ -856,6 +906,27 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "uploads_select".
+ */
+export interface UploadsSelect<T extends boolean = true> {
+  alt?: T;
+  caption?: T;
+  prefix?: T;
+  _objectKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1016,6 +1087,14 @@ export interface BeachesSelect<T extends boolean = true> {
   imageAttribution?: T;
   highlights?: T;
   bestTimeToVisit?: T;
+  media?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  videoFile?: T;
+  posterUrl?: T;
   status?: T;
   featured?: T;
   updatedAt?: T;
@@ -1050,6 +1129,14 @@ export interface RestaurantsSelect<T extends boolean = true> {
   heroImage?: T;
   imageAttribution?: T;
   highlights?: T;
+  media?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  videoFile?: T;
+  posterUrl?: T;
   status?: T;
   featured?: T;
   updatedAt?: T;

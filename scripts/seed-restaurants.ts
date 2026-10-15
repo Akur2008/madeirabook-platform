@@ -1,8 +1,12 @@
 import { getPayload } from 'payload'
 import config from '../src/payload.config.js'
+import type { Restaurant } from '../src/payload-types.js'
 import 'dotenv/config'
 
-const restaurants = [
+const restaurants: (Omit<
+  Restaurant,
+  'id' | 'createdAt' | 'updatedAt' | 'status' | 'location'
+> & { locationSlug?: string })[] = [
   {
     name: 'Three House Restaurant',
     slug: 'three-house',

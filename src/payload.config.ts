@@ -1,5 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -7,6 +8,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Uploads } from './collections/Uploads'
 import { Locations } from './collections/Locations'
 import { Amenities } from './collections/Amenities'
 import { HouseRules } from './collections/HouseRules'
@@ -41,6 +43,7 @@ export default buildConfig({
   collections: [
     Users,
     Media,
+    Uploads,
     Locations,
     Amenities,
     HouseRules,
@@ -70,5 +73,26 @@ export default buildConfig({
     },
   }),
   sharp,
-  plugins: [],
+  plugins: [
+    s3Storage({
+      collections: {
+        uploads: {
+          prefix: 'uploads',
+          generateFileURL: ({ filename, prefix }) =>
+            `${process.env.R2_PUBLIC_URL}/${prefix ?? 'uploads'}/${filename}`,
+        },
+      },
+      bucket: 'madeirabook-sounds',
+      config: {
+        endpoint: process.env.R2_ENDPOINT,
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+        },
+        region: 'auto',
+        forcePathStyle: true,
+      },
+      disableLocalStorage: true,
+    }),
+  ],
 })
