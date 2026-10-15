@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
@@ -80,8 +81,69 @@ const WHY_CARDS = [
 const HEADER_BTN =
   'inline-flex items-center justify-center whitespace-nowrap rounded-lg border px-3 py-2 text-xs font-semibold transition-colors sm:px-5 sm:py-2.5 sm:text-sm'
 
-export default async function HomePage() {
+const REF_COOKIE = 'madeirabook_ref'
+const REF_CODE_RE = /^[a-z0-9_-]{2,50}$/
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const payload = await getPayload({ config: await config })
+
+  // Ambassador white-label: ?ref= wins over the 30-day cookie (fresh attribution)
+  const cookieStore = await cookies()
+  const { ref } = await searchParams
+  const refCode =
+    (typeof ref === 'string' && REF_CODE_RE.test(ref) ? ref : null) ??
+    cookieStore.get(REF_COOKIE)?.value ??
+    null
+
+  let ambassador: {
+    displayName: string
+    avatarUrl: string | null
+    accentColor: string | null
+    selectedBeachesSlugs: string[]
+  } | null = null
+
+  if (refCode) {
+    const { docs } = await payload.find({
+      collection: 'referrals',
+      where: {
+        and: [
+          { status: { equals: 'active' } },
+          {
+            or: [{ code: { equals: refCode } }, { aliases: { contains: refCode } }],
+          },
+        ],
+      },
+      limit: 1,
+      depth: 1,
+      select: {
+        code: true,
+        aliases: true,
+        status: true,
+        creatorName: true,
+        displayName: true,
+        avatarUrl: true,
+        accentColor: true,
+        selectedBeaches: true,
+      },
+    })
+    const doc = docs[0]
+    if (doc) {
+      const raw = (doc.displayName ?? doc.creatorName).trim()
+      const name = raw.split('@')[0].trim()
+      ambassador = {
+        displayName: /madeira/i.test(name) ? name : `${name}'s Madeira`,
+        avatarUrl: doc.avatarUrl ?? null,
+        accentColor: doc.accentColor ?? null,
+        selectedBeachesSlugs: (doc.selectedBeaches ?? [])
+          .map((b) => (typeof b === 'object' && b !== null ? b.slug : null))
+          .filter((s): s is string => Boolean(s)),
+      }
+    }
+  }
 
   const { docs: gateways } = await payload.find({
     collection: 'sluice-pages',
@@ -263,6 +325,7 @@ export default async function HomePage() {
             properties={mapStays}
             beaches={mapBeaches}
             restaurants={mapRestaurants}
+            ambassador={ambassador}
           />
         </div>
       </section>

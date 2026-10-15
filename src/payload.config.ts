@@ -23,6 +23,7 @@ import { EmailQueue } from './collections/EmailQueue'
 import { WebhookEvents } from './collections/WebhookEvents'
 import { Bookings } from './collections/Bookings'
 import { Referrals } from './collections/Referrals'
+import { Guides } from './collections/Guides'
 import { AffiliatePayouts } from './collections/AffiliatePayouts'
 import { Applications } from './collections/Applications'
 import { PrivacyPolicy } from './globals/PrivacyPolicy'
@@ -58,6 +59,7 @@ export default buildConfig({
     WebhookEvents,
     Bookings,
     Referrals,
+    Guides,
     AffiliatePayouts,
     Applications,
   ],

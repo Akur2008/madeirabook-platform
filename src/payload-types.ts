@@ -84,6 +84,7 @@ export interface Config {
     'webhook-events': WebhookEvent;
     bookings: Booking;
     referrals: Referral;
+    guides: Guide;
     'affiliate-payouts': AffiliatePayout;
     applications: Application;
     'payload-kv': PayloadKv;
@@ -110,6 +111,7 @@ export interface Config {
     'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
     bookings: BookingsSelect<false> | BookingsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
+    guides: GuidesSelect<false> | GuidesSelect<true>;
     'affiliate-payouts': AffiliatePayoutsSelect<false> | AffiliatePayoutsSelect<true>;
     applications: ApplicationsSelect<false> | ApplicationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -708,6 +710,51 @@ export interface Application {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "guides".
+ */
+export interface Guide {
+  id: number;
+  title: string;
+  slug: string;
+  /**
+   * Hero image uploaded to R2.
+   */
+  coverImage?: (number | null) | Upload;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Short preview used on cards and as SEO description fallback.
+   */
+  excerpt?: string | null;
+  category?: ('gastronomy' | 'lifestyle' | 'logistics' | 'spots' | 'history') | null;
+  featuredRestaurants?: (number | Restaurant)[] | null;
+  featuredBeaches?: (number | Beach)[] | null;
+  featuredProperties?: (number | Property)[] | null;
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    image?: (number | null) | Upload;
+  };
+  status: 'draft' | 'published';
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "affiliate-payouts".
  */
 export interface AffiliatePayout {
@@ -816,6 +863,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'referrals';
         value: number | Referral;
+      } | null)
+    | ({
+        relationTo: 'guides';
+        value: number | Guide;
       } | null)
     | ({
         relationTo: 'affiliate-payouts';
@@ -1226,6 +1277,32 @@ export interface ReferralsSelect<T extends boolean = true> {
   displayName?: T;
   sourceApplication?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "guides_select".
+ */
+export interface GuidesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  coverImage?: T;
+  content?: T;
+  excerpt?: T;
+  category?: T;
+  featuredRestaurants?: T;
+  featuredBeaches?: T;
+  featuredProperties?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  status?: T;
+  publishedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type * as Leaflet from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -48,11 +49,20 @@ interface MapRestaurant {
   heroImage?: string | null
 }
 
+interface AmbassadorBranding {
+  displayName: string
+  avatarUrl?: string | null
+  accentColor?: string | null
+  selectedBeachesSlugs?: string[]
+  selectedRestaurantsSlugs?: string[]
+}
+
 interface ExploreMapProps {
   properties: MapStay[]
   beaches: MapBeach[]
   restaurants: MapRestaurant[]
   activeFilter?: MapFilter
+  ambassador?: AmbassadorBranding | null
 }
 
 export default function ExploreMap({
@@ -60,13 +70,35 @@ export default function ExploreMap({
   beaches,
   restaurants,
   activeFilter = 'all',
+  ambassador = null,
 }: ExploreMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Leaflet.Map | null>(null)
   const layerRef = useRef<Leaflet.LayerGroup | null>(null)
   const leafletRef = useRef<typeof Leaflet | null>(null)
+  const router = useRouter()
   const [filter, setFilter] = useState<MapFilter>(activeFilter)
   const [ready, setReady] = useState(false)
+
+  // Ambassador curation: empty/missing lists mean "show everything"
+  const visibleBeaches = useMemo(() => {
+    const slugs = ambassador?.selectedBeachesSlugs
+    if (!slugs?.length) return beaches
+    const set = new Set(slugs)
+    return beaches.filter((b) => set.has(b.slug))
+  }, [beaches, ambassador])
+
+  const visibleRestaurants = useMemo(() => {
+    const slugs = ambassador?.selectedRestaurantsSlugs
+    if (!slugs?.length) return restaurants
+    const set = new Set(slugs)
+    return restaurants.filter((r) => set.has(r.slug))
+  }, [restaurants, ambassador])
+
+  const resetBranding = () => {
+    document.cookie = 'madeirabook_ref=; path=/; max-age=0'
+    router.push('/')
+  }
 
   // Map init — leaflet/maplibre are imported lazily so SSR never touches `window`
   useEffect(() => {
@@ -136,20 +168,57 @@ export default function ExploreMap({
       properties.forEach((p) => addPin(p.lat, p.lng, icon, p.title, `/p/${p.slug}`))
     }
     if (filter === 'all' || filter === 'beaches') {
-      const icon = pin('#3b82f6', '🏖️')
-      beaches.forEach((b) => addPin(b.lat, b.lng, icon, b.name, `/beaches/${b.slug}`))
+      const icon = pin(ambassador?.accentColor || '#3b82f6', '🏖️')
+      visibleBeaches.forEach((b) => addPin(b.lat, b.lng, icon, b.name, `/beaches/${b.slug}`))
     }
     if (filter === 'all' || filter === 'food') {
       const icon = pin('#d4af37', '🍽️')
-      restaurants.forEach((r) =>
+      visibleRestaurants.forEach((r) =>
         addPin(r.lat, r.lng, icon, r.name, `/restaurants/${r.slug}`),
       )
     }
-  }, [ready, filter, properties, beaches, restaurants])
+  }, [ready, filter, properties, visibleBeaches, visibleRestaurants, ambassador])
 
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
+      {ambassador && (
+        <div className="absolute left-3 top-14 z-[1001] flex items-center gap-3 rounded-2xl border border-white/15 bg-[#0a1420]/90 px-3 py-2 backdrop-blur sm:top-3">
+          {ambassador.avatarUrl ? (
+            // avatarUrl comes from CMS — arbitrary host, plain <img>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={ambassador.avatarUrl}
+              alt={ambassador.displayName}
+              className="h-10 w-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-lg">
+              🧭
+            </div>
+          )}
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold leading-tight text-white">
+              {ambassador.displayName}
+            </span>
+            <div className="mt-0.5 flex items-center gap-2 text-[10px] leading-tight">
+              <a
+                href="https://www.madeirabook.com"
+                className="text-white/45 transition-colors hover:text-white/70"
+              >
+                Powered by Madeirabook
+              </a>
+              <button
+                type="button"
+                onClick={resetBranding}
+                className="font-semibold text-[#d4af37] transition-colors hover:text-white"
+              >
+                See all Madeira →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="absolute left-1/2 top-3 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white/15 bg-[#0a1420]/90 p-1 backdrop-blur">
         {FILTERS.map((f) => (
           <button

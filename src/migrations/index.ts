@@ -12,6 +12,7 @@ import * as migration_20261015_151129_extend_referrals_with_ambassador_fields fr
 import * as migration_20261015_174058_add_restaurants_collection from './20261015_174058_add_restaurants_collection';
 import * as migration_20261015_184546_add_uploads_collection from './20261015_184546_add_uploads_collection';
 import * as migration_20261015_185608_add_media_fields_to_beaches_and_restaurants from './20261015_185608_add_media_fields_to_beaches_and_restaurants';
+import * as migration_20261015_215036_add_guides_collection from './20261015_215036_add_guides_collection';
 
 export const migrations = [
   {
@@ -82,6 +83,11 @@ export const migrations = [
   {
     up: migration_20261015_185608_add_media_fields_to_beaches_and_restaurants.up,
     down: migration_20261015_185608_add_media_fields_to_beaches_and_restaurants.down,
-    name: '20261015_185608_add_media_fields_to_beaches_and_restaurants'
+    name: '20261015_185608_add_media_fields_to_beaches_and_restaurants',
+  },
+  {
+    up: migration_20261015_215036_add_guides_collection.up,
+    down: migration_20261015_215036_add_guides_collection.down,
+    name: '20261015_215036_add_guides_collection'
   },
 ];

@@ -1,8 +1,11 @@
 import type { MetadataRoute } from 'next'
+import { getPayload } from 'payload'
+
+import config from '@/payload.config'
 
 const baseUrl = 'https://www.madeirabook.com'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
     { path: '/', priority: 1.0, changeFrequency: 'weekly' },
     { path: '/gateways', priority: 0.9, changeFrequency: 'weekly' },
@@ -53,13 +56,31 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/where-to-eat-madeira', priority: 0.7, changeFrequency: 'monthly' },
     { path: '/where-to-stay-madeira', priority: 0.7, changeFrequency: 'monthly' },
     { path: '/zurich-to-madeira', priority: 0.7, changeFrequency: 'monthly' },
+    { path: '/guides', priority: 0.7, changeFrequency: 'weekly' },
     { path: '/google89a0de19c9eba75c', priority: 0.7, changeFrequency: 'monthly' },
   ] as const
 
-  return routes.map(route => ({
+  const staticEntries: MetadataRoute.Sitemap = routes.map(route => ({
     url: `${baseUrl}${route.path}`,
     lastModified: new Date(),
     changeFrequency: route.changeFrequency,
     priority: route.priority,
   }))
+
+  const payload = await getPayload({ config: await config })
+  const { docs: guides } = await payload.find({
+    collection: 'guides',
+    where: { status: { equals: 'published' } },
+    limit: 1000,
+    depth: 0,
+  })
+
+  const guideEntries: MetadataRoute.Sitemap = guides.map(g => ({
+    url: `${baseUrl}/guides/${g.slug}`,
+    lastModified: g.updatedAt ? new Date(g.updatedAt) : new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }))
+
+  return [...staticEntries, ...guideEntries]
 }
