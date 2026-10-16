@@ -521,7 +521,7 @@ export default async function HomePage({
       <AcquisitionSection />
 
       {/* 7. Minimal footer — 3 links only */}
-      <footer className="border-t border-white/10 px-6 py-10">
+      <footer className="border-t border-white/10 px-6 pt-10 pb-24">
         <nav className="flex flex-col items-center gap-4 text-sm text-white/50 sm:flex-row sm:justify-center sm:gap-10">
           <Link href="/legal/privacy" className="transition-colors hover:text-white/80">
             Privacy Policy
