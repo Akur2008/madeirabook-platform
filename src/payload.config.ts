@@ -26,6 +26,8 @@ import { Referrals } from './collections/Referrals'
 import { Guides } from './collections/Guides'
 import { AffiliatePayouts } from './collections/AffiliatePayouts'
 import { Applications } from './collections/Applications'
+import { Trails } from './collections/Trails'
+import { Viewpoints } from './collections/Viewpoints'
 import { PrivacyPolicy } from './globals/PrivacyPolicy'
 import { TermsOfService } from './globals/TermsOfService'
 import { CookiePolicy } from './globals/CookiePolicy'
@@ -62,6 +64,8 @@ export default buildConfig({
     Guides,
     AffiliatePayouts,
     Applications,
+    Trails,
+    Viewpoints,
   ],
   globals: [PrivacyPolicy, TermsOfService, CookiePolicy, LegalInfo],
   editor: lexicalEditor(),

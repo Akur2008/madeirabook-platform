@@ -28,14 +28,27 @@ interface PropertyMapProps {
   longitude: number
   title: string
   imageUrl?: string
+  endLatitude?: number
+  endLongitude?: number
+  endTitle?: string
 }
 
-export default function PropertyMap({ latitude, longitude, title, imageUrl }: PropertyMapProps) {
+export default function PropertyMap({
+  latitude,
+  longitude,
+  title,
+  imageUrl,
+  endLatitude,
+  endLongitude,
+  endTitle,
+}: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
+
+    const hasEnd = endLatitude != null && endLongitude != null
 
     const map = L.map(containerRef.current, {
       center: [latitude, longitude],
@@ -57,13 +70,31 @@ export default function PropertyMap({ latitude, longitude, title, imageUrl }: Pr
       .addTo(map)
       .bindPopup(popupHtml, { maxWidth: 220 })
 
+    if (hasEnd) {
+      L.marker([endLatitude, endLongitude], { icon: customIcon })
+        .addTo(map)
+        .bindPopup(endTitle ?? 'End point', { maxWidth: 220 })
+
+      L.polyline(
+        [
+          [latitude, longitude],
+          [endLatitude, endLongitude],
+        ],
+        { color: '#f97316', weight: 3, dashArray: '6 8' },
+      ).addTo(map)
+
+      map.fitBounds(
+        L.latLngBounds([latitude, longitude], [endLatitude, endLongitude]).pad(0.15),
+      )
+    }
+
     mapRef.current = map
 
     return () => {
       map.remove()
       mapRef.current = null
     }
-  }, [latitude, longitude, title])
+  }, [latitude, longitude, title, endLatitude, endLongitude, endTitle])
 
   return <div ref={containerRef} className="w-full h-[400px] rounded-xl overflow-hidden border border-white/10" />
 }

@@ -13,6 +13,7 @@ import * as migration_20261015_174058_add_restaurants_collection from './2026101
 import * as migration_20261015_184546_add_uploads_collection from './20261015_184546_add_uploads_collection';
 import * as migration_20261015_185608_add_media_fields_to_beaches_and_restaurants from './20261015_185608_add_media_fields_to_beaches_and_restaurants';
 import * as migration_20261015_215036_add_guides_collection from './20261015_215036_add_guides_collection';
+import * as migration_20261015_234434_add_trails_and_viewpoints from './20261015_234434_add_trails_and_viewpoints';
 
 export const migrations = [
   {
@@ -88,6 +89,11 @@ export const migrations = [
   {
     up: migration_20261015_215036_add_guides_collection.up,
     down: migration_20261015_215036_add_guides_collection.down,
-    name: '20261015_215036_add_guides_collection'
+    name: '20261015_215036_add_guides_collection',
+  },
+  {
+    up: migration_20261015_234434_add_trails_and_viewpoints.up,
+    down: migration_20261015_234434_add_trails_and_viewpoints.down,
+    name: '20261015_234434_add_trails_and_viewpoints'
   },
 ];

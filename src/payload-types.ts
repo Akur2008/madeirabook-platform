@@ -87,6 +87,8 @@ export interface Config {
     guides: Guide;
     'affiliate-payouts': AffiliatePayout;
     applications: Application;
+    trails: Trail;
+    viewpoints: Viewpoint;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -114,6 +116,8 @@ export interface Config {
     guides: GuidesSelect<false> | GuidesSelect<true>;
     'affiliate-payouts': AffiliatePayoutsSelect<false> | AffiliatePayoutsSelect<true>;
     applications: ApplicationsSelect<false> | ApplicationsSelect<true>;
+    trails: TrailsSelect<false> | TrailsSelect<true>;
+    viewpoints: ViewpointsSelect<false> | ViewpointsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -774,6 +778,133 @@ export interface AffiliatePayout {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trails".
+ */
+export interface Trail {
+  id: number;
+  name: string;
+  slug: string;
+  /**
+   * Official route code, e.g. "PR6", "PR1.2".
+   */
+  prCode?: string | null;
+  shortDescription?: string | null;
+  description?: string | null;
+  location?: (number | null) | Location;
+  geoCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  endCoordinates?: {
+    lat?: number | null;
+    lng?: number | null;
+  };
+  distanceKm?: number | null;
+  durationMinutes?: number | null;
+  /**
+   * Elevation gain in metres.
+   */
+  elevationGain?: number | null;
+  difficulty?: ('easy' | 'moderate' | 'hard') | null;
+  type?: ('levada' | 'vereda' | 'caldeirao' | 'coastal' | 'peak') | null;
+  /**
+   * True if the route does not return to the start point.
+   */
+  isLinear?: boolean | null;
+  season?: string | null;
+  /**
+   * Trailhead name, e.g. "Rabaçal Parking".
+   */
+  startPoint?: string | null;
+  /**
+   * External reference link (Wikiloc / official route page).
+   */
+  trailheadUrl?: string | null;
+  /**
+   * Image URL from Wikimedia Commons (CC-licensed only).
+   */
+  heroImage?: string | null;
+  /**
+   * Author and license, e.g. "Photo by John Doe, CC-BY-SA 4.0, via Wikimedia Commons".
+   */
+  imageAttribution?: string | null;
+  highlights?: string[] | null;
+  media?:
+    | {
+        image?: (number | null) | Upload;
+        id?: string | null;
+      }[]
+    | null;
+  videoFile?: (number | null) | Upload;
+  /**
+   * Fallback превью если videoFile не задан
+   */
+  posterUrl?: string | null;
+  status: 'draft' | 'published';
+  featured?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "viewpoints".
+ */
+export interface Viewpoint {
+  id: number;
+  name: string;
+  slug: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  location?: (number | null) | Location;
+  geoCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  /**
+   * Elevation above sea level in metres.
+   */
+  elevationM?: number | null;
+  type?: ('cliff' | 'peak' | 'miradouro' | 'tower' | 'coastal' | 'valley') | null;
+  /**
+   * What is visible: ocean, city, mountains, valley, sunset.
+   */
+  viewType?: string[] | null;
+  access?: ('car' | 'walk_short' | 'walk_long') | null;
+  /**
+   * e.g. "Sunrise", "Sunset", "All day".
+   */
+  bestTime?: string | null;
+  /**
+   * Skywalk glass floor, e.g. Cabo Girão.
+   */
+  glassPlatform?: boolean | null;
+  /**
+   * Image URL from Wikimedia Commons (CC-licensed only).
+   */
+  heroImage?: string | null;
+  /**
+   * Author and license, e.g. "Photo by John Doe, CC-BY-SA 4.0, via Wikimedia Commons".
+   */
+  imageAttribution?: string | null;
+  highlights?: string[] | null;
+  media?:
+    | {
+        image?: (number | null) | Upload;
+        id?: string | null;
+      }[]
+    | null;
+  videoFile?: (number | null) | Upload;
+  /**
+   * Fallback превью если videoFile не задан
+   */
+  posterUrl?: string | null;
+  status: 'draft' | 'published';
+  featured?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -875,6 +1006,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'applications';
         value: number | Application;
+      } | null)
+    | ({
+        relationTo: 'trails';
+        value: number | Trail;
+      } | null)
+    | ({
+        relationTo: 'viewpoints';
+        value: number | Viewpoint;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1336,6 +1475,92 @@ export interface ApplicationsSelect<T extends boolean = true> {
   message?: T;
   status?: T;
   reviewNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trails_select".
+ */
+export interface TrailsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  prCode?: T;
+  shortDescription?: T;
+  description?: T;
+  location?: T;
+  geoCoordinates?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+      };
+  endCoordinates?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+      };
+  distanceKm?: T;
+  durationMinutes?: T;
+  elevationGain?: T;
+  difficulty?: T;
+  type?: T;
+  isLinear?: T;
+  season?: T;
+  startPoint?: T;
+  trailheadUrl?: T;
+  heroImage?: T;
+  imageAttribution?: T;
+  highlights?: T;
+  media?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  videoFile?: T;
+  posterUrl?: T;
+  status?: T;
+  featured?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "viewpoints_select".
+ */
+export interface ViewpointsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  shortDescription?: T;
+  description?: T;
+  location?: T;
+  geoCoordinates?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+      };
+  elevationM?: T;
+  type?: T;
+  viewType?: T;
+  access?: T;
+  bestTime?: T;
+  glassPlatform?: T;
+  heroImage?: T;
+  imageAttribution?: T;
+  highlights?: T;
+  media?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  videoFile?: T;
+  posterUrl?: T;
+  status?: T;
+  featured?: T;
   updatedAt?: T;
   createdAt?: T;
 }

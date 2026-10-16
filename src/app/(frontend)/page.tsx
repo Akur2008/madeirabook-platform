@@ -180,6 +180,20 @@ export default async function HomePage({
     depth: 1,
   })
 
+  const { docs: trails } = await payload.find({
+    collection: 'trails',
+    where: { status: { equals: 'published' } },
+    limit: 50,
+    depth: 1,
+  })
+
+  const { docs: viewpoints } = await payload.find({
+    collection: 'viewpoints',
+    where: { status: { equals: 'published' } },
+    limit: 50,
+    depth: 1,
+  })
+
   const mapStays = mapProperties.flatMap((p) => {
     const loc = typeof p.location === 'object' ? p.location : null
     if (loc?.geoCoordinates?.lat == null || loc?.geoCoordinates?.lng == null) return []
@@ -223,6 +237,36 @@ export default async function HomePage({
         cuisine: r.cuisine,
         averagePrice: r.averagePrice,
         heroImage: r.heroImage,
+      },
+    ]
+  })
+
+  const mapTrails = trails.flatMap((t) => {
+    if (t.geoCoordinates?.lat == null || t.geoCoordinates?.lng == null) return []
+    return [
+      {
+        id: t.id,
+        slug: t.slug,
+        name: t.name,
+        lat: t.geoCoordinates.lat,
+        lng: t.geoCoordinates.lng,
+        distanceKm: t.distanceKm,
+        difficulty: t.difficulty,
+      },
+    ]
+  })
+
+  const mapViewpoints = viewpoints.flatMap((v) => {
+    if (v.geoCoordinates?.lat == null || v.geoCoordinates?.lng == null) return []
+    return [
+      {
+        id: v.id,
+        slug: v.slug,
+        name: v.name,
+        lat: v.geoCoordinates.lat,
+        lng: v.geoCoordinates.lng,
+        elevationM: v.elevationM,
+        type: v.type,
       },
     ]
   })
@@ -318,13 +362,16 @@ export default async function HomePage({
         </h2>
         <p className="mx-auto mb-8 mt-3 max-w-2xl text-center text-white/60">
           {mapStays.length} curated stays · {mapBeaches.length} beaches ·{' '}
-          {mapRestaurants.length} restaurants. Tap any pin.
+          {mapRestaurants.length} restaurants · {mapTrails.length} trails ·{' '}
+          {mapViewpoints.length} viewpoints. Tap any pin.
         </p>
         <div className="h-[400px] overflow-hidden rounded-xl border border-white/10 md:h-[600px]">
           <ExploreMap
             properties={mapStays}
             beaches={mapBeaches}
             restaurants={mapRestaurants}
+            trails={mapTrails}
+            viewpoints={mapViewpoints}
             ambassador={ambassador}
           />
         </div>

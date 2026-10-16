@@ -10,13 +10,15 @@ const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 const MADEIRA_CENTER: [number, number] = [32.75, -16.95]
 const MADEIRA_ZOOM = 10
 
-type MapFilter = 'all' | 'stays' | 'beaches' | 'food'
+type MapFilter = 'all' | 'stays' | 'beaches' | 'food' | 'trails' | 'views'
 
 const FILTERS: Array<{ key: MapFilter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'stays', label: 'Stays' },
   { key: 'beaches', label: 'Beaches' },
   { key: 'food', label: 'Food' },
+  { key: 'trails', label: 'Trails' },
+  { key: 'views', label: 'Views' },
 ]
 
 interface MapStay {
@@ -49,6 +51,26 @@ interface MapRestaurant {
   heroImage?: string | null
 }
 
+interface MapTrail {
+  id: string | number
+  slug: string
+  name: string
+  lat: number
+  lng: number
+  distanceKm?: number | null
+  difficulty?: string | null
+}
+
+interface MapViewpoint {
+  id: string | number
+  slug: string
+  name: string
+  lat: number
+  lng: number
+  elevationM?: number | null
+  type?: string | null
+}
+
 interface AmbassadorBranding {
   displayName: string
   avatarUrl?: string | null
@@ -61,6 +83,8 @@ interface ExploreMapProps {
   properties: MapStay[]
   beaches: MapBeach[]
   restaurants: MapRestaurant[]
+  trails?: MapTrail[]
+  viewpoints?: MapViewpoint[]
   activeFilter?: MapFilter
   ambassador?: AmbassadorBranding | null
 }
@@ -69,6 +93,8 @@ export default function ExploreMap({
   properties,
   beaches,
   restaurants,
+  trails = [],
+  viewpoints = [],
   activeFilter = 'all',
   ambassador = null,
 }: ExploreMapProps) {
@@ -177,7 +203,17 @@ export default function ExploreMap({
         addPin(r.lat, r.lng, icon, r.name, `/restaurants/${r.slug}`),
       )
     }
-  }, [ready, filter, properties, visibleBeaches, visibleRestaurants, ambassador])
+    if (filter === 'all' || filter === 'trails') {
+      const icon = pin('#f97316', '🥾')
+      trails.forEach((t) => addPin(t.lat, t.lng, icon, t.name, `/trails/${t.slug}`))
+    }
+    if (filter === 'all' || filter === 'views') {
+      const icon = pin('#a855f7', '👁️')
+      viewpoints.forEach((v) =>
+        addPin(v.lat, v.lng, icon, v.name, `/viewpoints/${v.slug}`),
+      )
+    }
+  }, [ready, filter, properties, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassador])
 
   return (
     <div className="relative h-full w-full">

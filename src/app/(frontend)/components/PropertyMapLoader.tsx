@@ -16,6 +16,9 @@ interface PropertyMapLoaderProps {
   longitude: number
   title: string
   imageUrl?: string
+  endLatitude?: number
+  endLongitude?: number
+  endTitle?: string
 }
 
 export default function PropertyMapLoader(props: PropertyMapLoaderProps) {
