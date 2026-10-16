@@ -9,6 +9,30 @@ export const Users: CollectionConfig = {
   fields: [
     // Email added by default
     {
+      name: 'role',
+      type: 'select',
+      required: true,
+      defaultValue: 'guest',
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'Owner', value: 'owner' },
+        { label: 'Guest', value: 'guest' },
+      ],
+      admin: {
+        description: 'Access level: admin (Payload panel), owner (owner cabinet), guest (default).',
+      },
+    },
+    {
+      name: 'magicToken',
+      type: 'text',
+      hidden: true,
+    },
+    {
+      name: 'magicTokenExpiresAt',
+      type: 'date',
+      hidden: true,
+    },
+    {
       name: 'stripeAccountId',
       type: 'text',
       admin: {

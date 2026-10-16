@@ -305,10 +305,10 @@ export default async function HomePage({
               Try the escape →
             </Link>
             <a
-              href="https://app.madeirabook.com"
+              href="/explore"
               className={`${HEADER_BTN} border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-500`}
             >
-              Book →
+              Map →
             </a>
           </div>
         </div>

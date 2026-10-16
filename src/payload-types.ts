@@ -174,6 +174,12 @@ export interface UserAuthOperations {
 export interface User {
   id: number;
   /**
+   * Access level: admin (Payload panel), owner (owner cabinet), guest (default).
+   */
+  role: 'admin' | 'owner' | 'guest';
+  magicToken?: string | null;
+  magicTokenExpiresAt?: string | null;
+  /**
    * Stripe Connect Express account id (acct_...) for split payouts.
    */
   stripeAccountId?: string | null;
@@ -1062,6 +1068,9 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  magicToken?: T;
+  magicTokenExpiresAt?: T;
   stripeAccountId?: T;
   chargesEnabled?: T;
   updatedAt?: T;
