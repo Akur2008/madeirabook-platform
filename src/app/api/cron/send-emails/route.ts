@@ -132,7 +132,7 @@ export async function GET(req: Request) {
 
         await sendResendEmail(apiKey, {
           to: subscriber.email,
-          replyTo: 'akur2013@gmail.com',
+          replyTo: 'hello@madeirabook.com',
           subject: rendered.subject,
           html: rendered.html,
           text: rendered.text,

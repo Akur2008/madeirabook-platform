@@ -165,7 +165,7 @@ export async function POST(req: Request) {
   try {
     await sendResendEmail(apiKey, {
       to: normalizedEmail,
-      replyTo: 'akur2013@gmail.com',
+      replyTo: 'hello@madeirabook.com',
       subject: rendered.subject,
       html: rendered.html,
       text: rendered.text,
