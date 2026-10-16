@@ -72,6 +72,7 @@ export async function POST(req: Request) {
     try {
       await sendResendEmail(apiKey, {
         to: email,
+        replyTo: 'owner@madeirabook.com',
         subject: 'Your Madeirabook login link',
         text: `Sign in to your owner cabinet:\n\n${link}\n\nThis link expires in ${TOKEN_TTL_MINUTES} minutes.`,
         html:
