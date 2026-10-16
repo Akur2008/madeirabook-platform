@@ -83,7 +83,7 @@ export default function EscapeCard() {
             setSheetOpen(true)
           }
         }}
-        className="w-full max-w-md cursor-pointer rounded-2xl border border-white/15 px-6 pb-7 pt-6 text-left backdrop-blur-xl transition-colors hover:bg-white/5"
+        className="w-full max-w-md cursor-pointer rounded-2xl border border-white/15 p-6 text-left backdrop-blur-xl transition-colors hover:bg-white/5 md:p-8"
         style={{ background: 'rgba(10, 20, 32, 0.75)' }}
       >
         <p className="mb-0 text-2xl font-light leading-tight text-white/95 md:text-3xl" style={SERIF}>
