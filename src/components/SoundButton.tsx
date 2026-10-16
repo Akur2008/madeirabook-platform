@@ -19,6 +19,7 @@ export default function SoundButton() {
   const engine = useAudioEngine()
   const btnRef = useRef<HTMLButtonElement>(null)
   const urlRef = useRef(FALLBACK_URL)
+  const userMutedRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -50,24 +51,28 @@ export default function SoundButton() {
 
   const toggle = useCallback(async () => {
     if (engine.isStarted) {
+      userMutedRef.current = true
       await engine.stop()
       return
     }
+    userMutedRef.current = false
     await engine.start()
     await playOcean()
   }, [engine, playOcean])
 
-  // Sound left on in a previous session: autoplay is still blocked until
-  // a gesture, so resume on the first tap anywhere on the page.
+  // Browsers only treat click/tap/keypress as a user gesture for autoplay —
+  // scroll does not count. Start ambient on the first tap anywhere on the
+  // page (also covers the "sound left on in a previous session" resume case),
+  // unless the user explicitly muted via this button.
   useEffect(() => {
-    if (!engine.isStarted || ambientPlaying) return
-    const resume = (e: PointerEvent) => {
+    if (ambientPlaying || userMutedRef.current) return
+    const onFirstGesture = (e: PointerEvent) => {
       if (btnRef.current?.contains(e.target as Node)) return
       void engine.start().then(playOcean)
     }
-    window.addEventListener('pointerdown', resume, { once: true })
-    return () => window.removeEventListener('pointerdown', resume)
-  }, [engine, playOcean, engine.isStarted, ambientPlaying])
+    window.addEventListener('pointerdown', onFirstGesture, { once: true })
+    return () => window.removeEventListener('pointerdown', onFirstGesture)
+  }, [engine, playOcean, ambientPlaying])
 
   return (
     <>
@@ -77,7 +82,7 @@ export default function SoundButton() {
         type="button"
         aria-label={engine.isStarted ? 'Mute sound' : 'Enable sound'}
         onClick={() => void toggle()}
-        className="fixed bottom-6 right-6 z-40 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-[22px] backdrop-blur-sm transition-colors hover:bg-black/80"
+        className="fixed bottom-6 right-6 z-[2000] flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-[22px] backdrop-blur-sm transition-colors hover:bg-black/80"
         style={{
           animation: engine.isStarted ? 'soundButtonPulse 2s infinite' : 'none',
         }}
