@@ -199,7 +199,7 @@ export default async function ViewpointPage({
             <div className="mx-auto aspect-[9/16] w-full max-w-[400px] overflow-hidden rounded-xl border border-white/10 bg-[#0f1d2e]">
               {videoUrl ? (
                 <video
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover object-center"
                   src={videoUrl}
                   poster={viewpoint.posterUrl ?? photoUrl ?? undefined}
                   autoPlay
@@ -214,7 +214,7 @@ export default async function ViewpointPage({
                 <img
                   src={photoUrl}
                   alt={viewpoint.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover object-center"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-5xl">

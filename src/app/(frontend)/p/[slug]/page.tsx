@@ -163,14 +163,14 @@ export default async function PropertyPage({
 
         {images.length > 0 && (
           <div className="mt-10">
-            <div className="relative h-96 w-full overflow-hidden rounded-2xl">
+            <div className="relative mx-auto aspect-[9/16] w-full max-w-[400px] overflow-hidden rounded-2xl">
               <Image
                 src={images[0].url}
                 alt={p.title}
                 fill
                 priority
-                sizes="100vw"
-                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 400px"
+                className="object-cover object-center"
               />
             </div>
             {images.length > 1 && (

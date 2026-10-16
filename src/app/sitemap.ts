@@ -8,6 +8,7 @@ const baseUrl = 'https://www.madeirabook.com'
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
     { path: '/', priority: 1.0, changeFrequency: 'weekly' },
+    { path: '/explore', priority: 0.8, changeFrequency: 'weekly' },
     { path: '/gateways', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/gateway/dolphins', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/gateway/above-clouds', priority: 0.8, changeFrequency: 'monthly' },

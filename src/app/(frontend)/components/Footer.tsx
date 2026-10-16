@@ -6,8 +6,9 @@ import { usePathname } from 'next/navigation'
 
 export default function Footer() {
   const pathname = usePathname()
-  // The landing page renders its own minimal footer (3 links only).
-  if (pathname === '/') return null
+  // The landing page renders its own minimal footer (3 links only);
+  // /explore is a fullscreen map with no footer.
+  if (pathname === '/' || pathname === '/explore') return null
 
   return (
     <footer className="bg-gray-900 text-white py-8 mt-12">
