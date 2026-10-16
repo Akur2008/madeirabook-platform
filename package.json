@@ -24,6 +24,8 @@
     "@payloadcms/richtext-lexical": "3.90.2",
     "@payloadcms/storage-s3": "^3.90.2",
     "@payloadcms/ui": "3.90.2",
+    "@sentry/nextjs": "^11.8.0",
+    "@vercel/analytics": "^2.0.1",
     "cross-env": "^7.0.3",
     "date-fns": "^4.4.0",
     "dotenv": "16.4.7",

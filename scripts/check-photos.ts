@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import config from '../src/payload.config'
-import { getPayload } from 'payload'
+import { getPayload, type CollectionSlug } from 'payload'
 
 async function main() {
   const p = await getPayload({ config })
@@ -12,11 +12,12 @@ async function main() {
     { slug: 'viewpoints', name: 'VIEWPOINTS' },
   ]
   for (const c of collections) {
-    const r = await p.find({ collection: c.slug, limit: 200, depth: 0 })
-    const withPhoto = r.docs.filter(d => (d.media && d.media.length > 0) || d.heroImage)
-    const without = r.docs.filter(d => (!d.media || d.media.length === 0) && !d.heroImage)
+    const r = await p.find({ collection: c.slug as CollectionSlug, limit: 200, depth: 0 })
+    const docs = r.docs as { slug?: string; id: string | number; media?: unknown[]; heroImage?: unknown }[]
+    const withPhoto = docs.filter(d => (d.media && d.media.length > 0) || d.heroImage)
+    const without = docs.filter(d => (!d.media || d.media.length === 0) && !d.heroImage)
     console.log('=== ' + c.name + ' ===')
-    console.log('  Total: ' + r.docs.length + ' | With photo: ' + withPhoto.length + ' | Without: ' + without.length)
+    console.log('  Total: ' + docs.length + ' | With photo: ' + withPhoto.length + ' | Without: ' + without.length)
     if (without.length > 0) {
       console.log('  --- MISSING PHOTOS ---')
       without.forEach(d => console.log('  ' + (d.slug || d.id)))

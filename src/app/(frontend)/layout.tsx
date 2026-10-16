@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Metadata } from 'next'
+import { Analytics } from '@vercel/analytics/next'
 import './styles.css'
 import Footer from './components/Footer'
 import { AudioEngineProvider } from '@/audio/AudioEngineProvider'
@@ -39,6 +40,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           <Footer />
           <SoundButton />
         </AudioEngineProvider>
+        <Analytics />
       </body>
     </html>
   )

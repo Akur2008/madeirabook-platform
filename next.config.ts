@@ -1,4 +1,5 @@
 import { withPayload } from '@payloadcms/next/withPayload'
+import { withSentryConfig } from '@sentry/nextjs/config'
 import type { NextConfig } from 'next'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -95,4 +96,11 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackages: false }), {
+  silent: true,
+  org: 'o4512266386276352',
+  project: '4512266408886352',
+  widenClientFileUpload: true,
+  bundleSizeOptimizations: { excludeDebugStatements: true },
+  webpack: { automaticVercelMonitors: true },
+})
