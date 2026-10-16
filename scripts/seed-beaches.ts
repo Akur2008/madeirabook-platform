@@ -19,6 +19,8 @@ Go for the landscape rather than beach facilities: there is a small café and sh
       'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Seixal_-_Ilha_da_Madeira_-_Portugal_%2851817017914%29.jpg/1920px-Seixal_-_Ilha_da_Madeira_-_Portugal_%2851817017914%29.jpg',
     imageAttribution:
       'Photo by Vitor Oliveira, CC BY-SA 2.0, via Wikimedia Commons',
+    posterUrl:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Seixal_-_Ilha_da_Madeira_-_Portugal_%2851817017914%29.jpg/1920px-Seixal_-_Ilha_da_Madeira_-_Portugal_%2851817017914%29.jpg',
     highlights: [
       'Black volcanic sand',
       'Cliffs and waterfalls backdrop',
@@ -249,6 +251,33 @@ Come for a slow day: walk the lanes between gardens, sit on the sea wall with a 
     ],
     bestTimeToVisit: 'May–October (surf: Nov–Mar)',
     featured: false,
+  },
+  {
+    name: 'Praia dos Reis Magos',
+    slug: 'reis-magos-beach',
+    shortDescription:
+      'A quiet pebble beach and bathing platform in Caniço de Baixo — calm south-facing water, seafront restaurants, and a short walk from our apartments.',
+    description: `Praia dos Reis Magos is the local beach of Caniço de Baixo, about ten minutes east of Funchal on the south coast. A small strip of dark pebbles and a broad concrete sunbathing platform sit below the promenade; the water faces south and stays calm for most of the year, sheltered from the swell that rules the north shore.
+
+Access is straight off the seafront: steps and ladders lead into the ocean, and a row of cafés and restaurants runs along the promenade directly behind the beach. It is the closest real swim to the Madeirabook apartments in Caniço de Baixo — a short walk down the hill.
+
+Come in the morning, when the light lies flat on the water and locals take their first swim, then stay for lunch on the seafront. For sunset, follow the promenade west towards Garajau as the cliffs catch the last light.`,
+    locationSlug: 'canico-de-baixo',
+    geoCoordinates: { lat: 32.6458, lng: -16.8243 },
+    heroImage:
+      'https://upload.wikimedia.org/wikipedia/commons/0/01/Praia_dos_Reis_Magos_-_Ilha_da_Madeira_-_Portugal_%281485772854%29.jpg',
+    imageAttribution:
+      'Photo by Vitor Oliveira, CC BY-SA 2.0, via Wikimedia Commons',
+    posterUrl:
+      'https://upload.wikimedia.org/wikipedia/commons/0/01/Praia_dos_Reis_Magos_-_Ilha_da_Madeira_-_Portugal_%281485772854%29.jpg',
+    highlights: [
+      'Calm, sheltered south-facing water',
+      'Pebble beach and sunbathing platform',
+      'Seafront cafés and restaurants',
+      'Short walk from Madeirabook apartments',
+    ],
+    bestTimeToVisit: 'May–October',
+    featured: true,
   },
 ]
 

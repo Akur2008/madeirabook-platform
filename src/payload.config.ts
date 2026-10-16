@@ -36,6 +36,11 @@ import { LegalInfo } from './globals/LegalInfo'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Public R2 bucket URL. Fallback is required: the variable is not set in all
+// deploy environments, and `undefined` here leaks into every generated file URL.
+const R2_PUBLIC_URL =
+  process.env.R2_PUBLIC_URL || 'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev'
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -85,7 +90,7 @@ export default buildConfig({
         uploads: {
           prefix: 'uploads',
           generateFileURL: ({ filename, prefix }) =>
-            `${process.env.R2_PUBLIC_URL}/${prefix ?? 'uploads'}/${filename}`,
+            `${R2_PUBLIC_URL}/${prefix ?? 'uploads'}/${filename}`,
         },
       },
       bucket: 'madeirabook-sounds',
