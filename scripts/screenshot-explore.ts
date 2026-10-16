@@ -16,6 +16,16 @@ const run = async () => {
   await page.waitForSelector('.explore-pin', { timeout: 30000 })
   // …then base tiles still need a few seconds to stream in.
   await page.waitForTimeout(8000)
+  // Zoom in so pins switch to photo mode for the OG image.
+  await page.evaluate(() => {
+    const map = (window as unknown as {
+      __exploreMap?: { setZoom: (zoom: number) => void }
+    }).__exploreMap
+    map?.setZoom(12)
+  })
+  await page.waitForSelector('.explore-pin-photo', { timeout: 15000 }).catch(() => {})
+  // Photo pins and fresh tiles need a moment to stream in.
+  await page.waitForTimeout(8000)
   await page.screenshot({ path: OUT_PATH })
   await browser.close()
 

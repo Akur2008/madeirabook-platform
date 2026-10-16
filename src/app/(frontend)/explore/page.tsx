@@ -4,9 +4,14 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
-import ExploreMap from '../components/ExploreMap'
+import ExploreMapInteractive from '../components/ExploreMapInteractive'
 
 export const revalidate = 60
+
+const uploadUrl = (u: unknown): string | null =>
+  typeof u === 'object' && u !== null && 'url' in u && typeof (u as { url?: unknown }).url === 'string'
+    ? (u as { url: string }).url
+    : null
 
 export const metadata: Metadata = {
   title: 'Explore Madeira — 92 curated places | Madeirabook',
@@ -80,6 +85,9 @@ export default async function ExplorePage() {
         lng: loc.geoCoordinates.lng,
         pricePerNight: p.pricePerNight,
         coverImage: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+        photoUrl: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+        shortDescription: p.shortDescription,
+        meta: p.pricePerNight ? `€${p.pricePerNight} / night` : null,
       },
     ]
   })
@@ -94,6 +102,10 @@ export default async function ExplorePage() {
         lat: b.geoCoordinates.lat,
         lng: b.geoCoordinates.lng,
         heroImage: b.heroImage,
+        photoUrl: uploadUrl(b.media?.[0]?.image) ?? b.heroImage ?? null,
+        shortDescription: b.shortDescription,
+        meta:
+          [b.highlights?.[0], b.bestTimeToVisit].filter(Boolean).join(' · ') || null,
       },
     ]
   })
@@ -110,6 +122,16 @@ export default async function ExplorePage() {
         cuisine: r.cuisine,
         averagePrice: r.averagePrice,
         heroImage: r.heroImage,
+        photoUrl: uploadUrl(r.media?.[0]?.image) ?? r.heroImage ?? null,
+        shortDescription: r.shortDescription,
+        meta:
+          [
+            r.cuisine,
+            r.averagePrice ? `~€${r.averagePrice}` : null,
+            r.googleRating ? `★ ${r.googleRating}` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ') || null,
       },
     ]
   })
@@ -125,6 +147,12 @@ export default async function ExplorePage() {
         lng: t.geoCoordinates.lng,
         distanceKm: t.distanceKm,
         difficulty: t.difficulty,
+        photoUrl: uploadUrl(t.media?.[0]?.image) ?? t.heroImage ?? null,
+        shortDescription: t.shortDescription,
+        meta:
+          [t.prCode, t.distanceKm ? `${t.distanceKm} km` : null, t.difficulty]
+            .filter(Boolean)
+            .join(' · ') || null,
       },
     ]
   })
@@ -140,6 +168,12 @@ export default async function ExplorePage() {
         lng: v.geoCoordinates.lng,
         elevationM: v.elevationM,
         type: v.type,
+        photoUrl: uploadUrl(v.media?.[0]?.image) ?? v.heroImage ?? null,
+        shortDescription: v.shortDescription,
+        meta:
+          [v.type, v.elevationM ? `${v.elevationM} m` : null, v.bestTime]
+            .filter(Boolean)
+            .join(' · ') || null,
       },
     ]
   })
@@ -168,7 +202,7 @@ export default async function ExplorePage() {
 
       {/* 64px top offset keeps the floating logo/CTA clear of the in-map filter bar */}
       <div className="explore-fullmap mt-16 h-[calc(100dvh-64px)]">
-        <ExploreMap
+        <ExploreMapInteractive
           properties={mapStays}
           beaches={mapBeaches}
           restaurants={mapRestaurants}
