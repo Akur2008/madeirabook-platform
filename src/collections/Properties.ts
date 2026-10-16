@@ -155,6 +155,14 @@ export const Properties: CollectionConfig = {
       ],
     },
     {
+      name: 'isVerified',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Verified by platform admin. Owner-created properties start unverified.',
+      },
+    },
+    {
       name: 'featured',
       type: 'checkbox',
       defaultValue: false,

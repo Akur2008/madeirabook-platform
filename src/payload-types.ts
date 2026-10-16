@@ -343,6 +343,10 @@ export interface Property {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Verified by platform admin. Owner-created properties start unverified.
+   */
+  isVerified?: boolean | null;
   featured?: boolean | null;
   status: 'draft' | 'published' | 'archived';
   updatedAt: string;
@@ -1200,6 +1204,7 @@ export interface PropertiesSelect<T extends boolean = true> {
         audio?: T;
         id?: T;
       };
+  isVerified?: T;
   featured?: T;
   status?: T;
   updatedAt?: T;

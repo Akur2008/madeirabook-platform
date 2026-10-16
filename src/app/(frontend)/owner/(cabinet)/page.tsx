@@ -61,7 +61,7 @@ export default async function OwnerDashboardPage() {
           {properties.map((p) => (
             <li key={p.id}>
               <Link
-                href={`/owner/properties/${p.id}`}
+                href={`/owner/properties/${p.id}/edit`}
                 className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm transition-colors hover:border-white/30"
               >
                 <span>{p.title}</span>
