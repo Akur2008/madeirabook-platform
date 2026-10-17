@@ -65,3 +65,20 @@ export const getCurrentOwner = cache(async (): Promise<User | null> => {
     return null
   }
 })
+
+// Numeric Smoobu apartment ids (properties.pmsPropertyId) linked to the
+// owner. Mutation routes use this to scope writes to the owner's own units.
+export async function getOwnerSmoobuIds(
+  ownerId: number | string,
+): Promise<number[]> {
+  const payload = await getPayload({ config: await config })
+  const { docs } = await payload.find({
+    collection: 'properties',
+    where: { owner: { equals: ownerId } },
+    limit: 100,
+    depth: 0,
+  })
+  return docs
+    .map((p) => Number(p.pmsPropertyId))
+    .filter((id) => Number.isFinite(id))
+}

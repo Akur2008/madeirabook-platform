@@ -95,6 +95,8 @@ export interface CreateReservationParams {
   postalCode?: string
   location?: string
   arrivalTime?: string
+  adults?: number
+  children?: number
 }
 
 // Creates a reservation in Smoobu, returns the Smoobu booking id.
@@ -116,13 +118,53 @@ export async function createReservation(
       location: p.location || '-',
     },
     arrivalTime: p.arrivalTime || '15:00',
-    adults: 2,
+    adults: p.adults || 2,
+    children: p.children || 0,
   }
   const res = await smoobuRequest('POST', '/api/reservations', body)
   if (!res || !res.id) {
     throw new Error(`Smoobu did not return a booking id: ${JSON.stringify(res)}`)
   }
   return Number(res.id)
+}
+
+// Cancels a Smoobu reservation. Ported from madeirabook-core
+// smoobu.js cancelReservation.
+export async function cancelReservation(
+  smoobuBookingId: number | string,
+): Promise<Record<string, unknown>> {
+  return smoobuRequest('DELETE', `/api/reservations/${smoobuBookingId}`, null)
+}
+
+// Sets daily price / min stay for a date range.
+// dates entries are "YYYY-MM-DD:YYYY-MM-DD" per the Smoobu Post Rates API;
+// a single day must be sent as a bare "YYYY-MM-DD" — Smoobu rejects
+// zero-length "X:X" ranges with a 422.
+// Ported from madeirabook-core smoobu.js setRates.
+export async function setRates(
+  apartmentIds: number[],
+  arrivalDate: string,
+  departureDate: string,
+  price: number,
+  minNights?: number | null,
+): Promise<Record<string, unknown>> {
+  const operation: Record<string, unknown> = {
+    dates: [
+      arrivalDate === departureDate
+        ? arrivalDate
+        : `${arrivalDate}:${departureDate}`,
+    ],
+    daily_price: price,
+  }
+  if (minNights && minNights > 0) {
+    operation.min_length_of_stay = minNights
+  }
+  const body = {
+    customerId: Number(process.env.SMOOBU_USER_ID),
+    apartments: apartmentIds.map(Number),
+    operations: [operation],
+  }
+  return smoobuRequest('POST', '/api/rates', body)
 }
 
 // Marks a Smoobu reservation as paid.
