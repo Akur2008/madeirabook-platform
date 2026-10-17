@@ -44,6 +44,45 @@ export const Properties: CollectionConfig = {
       defaultValue: 'madeirabook',
     },
     {
+      name: 'hotelType',
+      type: 'select',
+      options: [
+        { label: 'Hotel', value: 'hotel' },
+        { label: 'Resort', value: 'resort' },
+        { label: 'Boutique', value: 'boutique' },
+        { label: 'Apartment', value: 'apartment' },
+        { label: 'Villa', value: 'villa' },
+        { label: 'Quinta', value: 'quinta' },
+      ],
+      admin: {
+        description: 'Accommodation type. Used by the Madeira Oasis showcase.',
+      },
+    },
+    {
+      name: 'category',
+      type: 'text',
+      admin: {
+        description: 'Showcase category label, e.g. "5★ Luxury Oceanfront Resort".',
+      },
+    },
+    {
+      name: 'geoCoordinates',
+      type: 'group',
+      fields: [
+        {
+          name: 'lat',
+          type: 'number',
+        },
+        {
+          name: 'lng',
+          type: 'number',
+        },
+      ],
+      admin: {
+        description: 'Precise pin coordinates (per-property). Falls back to location.',
+      },
+    },
+    {
       name: 'pmsPropertyId',
       type: 'text',
     },

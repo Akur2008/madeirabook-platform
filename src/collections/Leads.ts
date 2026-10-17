@@ -21,7 +21,29 @@ export const Leads: CollectionConfig = {
         { label: 'WhatsApp', value: 'whatsapp' },
         { label: 'Instagram', value: 'instagram' },
         { label: 'Direct web', value: 'direct_web' },
+        { label: 'Oasis inquiry', value: 'oasis_inquiry' },
       ],
+    },
+    {
+      name: 'name',
+      type: 'text',
+      admin: {
+        description: 'Guest name (Oasis inquiry form).',
+      },
+    },
+    {
+      name: 'dates',
+      type: 'text',
+      admin: {
+        description: 'Requested stay dates (Oasis inquiry form).',
+      },
+    },
+    {
+      name: 'message',
+      type: 'textarea',
+      admin: {
+        description: 'Free-text inquiry message (Oasis inquiry form).',
+      },
     },
     {
       name: 'contactIdentifier',

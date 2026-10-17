@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+:root {
+  --oasis-bg: #fdfbf7;
+  --oasis-ink: #1c1a16;
+  --oasis-gold: #d4af37;
+  --oasis-gold-dark: #b8952e;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--oasis-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 0;
+  color: var(--oasis-ink);
+  background: var(--oasis-bg);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Masonry gallery via CSS columns */
+.oasis-masonry {
+  column-gap: 1rem;
+}
+.oasis-masonry > figure {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* Leaflet keeps its own stacking context; overlay chrome sits above panes */
+.leaflet-container {
+  background: var(--oasis-bg);
+  font-family: var(--font-sans);
+}

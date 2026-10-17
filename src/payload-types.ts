@@ -317,6 +317,21 @@ export interface Property {
   title: string;
   slug: string;
   brand: 'madeirabook' | 'madeiraoasis' | 'both';
+  /**
+   * Accommodation type. Used by the Madeira Oasis showcase.
+   */
+  hotelType?: ('hotel' | 'resort' | 'boutique' | 'apartment' | 'villa' | 'quinta') | null;
+  /**
+   * Showcase category label, e.g. "5★ Luxury Oceanfront Resort".
+   */
+  category?: string | null;
+  /**
+   * Precise pin coordinates (per-property). Falls back to location.
+   */
+  geoCoordinates?: {
+    lat?: number | null;
+    lng?: number | null;
+  };
   pmsPropertyId?: string | null;
   /**
    * PMS backend for this property. Empty = legacy Smoobu. Set automatically by "Publish to Zeevou".
@@ -951,7 +966,19 @@ export interface Viewpoint {
  */
 export interface Lead {
   id: number;
-  source: 'whatsapp' | 'instagram' | 'direct_web';
+  source: 'whatsapp' | 'instagram' | 'direct_web' | 'oasis_inquiry';
+  /**
+   * Guest name (Oasis inquiry form).
+   */
+  name?: string | null;
+  /**
+   * Requested stay dates (Oasis inquiry form).
+   */
+  dates?: string | null;
+  /**
+   * Free-text inquiry message (Oasis inquiry form).
+   */
+  message?: string | null;
   /**
    * Phone number or username when known.
    */
@@ -1275,6 +1302,14 @@ export interface PropertiesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   brand?: T;
+  hotelType?: T;
+  category?: T;
+  geoCoordinates?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+      };
   pmsPropertyId?: T;
   pms?: T;
   pmsMeta?: T;
@@ -1687,6 +1722,9 @@ export interface ViewpointsSelect<T extends boolean = true> {
  */
 export interface LeadsSelect<T extends boolean = true> {
   source?: T;
+  name?: T;
+  dates?: T;
+  message?: T;
   contactIdentifier?: T;
   email?: T;
   refCode?: T;
