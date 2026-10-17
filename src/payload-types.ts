@@ -89,6 +89,7 @@ export interface Config {
     applications: Application;
     trails: Trail;
     viewpoints: Viewpoint;
+    leads: Lead;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -118,6 +119,7 @@ export interface Config {
     applications: ApplicationsSelect<false> | ApplicationsSelect<true>;
     trails: TrailsSelect<false> | TrailsSelect<true>;
     viewpoints: ViewpointsSelect<false> | ViewpointsSelect<true>;
+    leads: LeadsSelect<false> | LeadsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -915,6 +917,31 @@ export interface Viewpoint {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads".
+ */
+export interface Lead {
+  id: number;
+  source: 'whatsapp' | 'instagram' | 'direct_web';
+  /**
+   * Phone number or username when known.
+   */
+  contactIdentifier?: string | null;
+  email?: string | null;
+  /**
+   * Ambassador referral code from the madeirabook_ref cookie.
+   */
+  refCode?: string | null;
+  /**
+   * Page the lead clicked from, e.g. /beaches/seixal-beach.
+   */
+  page: string;
+  status: 'new' | 'contacted' | 'converted';
+  userAgent?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1024,6 +1051,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'viewpoints';
         value: number | Viewpoint;
+      } | null)
+    | ({
+        relationTo: 'leads';
+        value: number | Lead;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1575,6 +1606,21 @@ export interface ViewpointsSelect<T extends boolean = true> {
   posterUrl?: T;
   status?: T;
   featured?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads_select".
+ */
+export interface LeadsSelect<T extends boolean = true> {
+  source?: T;
+  contactIdentifier?: T;
+  email?: T;
+  refCode?: T;
+  page?: T;
+  status?: T;
+  userAgent?: T;
   updatedAt?: T;
   createdAt?: T;
 }

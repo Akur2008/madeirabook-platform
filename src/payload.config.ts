@@ -28,6 +28,7 @@ import { AffiliatePayouts } from './collections/AffiliatePayouts'
 import { Applications } from './collections/Applications'
 import { Trails } from './collections/Trails'
 import { Viewpoints } from './collections/Viewpoints'
+import { Leads } from './collections/Leads'
 import { PrivacyPolicy } from './globals/PrivacyPolicy'
 import { TermsOfService } from './globals/TermsOfService'
 import { CookiePolicy } from './globals/CookiePolicy'
@@ -71,6 +72,7 @@ export default buildConfig({
     Applications,
     Trails,
     Viewpoints,
+    Leads,
   ],
   globals: [PrivacyPolicy, TermsOfService, CookiePolicy, LegalInfo],
   editor: lexicalEditor(),

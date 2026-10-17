@@ -5,6 +5,7 @@ import './styles.css'
 import Footer from './components/Footer'
 import { AudioEngineProvider } from '@/audio/AudioEngineProvider'
 import SoundButton from '@/components/SoundButton'
+import WhatsAppConciergeButton from '@/components/WhatsAppConciergeButton'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://madeirabook-platform.vercel.app'),
@@ -38,6 +39,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <AudioEngineProvider>
           <main>{children}</main>
           <Footer />
+          <WhatsAppConciergeButton />
           <SoundButton />
         </AudioEngineProvider>
         <Analytics />
