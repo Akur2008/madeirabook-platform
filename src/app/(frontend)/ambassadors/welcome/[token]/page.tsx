@@ -5,6 +5,7 @@ import React from 'react'
 
 import config from '@payload-config'
 import AcceptInvite from './AcceptInvite'
+import CopyLinkButton from './CopyLinkButton'
 
 export const metadata: Metadata = {
   title: 'Madeirabook — Ambassador invitation',
@@ -71,10 +72,20 @@ const PERKS = [
 ]
 
 const NEXT_STEPS = [
-  'Accept this invitation and connect payouts.',
-  'We build your map within 24 hours.',
-  'Share your links and earn 2% on every booking.',
+  'Share your link in bio.',
+  'Post stories with your map.',
+  'Get paid.',
 ]
+
+type Spot = { name?: string | null; slug?: string | null }
+
+function spotsOf(list: unknown): Spot[] {
+  if (!Array.isArray(list)) return []
+  return list.filter(
+    (item): item is Spot =>
+      typeof item === 'object' && item !== null && Boolean((item as Spot).slug),
+  )
+}
 
 function isExpired(iso: string | null | undefined): boolean {
   return iso ? Date.parse(iso) < Date.now() : false
@@ -103,7 +114,7 @@ export default async function WelcomePage(props: {
     collection: 'referrals',
     where: { invitationToken: { equals: token } },
     limit: 1,
-    depth: 0,
+    depth: 1,
   })
 
   const referral = docs[0]
@@ -179,21 +190,57 @@ export default async function WelcomePage(props: {
 
       <div className="mt-8 rounded-lg border border-white/10 bg-white/5 p-5">
         <p className="text-xs font-semibold uppercase tracking-widest text-white/50">
-          Your personal links
+          Your map link
         </p>
-        <p className="mt-3 break-all font-mono text-sm text-white/80">
-          madeirabook.com/map?ref={code}
-        </p>
-        <p className="mt-2 break-all font-mono text-sm text-white/80">
-          madeirabook.com/links?ref={code}
-        </p>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <p className="break-all font-mono text-sm text-white/80">
+            madeirabook.com/m/{code}
+          </p>
+          <CopyLinkButton url={`https://madeirabook.com/m/${code}`} />
+        </div>
         <p className="mt-4 text-sm text-white/60">
+          Earn 2% from every booking made through your map.{' '}
           Discount code:{' '}
           <span className="font-mono font-semibold text-[#d4af37]">
             {code.toUpperCase()}
           </span>
         </p>
       </div>
+
+      {(spotsOf(referral.selectedBeaches).length > 0 ||
+        spotsOf(referral.selectedRestaurants).length > 0) && (
+        <div className="mt-8 rounded-lg border border-white/10 bg-white/5 p-5">
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/50">
+            Your curated spots
+          </p>
+          <ul className="mt-3 space-y-2 text-sm text-white/80">
+            {spotsOf(referral.selectedBeaches).map((b) => (
+              <li key={`b-${b.slug}`}>
+                <a
+                  href={`/beaches/${b.slug}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="transition-colors hover:text-[#d4af37]"
+                >
+                  🏖️ {b.name}
+                </a>
+              </li>
+            ))}
+            {spotsOf(referral.selectedRestaurants).map((r) => (
+              <li key={`r-${r.slug}`}>
+                <a
+                  href={`/restaurants/${r.slug}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="transition-colors hover:text-[#d4af37]"
+                >
+                  🍽️ {r.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-white/50">

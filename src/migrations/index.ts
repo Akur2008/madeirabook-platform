@@ -17,6 +17,7 @@ import * as migration_20261015_234434_add_trails_and_viewpoints from './20261015
 import * as migration_20261016_153342_add_owner_magic_auth_fields from './20261016_153342_add_owner_magic_auth_fields';
 import * as migration_20261016_235314_sync_is_verified from './20261016_235314_sync_is_verified';
 import * as migration_20261017_003237_add_leads_collection from './20261017_003237_add_leads_collection';
+import * as migration_20261017_125504_add_selected_restaurants_to_referrals from './20261017_125504_add_selected_restaurants_to_referrals';
 
 export const migrations = [
   {
@@ -112,6 +113,11 @@ export const migrations = [
   {
     up: migration_20261017_003237_add_leads_collection.up,
     down: migration_20261017_003237_add_leads_collection.down,
-    name: '20261017_003237_add_leads_collection'
+    name: '20261017_003237_add_leads_collection',
+  },
+  {
+    up: migration_20261017_125504_add_selected_restaurants_to_referrals.up,
+    down: migration_20261017_125504_add_selected_restaurants_to_referrals.down,
+    name: '20261017_125504_add_selected_restaurants_to_referrals'
   },
 ];

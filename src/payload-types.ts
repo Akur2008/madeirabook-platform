@@ -682,6 +682,10 @@ export interface Referral {
    */
   selectedBeaches?: (number | Beach)[] | null;
   /**
+   * Restaurants featured on the creator map.
+   */
+  selectedRestaurants?: (number | Restaurant)[] | null;
+  /**
    * Public title of the creator guide, e.g. "Sergio's Madeira Guide".
    */
   displayName?: string | null;
@@ -1458,6 +1462,7 @@ export interface ReferralsSelect<T extends boolean = true> {
   bio?: T;
   accentColor?: T;
   selectedBeaches?: T;
+  selectedRestaurants?: T;
   displayName?: T;
   sourceApplication?: T;
   notes?: T;

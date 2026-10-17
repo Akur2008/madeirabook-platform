@@ -126,6 +126,15 @@ export const Referrals: CollectionConfig = {
       },
     },
     {
+      name: 'selectedRestaurants',
+      type: 'relationship',
+      relationTo: 'restaurants',
+      hasMany: true,
+      admin: {
+        description: 'Restaurants featured on the creator map.',
+      },
+    },
+    {
       name: 'displayName',
       type: 'text',
       admin: {

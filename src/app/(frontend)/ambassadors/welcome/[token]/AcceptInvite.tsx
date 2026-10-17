@@ -33,7 +33,8 @@ export default function AcceptInvite({ token }: { token: string }) {
       <div className="w-full rounded-lg border border-green-500/30 bg-green-500/10 p-6 text-center">
         <p className="text-lg font-semibold text-green-400">Welcome aboard.</p>
         <p className="mt-2 text-sm text-white/60">
-          We&apos;ll contact you within 24 hours to set up payouts.
+          Your map link is above — put it in your bio. We&apos;ll contact you
+          within 24 hours to set up payouts.
         </p>
       </div>
     )

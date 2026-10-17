@@ -91,6 +91,7 @@ interface ExploreMapProps {
   viewpoints?: MapViewpoint[]
   activeFilter?: MapFilter
   ambassador?: AmbassadorBranding | null
+  refCode?: string | null
 }
 
 export default function ExploreMap({
@@ -101,6 +102,7 @@ export default function ExploreMap({
   viewpoints = [],
   activeFilter = 'all',
   ambassador = null,
+  refCode = null,
 }: ExploreMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Leaflet.Map | null>(null)
@@ -198,10 +200,13 @@ export default function ExploreMap({
         iconAnchor: [17, 17],
       })
 
+    const withRef = (href: string) =>
+      refCode ? `${href}?ref=${encodeURIComponent(refCode)}` : href
+
     const addPin = (lat: number, lng: number, icon: Leaflet.DivIcon, title: string, href: string) => {
       const marker = L.marker([lat, lng], { icon, title })
       marker.on('click', () => {
-        window.location.href = href
+        window.location.href = withRef(href)
       })
       marker.addTo(layer)
     }
@@ -230,7 +235,7 @@ export default function ExploreMap({
         addPin(v.lat, v.lng, icon, v.name, `/viewpoints/${v.slug}`),
       )
     }
-  }, [ready, filter, properties, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassador])
+  }, [ready, filter, properties, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassador, refCode])
 
   return (
     <div className="relative h-full w-full">
@@ -273,7 +278,15 @@ export default function ExploreMap({
         </div>
       )}
       <div className="absolute left-1/2 top-3 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white/15 bg-[#0a1420]/90 p-1 backdrop-blur">
-        {FILTERS.map((f) => (
+        {FILTERS.filter(
+          (f) =>
+            f.key === 'all' ||
+            (f.key === 'stays' && properties.length > 0) ||
+            (f.key === 'beaches' && visibleBeaches.length > 0) ||
+            (f.key === 'food' && visibleRestaurants.length > 0) ||
+            (f.key === 'trails' && trails.length > 0) ||
+            (f.key === 'views' && viewpoints.length > 0),
+        ).map((f) => (
           <button
             key={f.key}
             type="button"
