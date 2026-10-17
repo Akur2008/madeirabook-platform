@@ -1,20 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { isOasisHost } from '@/lib/oasis-domain'
+
 const REF_COOKIE = 'madeirabook_ref'
 const REF_RE = /^[a-z0-9_-]{2,50}$/
 const MAP_RE = /^\/m\/([a-z0-9_-]{2,50})\/?$/
 const THIRTY_DAYS = 2592000
 
-const OASIS_HOSTS = new Set(['madeiraoasis.com', 'www.madeiraoasis.com'])
-
 export function middleware(req: NextRequest) {
   // Multi-domain routing: madeiraoasis.com serves the /oasis route group at
-  // the root. Only the mapped paths are rewritten; /api/*, /_next/*, /admin
-  // and every other path pass through untouched.
+  // the root. /oasis* URLs are redirected to their clean form, / and
+  // /hotels/* are rewritten internally; /api/*, /_next/*, /admin and every
+  // other path pass through untouched.
   const host = (req.headers.get('host') ?? '').split(':')[0].toLowerCase()
-  if (OASIS_HOSTS.has(host)) {
+  if (isOasisHost(host)) {
     const { pathname } = req.nextUrl
-    if (pathname === '/' || pathname === '/hotels' || pathname.startsWith('/hotels/')) {
+    if (pathname === '/oasis' || pathname.startsWith('/oasis/')) {
+      const url = req.nextUrl.clone()
+      url.pathname = pathname.slice('/oasis'.length) || '/'
+      return NextResponse.redirect(url, 308)
+    }
+    if (pathname === '/hotels') {
+      const url = req.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url, 308)
+    }
+    if (pathname === '/' || pathname.startsWith('/hotels/')) {
       const url = req.nextUrl.clone()
       url.pathname = `/oasis${pathname === '/' ? '' : pathname}`
       return NextResponse.rewrite(url)

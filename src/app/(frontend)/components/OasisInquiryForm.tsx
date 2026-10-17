@@ -3,7 +3,6 @@
 import { useState } from 'react'
 
 interface OasisInquiryFormProps {
-  hotelSlug: string
   hotelTitle: string
 }
 
@@ -13,7 +12,6 @@ const inputClass =
   'w-full rounded-lg border border-[#1c1a16]/15 bg-white px-4 py-3 text-sm text-[#1c1a16] outline-none transition-colors placeholder:text-[#1c1a16]/35 focus:border-[#d4af37]'
 
 export default function OasisInquiryForm({
-  hotelSlug,
   hotelTitle,
 }: OasisInquiryFormProps) {
   const [state, setState] = useState<FormState>('idle')
@@ -35,7 +33,7 @@ export default function OasisInquiryForm({
           email,
           dates,
           message,
-          page: `/oasis/hotels/${hotelSlug}`,
+          page: window.location.pathname,
         }),
       })
       setState(res.ok ? 'sent' : 'error')

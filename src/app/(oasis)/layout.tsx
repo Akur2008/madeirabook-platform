@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import OasisLink from '../(frontend)/components/OasisLink'
 import './oasis.css'
 
 export const metadata: Metadata = {
@@ -34,12 +34,12 @@ export default function OasisLayout(props: { children: React.ReactNode }) {
         {/* z-[1100] keeps the header above Leaflet's stacked panes on the map page */}
         <header className="fixed inset-x-0 top-0 z-[1100] border-b border-[#1c1a16]/10 bg-[#fdfbf7]/85 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-            <Link
-              href="/oasis"
+            <OasisLink
+              href="/"
               className="font-serif text-xl font-semibold tracking-tight text-[#1c1a16]"
             >
               Madeira <span className="text-[#b8952e]">Oasis</span>
-            </Link>
+            </OasisLink>
             <a
               href="mailto:concierge@madeirabook.com?subject=Stay%20request%20%E2%80%94%20Madeira%20Oasis"
               className="inline-flex items-center justify-center rounded-full border border-[#d4af37] bg-[#d4af37] px-4 py-2 text-xs font-semibold tracking-wide text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#8a7020] sm:px-6 sm:py-2.5 sm:text-sm"

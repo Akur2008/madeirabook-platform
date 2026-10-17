@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import React from 'react'
@@ -8,6 +7,7 @@ import React from 'react'
 import config from '@/payload.config'
 import type { Amenity, Media } from '@/payload-types'
 import OasisInquiryForm from '../../../../(frontend)/components/OasisInquiryForm'
+import OasisLink from '../../../../(frontend)/components/OasisLink'
 
 export const revalidate = 60
 
@@ -252,19 +252,19 @@ export default async function OasisHotelPage({
           and tailor the stay.
         </p>
         <div className="mt-10">
-          <OasisInquiryForm hotelSlug={p.slug} hotelTitle={p.title} />
+          <OasisInquiryForm hotelTitle={p.title} />
         </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-[#1c1a16]/10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-[#1c1a16]/50 sm:flex-row">
-          <Link
-            href="/oasis"
+          <OasisLink
+            href="/"
             className="transition-colors hover:text-[#1c1a16]"
           >
             ← Back to the collection
-          </Link>
+          </OasisLink>
           <a
             href="https://www.madeirabook.com"
             className="transition-colors hover:text-[#1c1a16]"

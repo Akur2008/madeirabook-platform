@@ -5,6 +5,8 @@ import type * as Leaflet from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
+import { oasisBase } from '@/lib/oasis-domain'
+
 // CartoDB Positron as a vector GL style (same Positron design as the raster
 // tiles, but served without the API-key watermark).
 const CARTO_POSITRON_STYLE =
@@ -118,6 +120,8 @@ export default function OasisMap({ hotels }: OasisMapProps) {
 
     layer.clearLayers()
 
+    const base = oasisBase(window.location.hostname)
+
     const icon = L.divIcon({
       className: 'oasis-pin',
       html: `<div style="width:26px;height:26px;border-radius:9999px;background:#d4af37;border:2px solid #1c1a16;box-shadow:0 2px 10px rgba(28,26,22,0.35);display:flex;align-items:center;justify-content:center;cursor:pointer;"><div style="width:8px;height:8px;border-radius:9999px;background:#1c1a16;"></div></div>`,
@@ -140,7 +144,7 @@ export default function OasisMap({ hotels }: OasisMapProps) {
               ? `<div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#b8952e;margin-top:3px;">${escapeHtml(h.category)}</div>`
               : ''
           }
-          <a href="/oasis/hotels/${escapeHtml(h.slug)}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View residence →</a>
+          <a href="${base}/hotels/${escapeHtml(h.slug)}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View residence →</a>
         </div>`
       marker.bindPopup(popupHtml, { maxWidth: 260, closeButton: false })
       marker.addTo(layer)
