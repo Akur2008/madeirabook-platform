@@ -69,7 +69,7 @@ async function main() {
   }
 
   const dirFiles = await fs.readdir(PHOTOS_DIR)
-  const media: { image: number | string }[] = []
+  const media: { image: number }[] = []
   let heroUrl: string | null = null
 
   for (const { src, name } of MAPPING) {

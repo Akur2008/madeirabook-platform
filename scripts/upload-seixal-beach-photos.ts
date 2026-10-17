@@ -66,7 +66,7 @@ async function main() {
   }
 
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'seixal-photos-'))
-  const media: { image: string }[] = []
+  const media: { image: number }[] = []
   let firstUrl: string | null = null
 
   try {
