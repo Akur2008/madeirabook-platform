@@ -2,6 +2,10 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import React from 'react'
 
+import { getPayload } from 'payload'
+
+import config from '@payload-config'
+import { hasSignedOwnerTerms } from '@/lib/agreements'
 import { getCurrentOwner } from '@/lib/ownerAuth'
 import BillingBanner from './BillingBanner'
 
@@ -22,6 +26,13 @@ export default async function OwnerCabinetLayout(props: {
 }) {
   const owner = await getCurrentOwner()
   if (!owner) redirect('/owner/login')
+
+  // Unsigned Owner Terms are gated here too — /owner/agreement lives outside
+  // this route group, so the redirect cannot loop back into this layout.
+  const payload = await getPayload({ config: await config })
+  if (!(await hasSignedOwnerTerms(payload, owner.id))) {
+    redirect('/owner/agreement')
+  }
 
   return (
     <div className="min-h-dvh bg-[#0a1420] text-white">

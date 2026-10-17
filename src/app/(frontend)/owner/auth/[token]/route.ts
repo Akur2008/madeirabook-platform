@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { hasSignedOwnerTerms } from '@/lib/agreements'
 import {
   OWNER_SESSION_COOKIE,
   createOwnerSessionToken,
@@ -60,7 +61,11 @@ export async function GET(
   })
 
   const session = await createOwnerSessionToken(user.id)
-  const res = NextResponse.redirect(ownerUrl, 303)
+  const signed = await hasSignedOwnerTerms(payload, user.id)
+  const res = NextResponse.redirect(
+    signed ? ownerUrl : new URL('/owner/agreement', req.url),
+    303,
+  )
   res.cookies.set(OWNER_SESSION_COOKIE, session, ownerSessionCookieOptions)
   return res
 }

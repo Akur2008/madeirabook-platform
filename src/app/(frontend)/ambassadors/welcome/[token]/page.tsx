@@ -4,6 +4,8 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@payload-config'
+import DigitalSignature from '@/components/DigitalSignature'
+import { hasSignedAmbassadorTerms } from '@/lib/agreements'
 import AcceptInvite from './AcceptInvite'
 import CopyLinkButton from './CopyLinkButton'
 
@@ -160,6 +162,26 @@ export default async function WelcomePage(props: {
           </a>{' '}
           and we&apos;ll send a new one.
         </p>
+      </Shell>
+    )
+  }
+
+  if (!(await hasSignedAmbassadorTerms(payload, referral.id))) {
+    return (
+      <Shell>
+        <h1 className="text-center text-4xl font-medium tracking-tight" style={SERIF}>
+          Almost there, {displayName}.
+        </h1>
+        <p className="mt-4 text-center text-sm text-white/60">
+          Review and sign the Ambassador Terms to unlock your guide.
+        </p>
+        <div className="mt-8">
+          <DigitalSignature
+            documentType="ambassador_terms"
+            token={token}
+            redirectTo={`/ambassadors/welcome/${token}`}
+          />
+        </div>
       </Shell>
     )
   }

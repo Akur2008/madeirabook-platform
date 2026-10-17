@@ -90,6 +90,7 @@ export interface Config {
     trails: Trail;
     viewpoints: Viewpoint;
     leads: Lead;
+    agreements: Agreement;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -120,6 +121,7 @@ export interface Config {
     trails: TrailsSelect<false> | TrailsSelect<true>;
     viewpoints: ViewpointsSelect<false> | ViewpointsSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
+    agreements: AgreementsSelect<false> | AgreementsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -974,6 +976,35 @@ export interface Lead {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agreements".
+ */
+export interface Agreement {
+  id: number;
+  /**
+   * Owner account that signed. Empty for ambassador agreements — see referral.
+   */
+  user?: (number | null) | User;
+  /**
+   * Ambassador referral that signed (ambassador agreements only).
+   */
+  referral?: (number | null) | Referral;
+  role: 'owner' | 'ambassador';
+  documentType: 'owner_terms' | 'ambassador_terms';
+  /**
+   * Version of the signed document, e.g. "v1.0".
+   */
+  documentVersion?: string | null;
+  /**
+   * Full name typed by the signer.
+   */
+  signedName?: string | null;
+  ipAddress?: string | null;
+  signedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1087,6 +1118,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'leads';
         value: number | Lead;
+      } | null)
+    | ({
+        relationTo: 'agreements';
+        value: number | Agreement;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1659,6 +1694,22 @@ export interface LeadsSelect<T extends boolean = true> {
   status?: T;
   userAgent?: T;
   commentId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agreements_select".
+ */
+export interface AgreementsSelect<T extends boolean = true> {
+  user?: T;
+  referral?: T;
+  role?: T;
+  documentType?: T;
+  documentVersion?: T;
+  signedName?: T;
+  ipAddress?: T;
+  signedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
