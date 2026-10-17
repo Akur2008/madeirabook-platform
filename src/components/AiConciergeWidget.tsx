@@ -27,14 +27,28 @@ function withRef(href: string, ref: string | null): string {
   return `${href}${href.includes('?') ? '&' : '?'}ref=${encodeURIComponent(ref)}`
 }
 
-// Minimal renderer: Markdown links + newlines, everything else plain text.
+// Minimal renderer: Markdown links + **bold** + newlines, rest plain text.
+function renderText(text: string, keyBase: string): React.ReactNode[] {
+  const out: React.ReactNode[] = []
+  const re = /\*\*([^*]+)\*\*/g
+  let last = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index))
+    out.push(<strong key={`${keyBase}-b${m.index}`}>{m[1]}</strong>)
+    last = m.index + m[0].length
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return out
+}
+
 function MessageBody({ content, refCode }: { content: string; refCode: string | null }) {
   const parts: React.ReactNode[] = []
   const re = /\[([^\]]+)\]\(([^)\s]+)\)/g
   let last = 0
   let m: RegExpExecArray | null
   while ((m = re.exec(content)) !== null) {
-    if (m.index > last) parts.push(content.slice(last, m.index))
+    if (m.index > last) parts.push(...renderText(content.slice(last, m.index), `t${m.index}`))
     const href = withRef(m[2], refCode)
     parts.push(
       <a
@@ -47,7 +61,7 @@ function MessageBody({ content, refCode }: { content: string; refCode: string | 
     )
     last = m.index + m[0].length
   }
-  if (last < content.length) parts.push(content.slice(last))
+  if (last < content.length) parts.push(...renderText(content.slice(last), 'tail'))
   return <span className="whitespace-pre-wrap">{parts}</span>
 }
 
