@@ -20,6 +20,12 @@ export async function POST(req: Request) {
   if (!owner) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  if (owner.hasActiveSubscription !== true) {
+    return NextResponse.json(
+      { error: 'subscription_required' },
+      { status: 403 },
+    )
+  }
 
   let body: Record<string, unknown>
   try {

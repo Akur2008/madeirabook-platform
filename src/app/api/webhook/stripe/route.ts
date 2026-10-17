@@ -43,10 +43,164 @@ function ownerEmailOf(property: { owner?: unknown } | undefined): string | null 
   return null
 }
 
+function stripeIdOf(
+  value: string | { id?: string } | null | undefined,
+): string | null {
+  if (!value) return null
+  return typeof value === 'string' ? value : (value.id ?? null)
+}
+
+// The PMS subscription carries metadata.ownerId (set in /api/owner/subscribe);
+// the price id check covers subscriptions created outside this flow.
+function isPmsSubscription(sub: Stripe.Subscription): boolean {
+  const meta = sub.metadata || {}
+  if (meta.kind === 'pms_subscription' || meta.ownerId) return true
+  const priceId = process.env.STRIPE_SUBSCRIPTION_PRICE_ID
+  if (!priceId) return false
+  return (sub.items?.data ?? []).some((it) => it.price?.id === priceId)
+}
+
+// Invoice line items expose the price under different keys depending on the
+// Stripe API version (price.id vs pricing.price_details.price).
+function invoicePriceIds(invoice: Stripe.Invoice): string[] {
+  return ((invoice.lines?.data ?? []) as unknown as Record<
+    string,
+    unknown
+  >[])
+    .map((line) => {
+      const direct = (line.price as { id?: string } | undefined)?.id
+      const nested = (
+        (line.pricing as { price_details?: { price?: string } } | undefined)
+          ?.price_details?.price
+      )
+      return direct ?? nested ?? null
+    })
+    .filter((id): id is string => Boolean(id))
+}
+
+function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const inv = invoice as unknown as Record<string, unknown>
+  const legacy = inv.subscription
+  const parent = (
+    inv.parent as
+      | { subscription_details?: { subscription?: unknown } }
+      | undefined
+  )?.subscription_details?.subscription
+  return stripeIdOf(
+    (legacy ?? parent) as string | { id?: string } | null | undefined,
+  )
+}
+
+async function setOwnerSubscription(
+  payload: Payload,
+  opts: {
+    ownerId?: string | null
+    customerId?: string | null
+    active: boolean
+  },
+): Promise<void> {
+  let userId: number | null = null
+  const ownerIdNum = Number(opts.ownerId)
+  if (Number.isFinite(ownerIdNum) && ownerIdNum > 0) {
+    userId = ownerIdNum
+  }
+  if (!userId && opts.customerId) {
+    const found = await payload.find({
+      collection: 'users',
+      where: { stripeCustomerId: { equals: opts.customerId } },
+      limit: 1,
+      depth: 0,
+    })
+    userId = found.docs[0]?.id ?? null
+  }
+  if (!userId && opts.customerId) {
+    // Last resort: match the Stripe customer email to a user.
+    try {
+      const customer = await getStripe().customers.retrieve(opts.customerId)
+      const email =
+        'email' in customer && typeof customer.email === 'string'
+          ? customer.email
+          : null
+      if (email) {
+        const found = await payload.find({
+          collection: 'users',
+          where: { email: { equals: email } },
+          limit: 1,
+          depth: 0,
+        })
+        userId = found.docs[0]?.id ?? null
+      }
+    } catch (err) {
+      console.warn(
+        `webhook: customer lookup failed (${opts.customerId})`,
+        err,
+      )
+    }
+  }
+  if (!userId) {
+    console.warn(
+      `webhook: owner not resolved for subscription update `
+        + `(customer=${opts.customerId}, ownerId=${opts.ownerId})`,
+    )
+    return
+  }
+  await payload.update({
+    collection: 'users',
+    id: userId,
+    data: {
+      hasActiveSubscription: opts.active,
+      ...(opts.customerId ? { stripeCustomerId: opts.customerId } : {}),
+    },
+  })
+  console.log(
+    `webhook: user ${userId} hasActiveSubscription → ${opts.active}`,
+  )
+}
+
+function subscriptionCustomerId(sub: Stripe.Subscription): string | null {
+  return stripeIdOf(sub.customer)
+}
+
+async function handleInvoiceSubscriptionEvent(
+  payload: Payload,
+  invoice: Stripe.Invoice,
+  active: boolean,
+): Promise<void> {
+  const customerId = stripeIdOf(invoice.customer)
+  let ownerId: string | null = null
+  let isPms = false
+
+  const subId = invoiceSubscriptionId(invoice)
+  if (subId) {
+    try {
+      const sub = await getStripe().subscriptions.retrieve(subId)
+      isPms = isPmsSubscription(sub)
+      ownerId = sub.metadata?.ownerId ?? null
+    } catch (err) {
+      console.warn(`webhook: subscription retrieve failed (${subId})`, err)
+    }
+  }
+  if (!isPms) {
+    const priceId = process.env.STRIPE_SUBSCRIPTION_PRICE_ID
+    isPms = priceId ? invoicePriceIds(invoice).includes(priceId) : false
+  }
+  if (!isPms) {
+    console.log(`webhook: invoice ${invoice.id} is not a PMS invoice, skip`)
+    return
+  }
+  await setOwnerSubscription(payload, { ownerId, customerId, active })
+}
+
 async function handleCheckoutCompleted(
   payload: Payload,
   session: Stripe.Checkout.Session,
 ): Promise<void> {
+  if (session.mode === 'subscription') {
+    console.log(
+      `webhook: subscription checkout ${session.id} — handled by subscription events`,
+    )
+    return
+  }
   const meta = session.metadata || {}
   const { propertySlug, arrival, departure } = meta
   if (!propertySlug || !arrival || !departure) {
@@ -290,6 +444,44 @@ export async function POST(req: Request) {
       await handleCheckoutCompleted(
         payload,
         event.data.object as Stripe.Checkout.Session,
+      )
+    } else if (event.type === 'customer.subscription.created') {
+      const sub = event.data.object as Stripe.Subscription
+      if (isPmsSubscription(sub)) {
+        await setOwnerSubscription(payload, {
+          ownerId: sub.metadata?.ownerId ?? null,
+          customerId: subscriptionCustomerId(sub),
+          active: true,
+        })
+      } else {
+        console.log(
+          `webhook: subscription ${sub.id} is not a PMS subscription, skip`,
+        )
+      }
+    } else if (event.type === 'customer.subscription.deleted') {
+      const sub = event.data.object as Stripe.Subscription
+      if (isPmsSubscription(sub)) {
+        await setOwnerSubscription(payload, {
+          ownerId: sub.metadata?.ownerId ?? null,
+          customerId: subscriptionCustomerId(sub),
+          active: false,
+        })
+      } else {
+        console.log(
+          `webhook: subscription ${sub.id} is not a PMS subscription, skip`,
+        )
+      }
+    } else if (event.type === 'invoice.paid') {
+      await handleInvoiceSubscriptionEvent(
+        payload,
+        event.data.object as Stripe.Invoice,
+        true,
+      )
+    } else if (event.type === 'invoice.payment_failed') {
+      await handleInvoiceSubscriptionEvent(
+        payload,
+        event.data.object as Stripe.Invoice,
+        false,
       )
     } else if (event.type === 'checkout.session.expired') {
       const s = event.data.object as Stripe.Checkout.Session

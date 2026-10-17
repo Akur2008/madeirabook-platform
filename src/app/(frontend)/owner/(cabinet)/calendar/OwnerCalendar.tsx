@@ -17,7 +17,7 @@ import {
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
-export default function OwnerCalendar() {
+export default function OwnerCalendar({ readOnly = false }: { readOnly?: boolean }) {
   const [month, setMonth] = useState(() => {
     const now = new Date()
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
@@ -113,7 +113,7 @@ export default function OwnerCalendar() {
   // First click anchors a day; second click on the same row opens the rate
   // editor for the (sorted) range between the two.
   const handleSelectDay = (apt: CalendarApartment, dateStr: string) => {
-    if (apt.aptId == null) return
+    if (readOnly || apt.aptId == null) return
     if (!anchor || anchor.aptId !== apt.aptId) {
       setAnchor({ aptId: apt.aptId, date: dateStr })
       return
@@ -176,16 +176,25 @@ export default function OwnerCalendar() {
           >
             &rarr;
           </button>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-400"
-            aria-label="New manual booking"
-            title="New manual booking"
-          >
-            +
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-400"
+              aria-label="New manual booking"
+              title="New manual booking"
+            >
+              +
+            </button>
+          )}
         </div>
       </div>
+
+      {readOnly && (
+        <div className="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
+          Subscription inactive — the calendar is read-only. Renew to edit
+          prices and bookings.
+        </div>
+      )}
 
       {anchor && (
         <div className="mt-3 text-xs text-emerald-300/80">
@@ -255,6 +264,7 @@ export default function OwnerCalendar() {
         <BookingModal
           booking={selected}
           propertyName={selectedPropertyName}
+          readOnly={readOnly}
           onClose={() => setSelected(null)}
           onCancelled={() => {
             setSelected(null)

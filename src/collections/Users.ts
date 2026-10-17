@@ -47,5 +47,20 @@ export const Users: CollectionConfig = {
         description: 'Whether the connected Stripe account can receive charges.',
       },
     },
+    {
+      name: 'stripeCustomerId',
+      type: 'text',
+      admin: {
+        description: 'Stripe Customer id (cus_...) used for the PMS subscription.',
+      },
+    },
+    {
+      name: 'hasActiveSubscription',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Whether the owner has an active Madeirabook PMS subscription.',
+      },
+    },
   ],
 }

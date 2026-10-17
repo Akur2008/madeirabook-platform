@@ -189,6 +189,14 @@ export interface User {
    * Whether the connected Stripe account can receive charges.
    */
   chargesEnabled?: boolean | null;
+  /**
+   * Stripe Customer id (cus_...) used for the PMS subscription.
+   */
+  stripeCustomerId?: string | null;
+  /**
+   * Whether the owner has an active Madeirabook PMS subscription.
+   */
+  hasActiveSubscription?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1116,6 +1124,8 @@ export interface UsersSelect<T extends boolean = true> {
   magicTokenExpiresAt?: T;
   stripeAccountId?: T;
   chargesEnabled?: T;
+  stripeCustomerId?: T;
+  hasActiveSubscription?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

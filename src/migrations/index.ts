@@ -19,6 +19,7 @@ import * as migration_20261016_235314_sync_is_verified from './20261016_235314_s
 import * as migration_20261017_003237_add_leads_collection from './20261017_003237_add_leads_collection';
 import * as migration_20261017_125504_add_selected_restaurants_to_referrals from './20261017_125504_add_selected_restaurants_to_referrals';
 import * as migration_20261017_142753_add_comment_id_to_leads from './20261017_142753_add_comment_id_to_leads';
+import * as migration_20261017_154056_add_owner_subscription_fields from './20261017_154056_add_owner_subscription_fields';
 
 export const migrations = [
   {
@@ -124,6 +125,11 @@ export const migrations = [
   {
     up: migration_20261017_142753_add_comment_id_to_leads.up,
     down: migration_20261017_142753_add_comment_id_to_leads.down,
-    name: '20261017_142753_add_comment_id_to_leads'
+    name: '20261017_142753_add_comment_id_to_leads',
+  },
+  {
+    up: migration_20261017_154056_add_owner_subscription_fields.up,
+    down: migration_20261017_154056_add_owner_subscription_fields.down,
+    name: '20261017_154056_add_owner_subscription_fields'
   },
 ];

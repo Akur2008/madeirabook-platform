@@ -17,9 +17,13 @@ const TILES = [
   { icon: '⭐', label: 'Rating', value: '—' },
 ]
 
-export default async function OwnerDashboardPage() {
+export default async function OwnerDashboardPage(props: {
+  searchParams: Promise<{ subscribed?: string }>
+}) {
   const owner = await getCurrentOwner()
   if (!owner) redirect('/owner/login')
+
+  const { subscribed } = await props.searchParams
 
   const payload = await getPayload({ config: await config })
   const { docs: properties } = await payload.find({
@@ -35,6 +39,12 @@ export default async function OwnerDashboardPage() {
       <h1 className="text-3xl font-medium" style={SERIF}>
         Dashboard
       </h1>
+
+      {subscribed === 'true' && (
+        <div className="mt-4 rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
+          Subscription activated. Thank you!
+        </div>
+      )}
 
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {TILES.map((tile) => (

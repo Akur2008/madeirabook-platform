@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import React from 'react'
 
 import { getCurrentOwner } from '@/lib/ownerAuth'
+import BillingBanner from './BillingBanner'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +50,13 @@ export default async function OwnerCabinetLayout(props: {
           </div>
         </div>
       </header>
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-8 md:flex-row">
+      <div className="mx-auto max-w-6xl px-6 pt-6">
+        <BillingBanner
+          subscribed={owner.hasActiveSubscription === true}
+          hasCustomer={Boolean(owner.stripeCustomerId)}
+        />
+      </div>
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 pb-8 pt-6 md:flex-row">
         <nav className="flex shrink-0 gap-2 overflow-x-auto md:w-48 md:flex-col">
           {NAV.map((item) => (
             <Link

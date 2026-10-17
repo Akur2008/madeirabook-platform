@@ -22,11 +22,13 @@ export default function BookingModal({
   propertyName,
   onClose,
   onCancelled,
+  readOnly = false,
 }: {
   booking: CalendarBooking
   propertyName: string
   onClose: () => void
   onCancelled: () => void
+  readOnly?: boolean
 }) {
   const color = channelColor(booking.channel)
   const [confirming, setConfirming] = useState(false)
@@ -108,7 +110,7 @@ export default function BookingModal({
           </div>
         )}
 
-        {confirming ? (
+        {readOnly ? null : confirming ? (
           <div className="mt-5 rounded-lg border border-red-400/30 bg-red-400/10 p-3">
             <p className="text-sm text-red-200">
               Cancel this booking in Smoobu? This cannot be undone.

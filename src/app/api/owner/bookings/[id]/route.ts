@@ -23,6 +23,12 @@ export async function DELETE(
   if (!owner) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  if (owner.hasActiveSubscription !== true) {
+    return NextResponse.json(
+      { error: 'subscription_required' },
+      { status: 403 },
+    )
+  }
 
   const { id } = await ctx.params
   const smoobuId = Number(id)
