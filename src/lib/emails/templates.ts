@@ -2,7 +2,7 @@
 // Each is (subscriber) => { subject, html, text }.
 // subscriber is a subscribers doc — at minimum { email, unsubscribeToken }.
 
-const APP_URL = process.env.APP_URL || 'https://app.madeirabook.com'
+const APP_URL = process.env.APP_URL || 'https://www.madeirabook.com'
 
 export interface EmailQueueSubscriber {
   email: string
@@ -59,7 +59,7 @@ function wrapper(
     ctaText +
     '</a></p>' +
     '<p style="color:#9ca3af;font-size:12px;margin-top:32px;border-top:1px solid #e5e7eb;padding-top:16px;">' +
-    'Madeirabook · <a href="https://app.madeirabook.com" style="color:#9ca3af;">app.madeirabook.com</a><br>' +
+    'Madeirabook · <a href="https://www.madeirabook.com" style="color:#9ca3af;">madeirabook.com</a><br>' +
     'You are receiving this because you subscribed to our guide.' +
     '</p>' +
     unsubscribeFooter(token) +
@@ -93,7 +93,7 @@ export const templates: Record<
 
   gateway_ocean_reactivation: (subscriber) => ({
     subject: 'We saved you a way in',
-    text: "You left us your email a while back. We haven't forgotten. Here's the entrance to four elements of Madeira: https://app.madeirabook.com/gateway/ocean",
+    text: "You left us your email a while back. We haven't forgotten. Here's the entrance to four elements of Madeira: https://www.madeirabook.com/gateway/ocean",
     html: wrapper(
       null,
       'We saved you a way in',
@@ -101,14 +101,14 @@ export const templates: Record<
         "<p>Since then we've built something quiet — four ways into the island, each one tuned to a different mood.</p>" +
         '<p>Two questions. Then we show you the sea, the forest, the sun, or the wild north. Your choice.</p>',
       'Find your element →',
-      'https://app.madeirabook.com/gateway/ocean?utm_source=email&utm_campaign=reactivation',
+      'https://www.madeirabook.com/gateway/ocean?utm_source=email&utm_campaign=reactivation',
       subscriber.unsubscribeToken,
     ),
   }),
 
   gateway_ocean: (subscriber) => ({
     subject: "The ocean doesn't ask questions — but you do",
-    text: 'Two questions. Then we show you the sea. Click to enter: https://app.madeirabook.com/gateway/ocean',
+    text: 'Two questions. Then we show you the sea. Click to enter: https://www.madeirabook.com/gateway/ocean',
     html: wrapper(
       null,
       "The ocean doesn't ask questions",
@@ -116,7 +116,7 @@ export const templates: Record<
         '<p>Two questions. Then we show you the sea.</p>' +
         '<p>Which element of Madeira is yours — the wild ocean, the misty forest, the sun on the basalt, or the waterfalls of the north?</p>',
       'Enter the gateway →',
-      'https://app.madeirabook.com/gateway/ocean?utm_source=email&utm_campaign=gateway_ocean',
+      'https://www.madeirabook.com/gateway/ocean?utm_source=email&utm_campaign=gateway_ocean',
       subscriber.unsubscribeToken,
     ),
   }),
@@ -161,7 +161,7 @@ export const templates: Record<
         '607 — studio, 6th floor, ocean view.<br>' +
         'Penthouse — top floor, panoramic terrace.</p>',
       'See availability →',
-      'https://app.madeirabook.com/?utm_source=email&utm_campaign=return_offer',
+      'https://www.madeirabook.com/?utm_source=email&utm_campaign=return_offer',
       subscriber.unsubscribeToken,
     ),
   }),

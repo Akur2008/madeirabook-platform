@@ -83,6 +83,16 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
+      // Neon's pooler drops stale TCP sessions when computes suspend; short
+      // idle lifetime + TCP keepalive recycle dead sockets instead of
+      // reusing them ("Connection terminated unexpectedly" in production).
+      max: 5,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 10_000,
+      maxLifetimeSeconds: 300,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10_000,
+      allowExitOnIdle: true,
     },
   }),
   sharp,

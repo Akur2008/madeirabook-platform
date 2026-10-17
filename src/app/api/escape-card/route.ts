@@ -5,6 +5,8 @@ export const runtime = 'nodejs'
 
 const REVALIDATE_SECONDS = 3600
 const FALLBACK_PRICE_EUR = 17
+const FALLBACK_MADEIRA_TEMP = 22
+const WEATHER_TIMEOUT_MS = 3000
 const MADEIRA_IATA = 'FNC'
 const MADEIRA_COORDS = { lat: 32.65, lng: -16.908 }
 
@@ -116,7 +118,7 @@ async function fetchWeather(city: CityInfo): Promise<{ from: WeatherPoint; to: W
       `&current=temperature_2m,weather_code`
     const res = await fetch(url, {
       next: { revalidate: REVALIDATE_SECONDS },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(WEATHER_TIMEOUT_MS),
     })
     if (!res.ok) return { from: null, to: null }
     const body = (await res.json()) as
@@ -162,7 +164,7 @@ export async function GET(req: NextRequest) {
       currency: 'EUR',
       fromTemp: weather.from?.temp ?? null,
       fromWeatherCode: weather.from?.code ?? null,
-      toTemp: weather.to?.temp ?? null,
+      toTemp: weather.to?.temp ?? FALLBACK_MADEIRA_TEMP,
       toWeatherCode: weather.to?.code ?? null,
       fallback: priceFallback,
     },

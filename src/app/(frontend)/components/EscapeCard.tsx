@@ -114,10 +114,14 @@ export default function EscapeCard() {
             🔥 Prices rise closer to Friday
           </p>
         )}
-        {typeof escapeCard?.fromTemp === 'number' && typeof escapeCard?.toTemp === 'number' && (
+        {typeof escapeCard?.toTemp === 'number' && (
           <p className="text-sm text-white/70 mt-2">
-            {weatherIcon(escapeCard.fromWeatherCode)} {city} {escapeCard.fromTemp}°C
-            <span className="mx-2">➔</span>
+            {typeof escapeCard.fromTemp === 'number' && (
+              <>
+                {weatherIcon(escapeCard.fromWeatherCode)} {city} {escapeCard.fromTemp}°C
+                <span className="mx-2">➔</span>
+              </>
+            )}
             {weatherIcon(escapeCard.toWeatherCode)} Madeira {escapeCard.toTemp}°C
           </p>
         )}

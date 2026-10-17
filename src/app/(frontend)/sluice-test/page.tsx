@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useAudioEngine } from '@/audio/useAudioEngine'
 import { useAutoplayVideo } from '@/components/useAutoplayVideo'
@@ -690,12 +692,13 @@ function BreathOverlay({ step, second, raised = false }: { step: number; second:
 
 function EscapeCard() {
   const engine = useAudioEngine()
+  const router = useRouter()
 
   const handleBegin = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
     engine.restoreFromBackground(400)
     setTimeout(() => {
-      window.location.href = 'https://app.madeirabook.com/'
+      router.push('/')
     }, 200)
   }
 
@@ -711,13 +714,13 @@ function EscapeCard() {
       <p className="text-white/95 text-xl" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
         Ready to go?
       </p>
-      <a
-        href="https://app.madeirabook.com/"
+      <Link
+        href="/"
         onClick={handleBegin}
         className="mt-4 block w-full py-3 rounded-full bg-white/10 border border-white/30 text-white text-sm tracking-widest uppercase text-center hover:bg-white/20 transition-colors"
       >
         Begin →
-      </a>
+      </Link>
     </div>
   )
 }

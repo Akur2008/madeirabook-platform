@@ -12,7 +12,7 @@ Madeirabook is operated by **Andrei Kurochkin, Empresário Individual em Portuga
 - **NIF:** available on request
 - **Contact:** hello@madeirabook.com
 
-Madeirabook is the **Data Controller** for personal data collected through the Platform ([madeirabook.com](https://madeirabook.com/) and [app.madeirabook.com](https://app.madeirabook.com/)).
+Madeirabook is the **Data Controller** for personal data collected through the Platform ([www.madeirabook.com](https://www.madeirabook.com/)).
 
 We process personal data in accordance with the **EU General Data Protection Regulation (GDPR)** (Regulation EU 2016/679) and Portuguese data protection law.
 
@@ -192,7 +192,7 @@ export const termsLastUpdated = '7 October 2026'
 
 export const termsFallback = `## 1. Who We Are
 
-These Terms & Conditions ("Terms") govern the use of the website **[madeirabook.com](https://madeirabook.com/)** and **[app.madeirabook.com](https://app.madeirabook.com/)** (together, the "Platform") and all bookings made through the Platform.
+These Terms & Conditions ("Terms") govern the use of the website **[www.madeirabook.com](https://www.madeirabook.com/)** (the "Platform") and all bookings made through the Platform.
 
 The Platform is operated by:
 
@@ -394,8 +394,7 @@ export const cookiesFallback = `## 1. About This Policy
 
 This Cookie Policy explains how **Madeirabook** (operated by Andrei Kurochkin, Empresário Individual em Portugal) uses cookies and similar technologies on:
 
-- **[madeirabook.com](https://madeirabook.com/)** (landing site)
-- **[app.madeirabook.com](https://app.madeirabook.com/)** (booking platform and owner cabinet)
+- **[www.madeirabook.com](https://www.madeirabook.com/)** (site, booking platform and owner cabinet)
 
 By using the Platform, you consent to the use of cookies as described below.
 

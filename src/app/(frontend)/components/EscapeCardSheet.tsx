@@ -1,12 +1,14 @@
 'use client'
 
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAudioEngine } from '@/audio/useAudioEngine'
 
-const ESCAPE_CARD_URL = 'https://app.madeirabook.com/api/escape-card'
-const BOOKINGS_URL = 'https://app.madeirabook.com/api/stats/bookings-count'
-const STAY_URL = 'https://app.madeirabook.com/'
+const ESCAPE_CARD_URL = '/api/escape-card'
+const BOOKINGS_URL = '/api/stats/bookings-count'
+const STAY_URL = '/'
 const SHEET_MS = 400
 const SHEET_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
@@ -14,19 +16,22 @@ const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 type EscapeCardData = {
   city?: string
   country?: string
-  minPrice?: number
+  cheapestPrice?: number
   currency?: string
   fallback?: boolean
 }
 
 function formatPrice(data: EscapeCardData): string | null {
-  if (typeof data.minPrice !== 'number') return null
-  if (data.currency === 'EUR') return `from €${data.minPrice}`
-  return data.currency ? `from ${data.minPrice} ${data.currency}` : `from ${data.minPrice}`
+  if (typeof data.cheapestPrice !== 'number') return null
+  if (data.currency === 'EUR') return `from €${data.cheapestPrice}`
+  return data.currency
+    ? `from ${data.cheapestPrice} ${data.currency}`
+    : `from ${data.cheapestPrice}`
 }
 
 export default function EscapeCardSheet() {
   const engine = useAudioEngine()
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
   const [escapeCard, setEscapeCard] = useState<EscapeCardData | null>(null)
@@ -64,10 +69,10 @@ export default function EscapeCardSheet() {
       e.preventDefault()
       engine.restoreFromBackground(SHEET_MS)
       setTimeout(() => {
-        window.location.href = STAY_URL
+        router.push(STAY_URL)
       }, 200)
     },
-    [engine],
+    [engine, router],
   )
 
   // Lock body scroll and close on Escape while the sheet is up.
@@ -143,13 +148,13 @@ export default function EscapeCardSheet() {
               </p>
             )}
 
-            <a
+            <Link
               href={STAY_URL}
               onClick={handleStay}
               className="mt-6 block w-full rounded-full border border-white/30 bg-white/10 py-3 text-center text-sm uppercase tracking-widest text-white transition-colors hover:bg-white/20"
             >
               Choose your stay →
-            </a>
+            </Link>
           </div>
         </div>
       )}
