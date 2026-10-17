@@ -248,6 +248,7 @@ export async function checkAvailability({
       and: [
         { pmsPropertyId: { exists: true } },
         { status: { equals: 'published' } },
+        { brand: { not_equals: 'madeiraoasis' } },
       ],
     },
     limit: 100,

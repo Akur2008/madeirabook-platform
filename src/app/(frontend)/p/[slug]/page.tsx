@@ -23,7 +23,13 @@ export async function generateMetadata({
   const payload = await getPayload({ config: await config })
   const { docs } = await payload.find({
     collection: 'properties',
-    where: { slug: { equals: slug }, status: { equals: 'published' } },
+    where: {
+      and: [
+        { slug: { equals: slug } },
+        { status: { equals: 'published' } },
+        { brand: { not_equals: 'madeiraoasis' } },
+      ],
+    },
     limit: 1,
     depth: 2,
   })
@@ -41,10 +47,10 @@ export async function generateMetadata({
       description: desc,
       images: image ? [{ url: image }] : [],
       type: 'website',
-      url: `https://madeirabook-platform.vercel.app/p/${p.slug}`,
+      url: `https://www.madeirabook.com/p/${p.slug}`,
     },
     alternates: {
-      canonical: `https://madeirabook-platform.vercel.app/p/${p.slug}`,
+      canonical: `https://www.madeirabook.com/p/${p.slug}`,
     },
   }
 }
@@ -59,7 +65,13 @@ export default async function PropertyPage({
 
   const { docs } = await payload.find({
     collection: 'properties',
-    where: { slug: { equals: slug }, status: { equals: 'published' } },
+    where: {
+      and: [
+        { slug: { equals: slug } },
+        { status: { equals: 'published' } },
+        { brand: { not_equals: 'madeiraoasis' } },
+      ],
+    },
     limit: 1,
     depth: 2,
   })
@@ -139,7 +151,7 @@ export default async function PropertyPage({
         price: p.pricePerNight,
         priceCurrency: 'EUR',
         availability: 'https://schema.org/InStock',
-        url: `https://madeirabook-platform.vercel.app/p/${p.slug}`,
+        url: `https://www.madeirabook.com/p/${p.slug}`,
       },
     }),
   }

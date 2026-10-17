@@ -5,7 +5,23 @@ const REF_RE = /^[a-z0-9_-]{2,50}$/
 const MAP_RE = /^\/m\/([a-z0-9_-]{2,50})\/?$/
 const THIRTY_DAYS = 2592000
 
+const OASIS_HOSTS = new Set(['madeiraoasis.com', 'www.madeiraoasis.com'])
+
 export function middleware(req: NextRequest) {
+  // Multi-domain routing: madeiraoasis.com serves the /oasis route group at
+  // the root. Only the mapped paths are rewritten; /api/*, /_next/*, /admin
+  // and every other path pass through untouched.
+  const host = (req.headers.get('host') ?? '').split(':')[0].toLowerCase()
+  if (OASIS_HOSTS.has(host)) {
+    const { pathname } = req.nextUrl
+    if (pathname === '/' || pathname === '/hotels' || pathname.startsWith('/hotels/')) {
+      const url = req.nextUrl.clone()
+      url.pathname = `/oasis${pathname === '/' ? '' : pathname}`
+      return NextResponse.rewrite(url)
+    }
+    return NextResponse.next()
+  }
+
   const param = req.nextUrl.searchParams.get('ref')
   const mapMatch = req.nextUrl.pathname.match(MAP_RE)
   const ref =

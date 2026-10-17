@@ -112,9 +112,9 @@ export async function generateMetadata({
       description: desc,
       images: image ? [{ url: image }] : [],
       type: 'website',
-      url: `/oasis/hotels/${p.slug}`,
+      url: `/hotels/${p.slug}`,
     },
-    alternates: { canonical: `/oasis/hotels/${p.slug}` },
+    alternates: { canonical: `/hotels/${p.slug}` },
   }
 }
 

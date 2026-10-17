@@ -65,7 +65,12 @@ export default async function BeachPage({
 
   const { docs: properties } = await payload.find({
     collection: 'properties',
-    where: { status: { equals: 'published' } },
+    where: {
+      and: [
+        { status: { equals: 'published' } },
+        { brand: { not_equals: 'madeiraoasis' } },
+      ],
+    },
     limit: 3,
     depth: 2,
   })

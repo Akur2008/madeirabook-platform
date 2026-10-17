@@ -39,7 +39,12 @@ export default async function ExplorePage() {
 
   const { docs: mapProperties } = await payload.find({
     collection: 'properties',
-    where: { status: { equals: 'published' } },
+    where: {
+      and: [
+        { status: { equals: 'published' } },
+        { brand: { not_equals: 'madeiraoasis' } },
+      ],
+    },
     limit: 200,
     depth: 1,
   })

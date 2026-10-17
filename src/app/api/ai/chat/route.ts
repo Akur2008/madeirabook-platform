@@ -83,6 +83,12 @@ async function siteIndex(): Promise<string> {
       payload.find({
         ...base,
         collection: 'properties',
+        where: {
+          and: [
+            { status: { equals: 'published' } },
+            { brand: { not_equals: 'madeiraoasis' } },
+          ],
+        },
         select: { title: true, slug: true, shortDescription: true, pricePerNight: true, bedrooms: true, maxGuests: true },
       }),
       payload.find({

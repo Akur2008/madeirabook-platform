@@ -23,10 +23,10 @@ export const metadata: Metadata = {
     description:
       'Curated stays in Madeira — direct booking, honest prices.',
     type: 'website',
-    url: 'https://madeirabook-platform.vercel.app/',
+    url: 'https://www.madeirabook.com/',
   },
   alternates: {
-    canonical: 'https://madeirabook-platform.vercel.app/',
+    canonical: 'https://www.madeirabook.com/',
   },
 }
 
@@ -38,13 +38,13 @@ const WEBSITE_JSONLD = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Madeirabook',
-  url: 'https://madeirabook-platform.vercel.app/',
+  url: 'https://www.madeirabook.com/',
   description:
     'Curated stays in Madeira — direct booking, honest prices.',
   potentialAction: {
     '@type': 'SearchAction',
     target:
-      'https://madeirabook-platform.vercel.app/?q={search_term_string}',
+      'https://www.madeirabook.com/?q={search_term_string}',
     'query-input': 'required name=search_term_string',
   },
 }
@@ -155,14 +155,24 @@ export default async function HomePage({
 
   const { docs: properties } = await payload.find({
     collection: 'properties',
-    where: { status: { equals: 'published' } },
+    where: {
+      and: [
+        { status: { equals: 'published' } },
+        { brand: { not_equals: 'madeiraoasis' } },
+      ],
+    },
     limit: 12,
     depth: 2,
   })
 
   const { docs: mapProperties } = await payload.find({
     collection: 'properties',
-    where: { status: { equals: 'published' } },
+    where: {
+      and: [
+        { status: { equals: 'published' } },
+        { brand: { not_equals: 'madeiraoasis' } },
+      ],
+    },
     limit: 50,
     depth: 1,
   })

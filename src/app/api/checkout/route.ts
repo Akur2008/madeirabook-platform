@@ -110,7 +110,12 @@ export async function POST(req: NextRequest) {
     const payload = await getPayload({ config: await config })
     const found = await payload.find({
       collection: 'properties',
-      where: { slug: { equals: propertySlug } },
+      where: {
+        and: [
+          { slug: { equals: propertySlug } },
+          { brand: { not_equals: 'madeiraoasis' } },
+        ],
+      },
       limit: 1,
       depth: 2,
     })

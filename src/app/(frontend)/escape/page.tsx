@@ -18,10 +18,10 @@ export const metadata: Metadata = {
     description:
       'Direct flights to Madeira from cities across Europe. Curated stays, honest prices.',
     type: 'website',
-    url: 'https://madeirabook-platform.vercel.app/escape',
+    url: 'https://www.madeirabook.com/escape',
   },
   alternates: {
-    canonical: 'https://madeirabook-platform.vercel.app/escape',
+    canonical: 'https://www.madeirabook.com/escape',
   },
 }
 

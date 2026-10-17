@@ -4,7 +4,8 @@ import Link from 'next/link'
 import './oasis.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://madeirabook-platform.vercel.app'),
+  metadataBase: new URL('https://www.madeiraoasis.com'),
+  alternates: { canonical: 'https://www.madeiraoasis.com' },
   title: 'Madeira Oasis — A private collection of Madeira’s finest hotels',
   description:
     'Fifteen hand-picked luxury addresses across Madeira. Oceanfront resorts, historic quintas and boutique suites — booked through the Madeira Oasis concierge.',

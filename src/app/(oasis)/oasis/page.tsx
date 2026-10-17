@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: 'Madeira Oasis — The collection',
   description:
     'Fifteen hand-picked luxury hotels across Madeira on one map. Request a stay through the Madeira Oasis concierge.',
-  alternates: { canonical: '/oasis' },
+  alternates: { canonical: '/' },
 }
 
 export default async function OasisPage() {

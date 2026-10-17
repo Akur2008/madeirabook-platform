@@ -9,7 +9,8 @@ import WhatsAppConciergeButton from '@/components/WhatsAppConciergeButton'
 import AiConciergeWidget from '@/components/AiConciergeWidget'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://madeirabook-platform.vercel.app'),
+  metadataBase: new URL('https://www.madeirabook.com'),
+  alternates: { canonical: 'https://www.madeirabook.com' },
   title: 'Madeirabook — Curated escapes to Madeira',
   description:
     'Emotional gateways to Madeira. Two-minute escapes from the city noise.',
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     description:
       'Emotional gateways to Madeira. Two-minute escapes from the city noise.',
     type: 'website',
-    url: 'https://madeirabook-platform.vercel.app',
+    url: 'https://www.madeirabook.com',
     images: [
       {
         url: 'https://www.madeirabook.com/hero.jpg',

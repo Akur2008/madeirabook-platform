@@ -61,7 +61,7 @@ export async function generateMetadata({
   })
   if (!docs.length) return { title: 'Not found' }
   const city = docs[0]
-  const url = `https://madeirabook-platform.vercel.app/escape/${city.slug}`
+  const url = `https://www.madeirabook.com/escape/${city.slug}`
   const description = `Direct flights from ${city.name} to Madeira from €${city.basePrice}. ${city.description?.slice(0, 120) ?? ''}`
   return {
     title: `Escape from ${city.name} to Madeira — Madeirabook`,
@@ -96,7 +96,12 @@ export default async function EscapePage({
 
   const { docs: properties } = await payload.find({
     collection: 'properties',
-    where: { status: { equals: 'published' } },
+    where: {
+      and: [
+        { status: { equals: 'published' } },
+        { brand: { not_equals: 'madeiraoasis' } },
+      ],
+    },
     limit: 3,
     depth: 2,
   })
@@ -152,14 +157,14 @@ export default async function EscapePage({
         price: city.basePrice,
         priceCurrency: city.currency || 'EUR',
         availability: 'https://schema.org/InStock',
-        url: `https://madeirabook-platform.vercel.app/escape/${city.slug}?utm_source=ai_search&utm_medium=chatgpt`,
+        url: `https://www.madeirabook.com/escape/${city.slug}?utm_source=ai_search&utm_medium=chatgpt`,
       },
     }),
     potentialAction: {
       '@type': 'ReserveAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `https://madeirabook-platform.vercel.app/escape/${city.slug}?utm_source=ai_search&utm_medium=chatgpt`,
+        urlTemplate: `https://www.madeirabook.com/escape/${city.slug}?utm_source=ai_search&utm_medium=chatgpt`,
         actionPlatform: [
           'http://schema.org/DesktopWebPlatform',
           'http://schema.org/MobileWebPlatform',
