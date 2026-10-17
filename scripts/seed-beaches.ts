@@ -279,6 +279,114 @@ Come in the morning, when the light lies flat on the water and locals take their
     bestTimeToVisit: 'May–October',
     featured: true,
   },
+  {
+    name: 'Ponta Gorda Beach',
+    slug: 'ponta-gorda-beach',
+    shortDescription:
+      'Funchal’s newest bathing complex on the Lido promenade — two seawater pools, direct ocean access and a sand sports court.',
+    description: `The Complexo Balnear da Ponta Gorda is the newest bathing complex on the Lido seafront — a broad deck above the rocks with two seawater pools for adults, a children's pool, and steps straight into the Atlantic.
+
+Entry is a few euros and covers showers, changing rooms, sunbeds and a lifeguard; there is a bar and a sand court used for beach volleyball and football. The whole Lido–Praia Formosa promenade runs past the entrance.
+
+Come mid-morning for a quiet pool swim with the swell breaking against the outer wall, then walk the promenade west towards Praia Formosa — one of the best flat walks in Funchal.`,
+    locationSlug: 'funchal',
+    geoCoordinates: { lat: 32.6342, lng: -16.9406 },
+    heroImage:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Piscinas_da_Ponta_Gorda_-_Funchal_-_Portugal_%289786398111%29.jpg/1920px-Piscinas_da_Ponta_Gorda_-_Funchal_-_Portugal_%289786398111%29.jpg',
+    imageAttribution:
+      'Photo by Vitor Oliveira, CC BY-SA 2.0, via Wikimedia Commons',
+    posterUrl:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Piscinas_da_Ponta_Gorda_-_Funchal_-_Portugal_%289786398111%29.jpg/1920px-Piscinas_da_Ponta_Gorda_-_Funchal_-_Portugal_%289786398111%29.jpg',
+    highlights: [
+      'Two seawater pools',
+      'Direct ocean access by steps',
+      'Sand court and playground',
+      'On the Lido–Formosa promenade',
+    ],
+    bestTimeToVisit: 'May–October',
+    featured: false,
+  },
+  {
+    name: 'Lido Bathing Complex',
+    slug: 'lido-complex-beach',
+    shortDescription:
+      'Funchal’s classic municipal pool complex — a huge seawater pool on the rocks, salt-sprayed and full of local life.',
+    description: `The Complexo Balnear do Lido is Funchal's classic municipal bathing complex, sitting on the rocks in the Lido hotel district. A large seawater pool, diving boards and concrete sun terraces fill the space between the promenade and the open Atlantic.
+
+It is cheap, lifeguarded and open year-round — locals swim before work and families take over at weekends. Sea access is by ladder on calm days; the pool is the safer option when the swell rolls in.
+
+The complex marks the start of the seafront promenade: from here it runs west past Ponta Gorda and Doca do Cavacas all the way to Praia Formosa — flat, paved and ocean-side the whole way.`,
+    locationSlug: 'funchal',
+    geoCoordinates: { lat: 32.6356, lng: -16.9328 },
+    heroImage:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/2016_Piscinas._Lido._Funchal._Madeira_Portugal-4.jpg/1920px-2016_Piscinas._Lido._Funchal._Madeira_Portugal-4.jpg',
+    imageAttribution:
+      'Photo by Luis Miguel Bugallo Sánchez (Lmbuga), CC BY-SA 4.0, via Wikimedia Commons',
+    posterUrl:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/2016_Piscinas._Lido._Funchal._Madeira_Portugal-4.jpg/1920px-2016_Piscinas._Lido._Funchal._Madeira_Portugal-4.jpg',
+    highlights: [
+      'Large seawater pool',
+      'Diving boards and sun terraces',
+      'Lifeguarded, open year-round',
+      'Start of the Lido promenade',
+    ],
+    bestTimeToVisit: 'April–October',
+    featured: false,
+  },
+  {
+    name: 'Praia da Rotunda',
+    slug: 'praia-da-rotunda',
+    shortDescription:
+      'A small rocky swim spot below the Lido roundabout — local, unmarked, best in calm seas.',
+    description: `Praia da Rotunda is the informal name locals give to the rocky shore below the Lido roundabout, where a stepped path leaves the seafront road and reaches a shelf of wave-cut lava. There are no facilities and no signs — just a rope rail, flat rocks and clear water.
+
+This is a confident-swimmer spot: entry is off the rocks and the south coast swell can make it unsafe. On calm mornings it is one of the quietest swims in Funchal, with the Gorgulho sea stack a few hundred metres offshore.
+
+If the sea is up, the municipal Lido complex is a five-minute walk along the promenade.`,
+    locationSlug: 'funchal',
+    geoCoordinates: { lat: 32.6385, lng: -16.9295 },
+    heroImage:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/S%C3%A3o_Martinho_%28Madeira%2C_Portugal%29%2C_Ilh%C3%A9u_do_Gorgulho_--_2025_--_1958.jpg/1920px-S%C3%A3o_Martinho_%28Madeira%2C_Portugal%29%2C_Ilh%C3%A9u_do_Gorgulho_--_2025_--_1958.jpg',
+    imageAttribution:
+      'Photo by Dietmar Rabich, CC BY-SA 4.0, via Wikimedia Commons — Ilhéu do Gorgulho and the Lido coast',
+    posterUrl:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/S%C3%A3o_Martinho_%28Madeira%2C_Portugal%29%2C_Ilh%C3%A9u_do_Gorgulho_--_2025_--_1958.jpg/1920px-S%C3%A3o_Martinho_%28Madeira%2C_Portugal%29%2C_Ilh%C3%A9u_do_Gorgulho_--_2025_--_1958.jpg',
+    highlights: [
+      'Unmarked local swim spot',
+      'Rock shelf entry',
+      'View of Ilhéu do Gorgulho',
+      'Five minutes from the Lido complex',
+    ],
+    bestTimeToVisit: 'May–October',
+    featured: false,
+  },
+  {
+    name: 'Praia das Cavacas',
+    slug: 'praia-das-cavacas',
+    shortDescription:
+      'Natural tidal pools carved into lava rock at the west end of Praia Formosa — swim in the sea without the swell.',
+    description: `Praia das Cavacas — known to most visitors as Doca do Cavacas — is a pocket of natural pools carved into the lava at the western end of Praia Formosa. Volcanic walls shelter clear tidal pools, and ladders give direct access to the open sea for stronger swimmers.
+
+The complex has showers, changing rooms and a lifeguard in season; a tunnel through the headland connects it to Praia Formosa's long promenade. The space is compact — on hot weekends it fills early.
+
+Go late afternoon, when the cliffs shade the pools and the rock turns honey-coloured. It is the calmest way to end a beach day that started on Praia Formosa.`,
+    locationSlug: 'funchal',
+    geoCoordinates: { lat: 32.6353, lng: -16.9479 },
+    heroImage:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Doca_do_Cavacas_-_Funchal_01.jpg/1920px-Doca_do_Cavacas_-_Funchal_01.jpg',
+    imageAttribution:
+      'Photo by H. Zell, CC BY-SA 3.0, via Wikimedia Commons',
+    posterUrl:
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Doca_do_Cavacas_-_Funchal_01.jpg/1920px-Doca_do_Cavacas_-_Funchal_01.jpg',
+    highlights: [
+      'Natural lava tidal pools',
+      'Sea access by ladders',
+      'Tunnel to Praia Formosa',
+      'Sheltered from the swell',
+    ],
+    bestTimeToVisit: 'May–October',
+    featured: false,
+  },
 ]
 
 async function seedBeaches(): Promise<void> {

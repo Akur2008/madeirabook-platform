@@ -15,6 +15,7 @@ import * as migration_20261015_185608_add_media_fields_to_beaches_and_restaurant
 import * as migration_20261015_215036_add_guides_collection from './20261015_215036_add_guides_collection';
 import * as migration_20261015_234434_add_trails_and_viewpoints from './20261015_234434_add_trails_and_viewpoints';
 import * as migration_20261016_153342_add_owner_magic_auth_fields from './20261016_153342_add_owner_magic_auth_fields';
+import * as migration_20261016_235314_sync_is_verified from './20261016_235314_sync_is_verified';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20261016_153342_add_owner_magic_auth_fields.up,
     down: migration_20261016_153342_add_owner_magic_auth_fields.down,
-    name: '20261016_153342_add_owner_magic_auth_fields'
+    name: '20261016_153342_add_owner_magic_auth_fields',
+  },
+  {
+    up: migration_20261016_235314_sync_is_verified.up,
+    down: migration_20261016_235314_sync_is_verified.down,
+    name: '20261016_235314_sync_is_verified'
   },
 ];

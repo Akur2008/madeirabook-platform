@@ -344,6 +344,10 @@ export interface Property {
       }[]
     | null;
   featured?: boolean | null;
+  /**
+   * Verified property badge.
+   */
+  isVerified?: boolean | null;
   status: 'draft' | 'published' | 'archived';
   updatedAt: string;
   createdAt: string;
@@ -1201,6 +1205,7 @@ export interface PropertiesSelect<T extends boolean = true> {
         id?: T;
       };
   featured?: T;
+  isVerified?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -160,6 +160,14 @@ export const Properties: CollectionConfig = {
       defaultValue: false,
     },
     {
+      name: 'isVerified',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Verified property badge.',
+      },
+    },
+    {
       name: 'status',
       type: 'select',
       options: [
