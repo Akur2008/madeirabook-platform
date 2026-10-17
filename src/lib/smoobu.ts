@@ -240,3 +240,94 @@ export async function checkAvailability({
   items.sort((a, b) => a.price - b.price)
   return items
 }
+
+export interface SmoobuRateDay {
+  price?: number
+  min_length_of_stay?: number
+  available?: boolean | number
+}
+
+// { [apartmentId]: { [date YYYY-MM-DD]: SmoobuRateDay } }
+export type SmoobuRatesMap = Record<string, Record<string, SmoobuRateDay>>
+
+export interface SmoobuReservation {
+  id: number
+  arrival: string
+  departure: string
+  apartment?: { id?: number | string }
+  channel?: { name?: string }
+  'guest-name'?: string
+  firstname?: string
+  lastname?: string
+  email?: string
+  phone?: string
+  price?: number
+  adults?: number
+  children?: number
+  'check-in'?: string
+  'check-out'?: string
+  'is-blocked-booking'?: boolean
+  status?: string
+  type?: string
+}
+
+interface SmoobuReservationsPage {
+  bookings?: SmoobuReservation[]
+  page_count?: number
+  total_items?: number
+}
+
+// Per-day rates for a list of apartments. Smoobu only returns the first
+// apartment of apartments[] per request, so we issue one request per id
+// with a 200ms pause between calls (rate limit), then merge.
+// Ported from madeirabook-core smoobu.js getRates.
+export async function getRates(
+  apartmentIds: number[],
+  startDate: string,
+  endDate: string,
+): Promise<SmoobuRatesMap> {
+  const merged: SmoobuRatesMap = {}
+  for (const aptId of apartmentIds) {
+    try {
+      const res = await smoobuRequest('GET', '/api/rates', null, {
+        'apartments[]': String(aptId),
+        end_date: endDate,
+        start_date: startDate,
+      })
+      const data = res?.data as SmoobuRatesMap | undefined
+      if (data) Object.assign(merged, data)
+    } catch (e) {
+      console.warn(
+        `smoobu getRates failed for apartment ${aptId}:`,
+        e instanceof Error ? e.message : e,
+      )
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200))
+  }
+  return merged
+}
+
+// Reservations in [from, to]. Smoobu ignores the apartments[] filter on this
+// endpoint, so callers must filter by apartment.id themselves. pageSize is
+// capped at 100 by the API; we paginate via `page` when page_count > 1.
+// Ported from madeirabook-core smoobu.js getReservations.
+export async function getReservations(
+  from: string,
+  to: string,
+): Promise<SmoobuReservation[]> {
+  const bookings: SmoobuReservation[] = []
+  let page = 1
+  let pageCount = 1
+  do {
+    const res = (await smoobuRequest('GET', '/api/reservations', null, {
+      from,
+      page,
+      pageSize: 100,
+      to,
+    })) as SmoobuReservationsPage
+    if (Array.isArray(res.bookings)) bookings.push(...res.bookings)
+    pageCount = Number(res.page_count) || 1
+    page += 1
+  } while (page <= pageCount && page <= 10)
+  return bookings
+}
