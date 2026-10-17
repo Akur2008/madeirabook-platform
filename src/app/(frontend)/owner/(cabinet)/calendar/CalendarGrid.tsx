@@ -21,6 +21,8 @@ interface GridProps {
   ) => CalendarBooking | undefined
   rateFor: (aptId: number | null, dateStr: string) => RateDay | undefined
   onSelectBooking: (b: CalendarBooking) => void
+  onSelectDay: (apt: CalendarApartment, dateStr: string) => void
+  isSelected: (aptId: number | null, dateStr: string) => boolean
 }
 
 function bookingBarClasses(bk: CalendarBooking, dateStr: string): string {
@@ -45,6 +47,8 @@ export function CalendarTable({
   bookingFor,
   rateFor,
   onSelectBooking,
+  onSelectDay,
+  isSelected,
 }: GridProps) {
   return (
     <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#0d1a2a]">
@@ -88,15 +92,20 @@ export function CalendarTable({
                 const isWeekend = wd === 0 || wd === 6
                 const rate = rateFor(apt.aptId, dtStr)
                 const bk = bookingFor(apt.aptId, dtStr)
+                const selected = isSelected(apt.aptId, dtStr)
                 return (
                   <td
                     key={dtStr}
-                    className={`relative h-14 border-b border-r border-white/5 ${
-                      dtStr === today
-                        ? 'bg-emerald-500/10'
-                        : isWeekend
-                          ? 'bg-white/[0.03]'
-                          : ''
+                    onClick={() => onSelectDay(apt, dtStr)}
+                    title="Click to set price — click again on another day for a range"
+                    className={`relative h-14 cursor-pointer border-b border-r border-white/5 transition-colors hover:bg-white/[0.07] ${
+                      selected
+                        ? 'bg-emerald-400/20 outline outline-1 outline-emerald-400/60'
+                        : dtStr === today
+                          ? 'bg-emerald-500/10'
+                          : isWeekend
+                            ? 'bg-white/[0.03]'
+                            : ''
                     }`}
                   >
                     {rate?.min_length_of_stay ? (
@@ -113,7 +122,10 @@ export function CalendarTable({
                       <button
                         type="button"
                         title={`${bk.channel}: ${bk.guestName}`}
-                        onClick={() => onSelectBooking(bk)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onSelectBooking(bk)
+                        }}
                         className={`absolute inset-x-0.5 top-1/2 h-3 -translate-y-1/2 cursor-pointer transition-opacity hover:opacity-80${bookingBarClasses(bk, dtStr)}`}
                         style={{ background: channelColor(bk.channel) }}
                       />
@@ -137,6 +149,8 @@ export function CalendarCards({
   bookingFor,
   rateFor,
   onSelectBooking,
+  onSelectDay,
+  isSelected,
 }: GridProps) {
   return (
     <div className="space-y-4">
@@ -154,15 +168,19 @@ export function CalendarCards({
               const isWeekend = wd === 0 || wd === 6
               const rate = rateFor(apt.aptId, dtStr)
               const bk = bookingFor(apt.aptId, dtStr)
+              const selected = isSelected(apt.aptId, dtStr)
               return (
                 <div
                   key={dtStr}
-                  className={`relative flex h-16 w-12 shrink-0 snap-start flex-col items-center rounded-lg border pt-1 ${
-                    dtStr === today
-                      ? 'border-emerald-400/40 bg-emerald-500/10'
-                      : isWeekend
-                        ? 'border-white/10 bg-white/[0.04]'
-                        : 'border-white/10'
+                  onClick={() => onSelectDay(apt, dtStr)}
+                  className={`relative flex h-16 w-12 shrink-0 cursor-pointer snap-start flex-col items-center rounded-lg border pt-1 transition-colors ${
+                    selected
+                      ? 'border-emerald-300 bg-emerald-400/20'
+                      : dtStr === today
+                        ? 'border-emerald-400/40 bg-emerald-500/10'
+                        : isWeekend
+                          ? 'border-white/10 bg-white/[0.04]'
+                          : 'border-white/10'
                   }`}
                 >
                   <span className="text-[9px] font-semibold text-white/40">
@@ -185,7 +203,10 @@ export function CalendarCards({
                     <button
                       type="button"
                       title={`${bk.channel}: ${bk.guestName}`}
-                      onClick={() => onSelectBooking(bk)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSelectBooking(bk)
+                      }}
                       className="absolute inset-x-0 bottom-0 h-1.5 rounded-b-lg"
                       style={{ background: channelColor(bk.channel) }}
                     />

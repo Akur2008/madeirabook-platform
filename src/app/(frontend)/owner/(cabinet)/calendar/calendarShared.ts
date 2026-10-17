@@ -1,4 +1,5 @@
-// Shared types and helpers for the owner calendar (read-only, A3.1).
+// Shared types and helpers for the owner calendar (A3.1 read + A3.2/A3.3
+// rates editing and manual bookings).
 
 export interface CalendarApartment {
   id: number

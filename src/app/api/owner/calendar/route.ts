@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { ownerCalendarCache } from '@/lib/ownerCalendarCache'
 import { getCurrentOwner } from '@/lib/ownerAuth'
 import {
   getRates,
@@ -38,11 +39,12 @@ interface CalendarResponse {
   }[]
 }
 
-// In-memory cache shared across dev hot reloads.
-const globalForCache = globalThis as unknown as {
-  __ownerCalendarCache?: Map<string, { at: number; data: CalendarResponse }>
-}
-const cache = (globalForCache.__ownerCalendarCache ??= new Map())
+// In-memory cache shared across dev hot reloads; invalidated by the
+// owner mutation routes (rates / bookings) after writes to Smoobu.
+const cache = ownerCalendarCache as Map<
+  string,
+  { at: number; data: CalendarResponse }
+>
 
 function fmtDate(d: Date): string {
   const y = d.getFullYear()

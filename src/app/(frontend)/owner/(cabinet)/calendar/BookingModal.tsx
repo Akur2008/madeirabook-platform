@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import { channelColor, type CalendarBooking } from './calendarShared'
 
@@ -21,12 +21,35 @@ export default function BookingModal({
   booking,
   propertyName,
   onClose,
+  onCancelled,
 }: {
   booking: CalendarBooking
   propertyName: string
   onClose: () => void
+  onCancelled: () => void
 }) {
   const color = channelColor(booking.channel)
+  const [confirming, setConfirming] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [error, setError] = useState('')
+
+  const cancel = async () => {
+    setCancelling(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/owner/bookings/${booking.id}`, {
+        method: 'DELETE',
+      })
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`)
+      onCancelled()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to cancel')
+      setCancelling(false)
+      setConfirming(false)
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
@@ -78,6 +101,43 @@ export default function BookingModal({
           <Row label="Total">&euro;{booking.price.toFixed(2)}</Row>
           <Row label="Smoobu ID">#{booking.id}</Row>
         </div>
+
+        {error && (
+          <div className="mt-4 rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-200">
+            {error}
+          </div>
+        )}
+
+        {confirming ? (
+          <div className="mt-5 rounded-lg border border-red-400/30 bg-red-400/10 p-3">
+            <p className="text-sm text-red-200">
+              Cancel this booking in Smoobu? This cannot be undone.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={cancel}
+                disabled={cancelling}
+                className="flex-1 rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
+              >
+                {cancelling ? 'Cancelling…' : 'Yes, cancel booking'}
+              </button>
+              <button
+                onClick={() => setConfirming(false)}
+                disabled={cancelling}
+                className="rounded-lg border border-white/15 px-4 py-2 text-sm text-white/70 transition-colors hover:border-white/40 hover:text-white"
+              >
+                Keep
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirming(true)}
+            className="mt-5 w-full rounded-lg border border-red-400/40 px-4 py-2 text-sm font-semibold text-red-300 transition-colors hover:bg-red-400/10"
+          >
+            Cancel booking
+          </button>
+        )}
       </div>
     </div>
   )

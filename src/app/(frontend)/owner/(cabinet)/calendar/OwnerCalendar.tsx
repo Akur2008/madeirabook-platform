@@ -1,13 +1,16 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import BookingModal from './BookingModal'
+import CreateBookingModal from './CreateBookingModal'
+import RateModal, { type RateEditTarget } from './RateModal'
 import { CalendarCards, CalendarTable } from './CalendarGrid'
 import {
   CHANNEL_LEGEND,
   MONTH_NAMES,
   fmtDateKey,
+  type CalendarApartment,
   type CalendarBooking,
   type CalendarData,
 } from './calendarShared'
@@ -23,6 +26,12 @@ export default function OwnerCalendar() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState<CalendarBooking | null>(null)
+  const [anchor, setAnchor] = useState<{ aptId: number; date: string } | null>(
+    null,
+  )
+  const [rateEdit, setRateEdit] = useState<RateEditTarget | null>(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -41,7 +50,12 @@ export default function OwnerCalendar() {
     return () => {
       cancelled = true
     }
-  }, [month])
+  }, [month, reloadKey])
+
+  const refresh = useCallback(() => {
+    setError('')
+    setReloadKey((k) => k + 1)
+  }, [])
 
   const [year, monthIdx] = useMemo(() => {
     const [y, m] = month.split('-').map(Number)
@@ -96,6 +110,29 @@ export default function OwnerCalendar() {
   const rateFor = (aptId: number | null, dateStr: string) =>
     aptId == null ? undefined : data?.rates[String(aptId)]?.[dateStr]
 
+  // First click anchors a day; second click on the same row opens the rate
+  // editor for the (sorted) range between the two.
+  const handleSelectDay = (apt: CalendarApartment, dateStr: string) => {
+    if (apt.aptId == null) return
+    if (!anchor || anchor.aptId !== apt.aptId) {
+      setAnchor({ aptId: apt.aptId, date: dateStr })
+      return
+    }
+    const [startDate, endDate] =
+      anchor.date <= dateStr ? [anchor.date, dateStr] : [dateStr, anchor.date]
+    setRateEdit({
+      aptId: apt.aptId,
+      aptName: apt.name,
+      startDate,
+      endDate,
+      currentRate: rateFor(apt.aptId, startDate),
+    })
+    setAnchor(null)
+  }
+
+  const isSelected = (aptId: number | null, dateStr: string) =>
+    aptId != null && anchor?.aptId === aptId && anchor.date === dateStr
+
   const selectedPropertyName = selected
     ? (data?.apartments.find((a) => a.id === selected.propertyId)?.name ?? '')
     : ''
@@ -139,8 +176,23 @@ export default function OwnerCalendar() {
           >
             &rarr;
           </button>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-400"
+            aria-label="New manual booking"
+            title="New manual booking"
+          >
+            +
+          </button>
         </div>
       </div>
+
+      {anchor && (
+        <div className="mt-3 text-xs text-emerald-300/80">
+          {anchor.date} selected — click another day in the same row to set a
+          price range, or the same day again for a single date.
+        </div>
+      )}
 
       {error && (
         <div className="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
@@ -167,6 +219,8 @@ export default function OwnerCalendar() {
                 bookingFor={bookingFor}
                 rateFor={rateFor}
                 onSelectBooking={setSelected}
+                onSelectDay={handleSelectDay}
+                isSelected={isSelected}
               />
             </div>
             <div className="md:hidden">
@@ -177,6 +231,8 @@ export default function OwnerCalendar() {
                 bookingFor={bookingFor}
                 rateFor={rateFor}
                 onSelectBooking={setSelected}
+                onSelectDay={handleSelectDay}
+                isSelected={isSelected}
               />
             </div>
           </div>
@@ -200,6 +256,32 @@ export default function OwnerCalendar() {
           booking={selected}
           propertyName={selectedPropertyName}
           onClose={() => setSelected(null)}
+          onCancelled={() => {
+            setSelected(null)
+            refresh()
+          }}
+        />
+      )}
+
+      {rateEdit && (
+        <RateModal
+          target={rateEdit}
+          onClose={() => setRateEdit(null)}
+          onSaved={() => {
+            setRateEdit(null)
+            refresh()
+          }}
+        />
+      )}
+
+      {showCreate && (
+        <CreateBookingModal
+          apartments={data?.apartments ?? []}
+          onClose={() => setShowCreate(false)}
+          onSaved={() => {
+            setShowCreate(false)
+            refresh()
+          }}
         />
       )}
     </div>

@@ -28,10 +28,6 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'www.madeirabook.com',
       },
-      {
-        protocol: 'https',
-        hostname: 'app.madeirabook.com',
-      },
     ],
   },
   webpack: (webpackConfig) => {
