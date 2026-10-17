@@ -941,6 +941,10 @@ export interface Lead {
   page: string;
   status: 'new' | 'contacted' | 'converted';
   userAgent?: string | null;
+  /**
+   * Instagram comment ID, used to deduplicate webhook deliveries.
+   */
+  commentId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1626,6 +1630,7 @@ export interface LeadsSelect<T extends boolean = true> {
   page?: T;
   status?: T;
   userAgent?: T;
+  commentId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

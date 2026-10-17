@@ -68,5 +68,13 @@ export const Leads: CollectionConfig = {
         hidden: true,
       },
     },
+    {
+      name: 'commentId',
+      type: 'text',
+      index: true,
+      admin: {
+        description: 'Instagram comment ID, used to deduplicate webhook deliveries.',
+      },
+    },
   ],
 }
