@@ -12,6 +12,9 @@ export const metadata: Metadata = {
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
+const PRIMARY_BTN =
+  'block w-full rounded-xl bg-[#10b981] px-6 py-4 text-center font-medium text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+
 const SECONDARY_BTN =
   'block w-full rounded-xl border border-white/10 bg-white/5 px-6 py-4 text-center text-white transition hover:border-white/30'
 
@@ -37,10 +40,17 @@ export default function LinksPage() {
         </p>
 
         <div className="mt-10 space-y-4">
-          <Link
-            href="/"
-            className="block w-full rounded-xl bg-[#10b981] px-6 py-4 text-center font-medium text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]"
-          >
+          <WhatsAppButton
+            className={PRIMARY_BTN}
+            message="Hi! I want to download the Madeira map 🗺️"
+            label="🗺️ Get the Madeira map on WhatsApp"
+          />
+          <WhatsAppButton
+            className={PRIMARY_BTN}
+            message="Hi! I want to make an escape to Madeira ✈️"
+            label="✈️ Plan my escape on WhatsApp"
+          />
+          <Link href="/" className={SECONDARY_BTN}>
             Book Your Stay
           </Link>
           <Link href="/" className={SECONDARY_BTN}>
@@ -52,7 +62,6 @@ export default function LinksPage() {
           <Link href="/" className={SECONDARY_BTN}>
             For Property Owners &amp; Creators
           </Link>
-          <WhatsAppButton className={SECONDARY_BTN} />
         </div>
 
         <footer className="mt-12 text-center text-xs text-white/30">

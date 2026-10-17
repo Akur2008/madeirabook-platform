@@ -2,8 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 
-const WA_BASE = 'https://wa.me/351919304028'
-const DEFAULT_HREF = `${WA_BASE}?text=Hi%20Madeirabook`
+const WA_BASE = 'https://wa.me/79626854685'
 const REF_COOKIE = 'madeirabook_ref'
 
 function readRefCookie(): string | null {
@@ -13,7 +12,17 @@ function readRefCookie(): string | null {
   return match ? decodeURIComponent(match[1]) : null
 }
 
-export default function WhatsAppButton({ className }: { className?: string }) {
+interface WhatsAppButtonProps {
+  className?: string
+  message: string
+  label: string
+}
+
+export default function WhatsAppButton({
+  className,
+  message,
+  label,
+}: WhatsAppButtonProps) {
   const anchorRef = useRef<HTMLAnchorElement>(null)
 
   // Rewrite href in-place once mounted: ?ref= param wins, then the
@@ -24,20 +33,20 @@ export default function WhatsAppButton({ className }: { className?: string }) {
       new URLSearchParams(window.location.search).get('ref') ??
       readRefCookie()
     if (ref && anchorRef.current) {
-      const text = `Hi Madeirabook, I came from ${ref}`
+      const text = `${message} (ref: ${ref})`
       anchorRef.current.href = `${WA_BASE}?text=${encodeURIComponent(text)}`
     }
-  }, [])
+  }, [message])
 
   return (
     <a
       ref={anchorRef}
-      href={DEFAULT_HREF}
+      href={`${WA_BASE}?text=${encodeURIComponent(message)}`}
       target="_blank"
       rel="noopener"
       className={className}
     >
-      💬 WhatsApp Concierge
+      {label}
     </a>
   )
 }

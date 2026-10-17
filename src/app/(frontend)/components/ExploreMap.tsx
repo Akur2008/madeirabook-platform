@@ -6,9 +6,13 @@ import type * as Leaflet from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
+import BookingDrawer from './BookingDrawer'
+
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 const MADEIRA_CENTER: [number, number] = [32.75, -16.95]
 const MADEIRA_ZOOM = 10
+const ESCAPE_CARD_URL = '/api/escape-card'
+const FALLBACK_CITY = 'Lisbon'
 
 type MapFilter = 'all' | 'stays' | 'beaches' | 'food' | 'trails' | 'views'
 
@@ -105,6 +109,19 @@ export default function ExploreMap({
   const router = useRouter()
   const [filter, setFilter] = useState<MapFilter>(activeFilter)
   const [ready, setReady] = useState(false)
+  const [escapeCity, setEscapeCity] = useState(FALLBACK_CITY)
+  const [escapeOpen, setEscapeOpen] = useState(false)
+
+  // Same geo-city lookup as the hero EscapeCard (/api/escape-card reads
+  // Vercel IP headers; falls back to Lisbon when unknown).
+  useEffect(() => {
+    fetch(ESCAPE_CARD_URL)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (typeof d?.city === 'string' && d.city) setEscapeCity(d.city)
+      })
+      .catch(() => undefined)
+  }, [])
 
   // Ambassador curation: empty/missing lists mean "show everything"
   const visibleBeaches = useMemo(() => {
@@ -271,6 +288,16 @@ export default function ExploreMap({
           </button>
         ))}
       </div>
+      {/* Bottom-center keeps clear of the fixed WhatsApp/Sound buttons on the
+          right edge and Leaflet's attribution corner */}
+      <button
+        type="button"
+        onClick={() => setEscapeOpen(true)}
+        className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 whitespace-nowrap rounded-full border border-emerald-500/60 bg-[#0a1420]/90 px-5 py-2.5 text-sm font-semibold text-white shadow-lg backdrop-blur transition-colors hover:border-emerald-400 hover:bg-emerald-600"
+      >
+        Escape from {escapeCity} →
+      </button>
+      <BookingDrawer open={escapeOpen} onOpenChange={setEscapeOpen} />
     </div>
   )
 }

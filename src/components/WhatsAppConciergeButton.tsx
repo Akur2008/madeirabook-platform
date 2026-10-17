@@ -3,9 +3,11 @@
 import React, { useCallback, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 
-const WA_BASE = 'https://wa.me/351919304028'
+const WA_BASE = 'https://wa.me/79626854685'
 const REF_COOKIE = 'madeirabook_ref'
-const DEFAULT_TEXT = 'Hi Madeirabook!'
+const MAP_TEXT = 'Hi! I want to download the Madeira map 🗺️'
+const ESCAPE_TEXT = 'Hi! I want to make an escape to Madeira ✈️'
+const DEFAULT_TEXT = MAP_TEXT
 
 const styles = `
 @keyframes waConciergePulse {
@@ -37,7 +39,7 @@ function messageForPath(pathname: string): string {
   const [section, slug] = segments
 
   if (pathname === '/') {
-    return "Hi Madeirabook! I'd like the interactive Madeira map + secret spots 🗺️"
+    return MAP_TEXT
   }
   if (section === 'beaches' && slug) {
     return `Hi! Interested in ${prettifySlug(slug)}. Can you help?`
@@ -45,8 +47,8 @@ function messageForPath(pathname: string): string {
   if (section === 'restaurants' && slug) {
     return `Hi! Table at ${prettifySlug(slug)}?`
   }
-  if (section === 'escape' && slug) {
-    return `Hi! I want to escape from ${prettifySlug(slug)} to Madeira 🌿`
+  if (section === 'escape') {
+    return ESCAPE_TEXT
   }
   if (section === 'p' && slug) {
     return `Hi! Interested in ${prettifySlug(slug)} — availability?`

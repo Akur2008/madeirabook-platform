@@ -8,6 +8,7 @@ import React from 'react'
 import config from '@/payload.config'
 import type { Upload } from '@/payload-types'
 import PropertyMap from '../../components/PropertyMapLoader'
+import VideoOnDemand from '../../components/VideoOnDemand'
 
 export const revalidate = 60
 
@@ -191,24 +192,11 @@ export default async function RestaurantPage({
 
           <div className="order-1 md:order-2">
             <div className="mx-auto aspect-[9/16] w-full max-w-[400px] overflow-hidden rounded-xl border border-white/10 bg-[#0f1d2e]">
-              {videoUrl ? (
-                <video
-                  className="h-full w-full object-cover object-center"
-                  src={videoUrl}
-                  poster={restaurant.posterUrl ?? photoUrl ?? undefined}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                />
-              ) : photoUrl ? (
-                // plain <img>: heroImage may be a Wikimedia URL outside next/image remotePatterns
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={photoUrl}
+              {videoUrl || photoUrl ? (
+                <VideoOnDemand
+                  videoUrl={videoUrl}
+                  posterUrl={restaurant.posterUrl ?? photoUrl}
                   alt={restaurant.name}
-                  className="h-full w-full object-cover object-center"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-5xl">
