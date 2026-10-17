@@ -4,11 +4,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { ownerCalendarCache } from '@/lib/ownerCalendarCache'
 import { getCurrentOwner } from '@/lib/ownerAuth'
-import {
-  getRates,
-  getReservations,
-  type SmoobuRatesMap,
-} from '@/lib/smoobu'
+import { getRates, getReservations, resolvePms } from '@/lib/pms'
+import type { SmoobuRatesMap } from '@/lib/smoobu'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -93,6 +90,7 @@ export async function GET(req: Request) {
     const apartments = properties.map((p) => ({
       id: p.id,
       name: p.title,
+      pms: resolvePms(p),
       aptId:
         p.pmsPropertyId && Number.isFinite(Number(p.pmsPropertyId))
           ? Number(p.pmsPropertyId)
@@ -107,41 +105,71 @@ export async function GET(req: Request) {
     const from = fmtDate(new Date(year, monthIdx - 1, 1))
     const to = fmtDate(new Date(year, monthIdx + 2, 0))
 
-    const [rates, reservations] = await Promise.all([
-      aptIds.length ? getRates(aptIds, from, to) : Promise.resolve({}),
-      getReservations(from, to),
-    ])
+    // Rates and reservations are routed per property through the PMS
+    // router — Smoobu or Zeevou depending on property.pms.
+    const rates: SmoobuRatesMap = {}
+    const pmsReservations = await Promise.all(
+      apartments.map(async (apt) => {
+        const prop = properties.find((p) => p.id === apt.id)
+        if (!prop || apt.aptId === null) return []
+        try {
+          const days = await getRates(prop, from, to)
+          const keyed: NonNullable<SmoobuRatesMap[string]> = {}
+          for (const [date, d] of Object.entries(days)) {
+            keyed[date] = {
+              price: d.price,
+              min_length_of_stay: d.minStay,
+              available: d.available,
+            }
+          }
+          rates[String(apt.aptId)] = keyed
+        } catch (e) {
+          console.warn(
+            `calendar rates failed for ${apt.pms} property ${apt.aptId}:`,
+            e instanceof Error ? e.message : e,
+          )
+        }
+        try {
+          return await getReservations(prop, from, to)
+        } catch (e) {
+          console.warn(
+            `calendar reservations failed for ${apt.pms} property ${apt.aptId}:`,
+            e instanceof Error ? e.message : e,
+          )
+          return []
+        }
+      }),
+    )
 
     const aptIdSet = new Set(aptIds.map(String))
     const bookings: CalendarResponse['bookings'] = []
-    for (const b of reservations) {
-      const aptId = String(b.apartment?.id ?? '')
-      if (!aptIdSet.has(aptId)) continue
-      if (b['is-blocked-booking']) continue
-      if (b.status === 'cancelled' || b.type === 'cancellation') continue
+    for (const list of pmsReservations) {
+      for (const b of list) {
+        const aptId = String(b.propertyId ?? '')
+        if (!aptIdSet.has(aptId)) continue
+        if (b.blocked || b.cancelled) continue
 
-      const prop = apartments.find((a) => String(a.aptId) === aptId)
-      if (!prop) continue
+        const prop = apartments.find((a) => String(a.aptId) === aptId)
+        if (!prop) continue
 
-      bookings.push({
-        id: b.id,
-        propertyId: prop.id,
-        aptId: Number(aptId),
-        arrival: b.arrival,
-        departure: b.departure,
-        channel: b.channel?.name || 'Direct',
-        guestName:
-          b['guest-name'] ||
-          `${b.firstname || ''} ${b.lastname || ''}`.trim(),
-        guestEmail: b.email || '',
-        guestPhone: b.phone || '',
-        price: Number(b.price) || 0,
-        adults: Number(b.adults) || 0,
-        children: Number(b.children) || 0,
-        guests: (Number(b.adults) || 0) + (Number(b.children) || 0),
-        checkIn: b['check-in'] || '',
-        checkOut: b['check-out'] || '',
-      })
+        bookings.push({
+          id: b.id,
+          propertyId: prop.id,
+          aptId: Number(aptId),
+          arrival: b.arrival,
+          departure: b.departure,
+          channel: b.channel || 'Direct',
+          guestName: b.guestName,
+          guestEmail: b.guestEmail,
+          guestPhone: b.guestPhone,
+          price: b.price,
+          adults: b.adults,
+          children: b.children,
+          guests: b.adults + b.children,
+          checkIn: b.checkIn,
+          checkOut: b.checkOut,
+        })
+      }
     }
 
     const data: CalendarResponse = {

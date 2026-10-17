@@ -317,6 +317,22 @@ export interface Property {
   brand: 'madeirabook' | 'madeiraoasis' | 'both';
   pmsPropertyId?: string | null;
   /**
+   * PMS backend for this property. Empty = legacy Smoobu. Set automatically by "Publish to Zeevou".
+   */
+  pms?: ('smoobu' | 'zeevou') | null;
+  /**
+   * PMS-specific ids (Zeevou: unitTypeId, unitId, ratePlanId). Managed automatically.
+   */
+  pmsMeta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
    * Platform-owned property (direct charge). Unchecked = external owner via Stripe Connect Express.
    */
   isPlatform?: boolean | null;
@@ -1225,6 +1241,8 @@ export interface PropertiesSelect<T extends boolean = true> {
   slug?: T;
   brand?: T;
   pmsPropertyId?: T;
+  pms?: T;
+  pmsMeta?: T;
   isPlatform?: T;
   commissionPercent?: T;
   owner?: T;

@@ -4,6 +4,9 @@ export const Properties: CollectionConfig = {
   slug: 'properties',
   admin: {
     useAsTitle: 'title',
+    components: {
+      beforeListTable: ['@/components/admin/ZeevouPublishPanel'],
+    },
   },
   access: {
     read: () => true,
@@ -43,6 +46,35 @@ export const Properties: CollectionConfig = {
     {
       name: 'pmsPropertyId',
       type: 'text',
+    },
+    {
+      name: 'pms',
+      type: 'select',
+      options: [
+        { label: 'Smoobu (Gold)', value: 'smoobu' },
+        { label: 'Zeevou (Silver)', value: 'zeevou' },
+      ],
+      admin: {
+        description:
+          'PMS backend for this property. Empty = legacy Smoobu. Set automatically by "Publish to Zeevou".',
+      },
+    },
+    {
+      name: 'pmsMeta',
+      type: 'json',
+      admin: {
+        description:
+          'PMS-specific ids (Zeevou: unitTypeId, unitId, ratePlanId). Managed automatically.',
+      },
+    },
+    {
+      name: 'icalExportUrl',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/IcalUrlField',
+        },
+      },
     },
     {
       name: 'isPlatform',

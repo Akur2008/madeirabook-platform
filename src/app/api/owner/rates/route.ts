@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { invalidateOwnerCalendar } from '@/lib/ownerCalendarCache'
-import { getCurrentOwner, getOwnerSmoobuIds } from '@/lib/ownerAuth'
-import { setRates } from '@/lib/smoobu'
+import { getCurrentOwner, getOwnerPmsProperties } from '@/lib/ownerAuth'
+import { setRates } from '@/lib/pms'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -72,8 +72,11 @@ export async function POST(req: Request) {
   }
 
   // Owners may only write rates for their own units.
-  const ownerIds = await getOwnerSmoobuIds(owner.id)
-  if (!ownerIds.includes(aptId)) {
+  const ownerProps = await getOwnerPmsProperties(owner.id)
+  const property = ownerProps.find(
+    (p) => Number(p.pmsPropertyId) === aptId,
+  )
+  if (!property) {
     return NextResponse.json(
       { error: 'Apartment not linked to your account' },
       { status: 403 },
@@ -81,7 +84,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    await setRates([aptId], startDate, endDate, price, minNights)
+    await setRates(property, { startDate, endDate, price, minNights })
     invalidateOwnerCalendar(owner.id)
     return NextResponse.json({ ok: true })
   } catch (e) {

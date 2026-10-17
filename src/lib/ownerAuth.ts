@@ -71,6 +71,15 @@ export const getCurrentOwner = cache(async (): Promise<User | null> => {
 export async function getOwnerSmoobuIds(
   ownerId: number | string,
 ): Promise<number[]> {
+  const docs = await getOwnerPmsProperties(ownerId)
+  return docs
+    .map((p) => Number(p.pmsPropertyId))
+    .filter((id) => Number.isFinite(id))
+}
+
+// Owner's properties with their PMS routing fields (pms / pmsPropertyId /
+// pmsMeta). Mutation and calendar routes resolve the backend per property.
+export async function getOwnerPmsProperties(ownerId: number | string) {
   const payload = await getPayload({ config: await config })
   const { docs } = await payload.find({
     collection: 'properties',
@@ -79,6 +88,4 @@ export async function getOwnerSmoobuIds(
     depth: 0,
   })
   return docs
-    .map((p) => Number(p.pmsPropertyId))
-    .filter((id) => Number.isFinite(id))
 }

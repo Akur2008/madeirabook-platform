@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { invalidateOwnerCalendar } from '@/lib/ownerCalendarCache'
-import { getCurrentOwner, getOwnerSmoobuIds } from '@/lib/ownerAuth'
-import { createReservation } from '@/lib/smoobu'
+import { getCurrentOwner, getOwnerPmsProperties } from '@/lib/ownerAuth'
+import { createBooking } from '@/lib/pms'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -74,8 +74,11 @@ export async function POST(req: Request) {
     )
   }
 
-  const ownerIds = await getOwnerSmoobuIds(owner.id)
-  if (!ownerIds.includes(aptId)) {
+  const ownerProps = await getOwnerPmsProperties(owner.id)
+  const property = ownerProps.find(
+    (p) => Number(p.pmsPropertyId) === aptId,
+  )
+  if (!property) {
     return NextResponse.json(
       { error: 'Apartment not linked to your account' },
       { status: 403 },
@@ -83,8 +86,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const smoobuId = await createReservation({
-      propertyId: aptId,
+    const pmsId = await createBooking(property, {
       arrivalDate,
       departureDate,
       guestName: firstName,
@@ -99,7 +101,7 @@ export async function POST(req: Request) {
       adults: Number.isFinite(adults) && adults > 0 ? adults : 2,
     })
     invalidateOwnerCalendar(owner.id)
-    return NextResponse.json({ ok: true, smoobuId })
+    return NextResponse.json({ ok: true, smoobuId: pmsId })
   } catch (e) {
     console.error('owner manual booking failed:', e)
     return NextResponse.json(
