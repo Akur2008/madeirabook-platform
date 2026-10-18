@@ -11,6 +11,7 @@ import AcquisitionSection from './components/AcquisitionSection'
 import EscapeCard from './components/EscapeCard'
 import ExploreMap from './components/ExploreMap'
 import GatewayCard from './components/GatewayCard'
+import HeroForestVideo from './components/HeroForestVideo'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,8 +32,6 @@ export const metadata: Metadata = {
 }
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
-
-const HERO_IMAGE = 'https://www.madeirabook.com/images/madeira-cover-balcony.jpg'
 
 const WEBSITE_JSONLD = {
   '@context': 'https://schema.org',
@@ -335,16 +334,9 @@ export default async function HomePage({
         </nav>
       </header>
 
-      {/* 2. Hero: Madeira image + always-visible escape card */}
+      {/* 2. Hero: Madeira mountain loop + always-visible escape card */}
       <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-6 py-16">
-        <Image
-          src={HERO_IMAGE}
-          alt="Madeira ocean view from a balcony"
-          fill
-          priority
-          sizes="100vw"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        <HeroForestVideo />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-[#0a1420]" />
         <div className="relative z-10 flex w-full max-w-3xl flex-col items-center text-center">
           <h1
