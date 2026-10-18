@@ -4,6 +4,7 @@ import Image from 'next/image'
 import AiConciergeWidget from '@/components/AiConciergeWidget'
 import OasisLink from '../../../../(frontend)/components/OasisLink'
 import { BookingLink, ConciergeAskButton } from './V3Actions'
+import V3ReelVideo from './V3ReelVideo'
 
 const R2 = 'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev/uploads'
 
@@ -54,7 +55,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function QuintaDaSerraV3Page() {
   return (
-    <div className="min-h-dvh bg-[#fdfbf7] text-[#1a1a1a]">
+    <div
+      data-ambient="off"
+      className="min-h-dvh bg-[#fdfbf7] text-[#1a1a1a]"
+    >
       {/* A/B test marker — visible only on the v3 variant */}
       <div className="fixed left-4 top-20 z-50 rounded-full bg-[#1a1a1a] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#d4af37] shadow-lg">
         V3 Preview
@@ -172,6 +176,9 @@ export default function QuintaDaSerraV3Page() {
           </div>
         </div>
       </section>
+
+      {/* Reel — full-viewport video with toggleable mountain ambient */}
+      <V3ReelVideo />
 
       {/* Key pillars — deep forest green band */}
       <section className="bg-[#1b3b2b] text-[#fdfbf7]">
