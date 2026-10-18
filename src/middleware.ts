@@ -5,6 +5,9 @@ import { isOasisHost } from '@/lib/oasis-domain'
 const REF_COOKIE = 'madeirabook_ref'
 const REF_RE = /^[a-z0-9_-]{2,50}$/
 const MAP_RE = /^\/m\/([a-z0-9_-]{2,50})\/?$/
+// A/B preview: /hotels/<slug>-v2 -> /oasis/hotels-v2/<slug>
+const V2_RE = /^\/hotels\/(.+)-v2$/
+const V2_OASIS_RE = /^\/oasis\/hotels\/(.+)-v2$/
 const THIRTY_DAYS = 2592000
 
 export function middleware(req: NextRequest) {
@@ -20,6 +23,12 @@ export function middleware(req: NextRequest) {
       url.pathname = pathname.slice('/oasis'.length) || '/'
       return NextResponse.redirect(url, 308)
     }
+    const v2Match = pathname.match(V2_RE)
+    if (v2Match) {
+      const url = req.nextUrl.clone()
+      url.pathname = `/oasis/hotels-v2/${v2Match[1]}`
+      return NextResponse.rewrite(url)
+    }
     if (pathname === '/hotels') {
       const url = req.nextUrl.clone()
       url.pathname = '/'
@@ -31,6 +40,13 @@ export function middleware(req: NextRequest) {
       return NextResponse.rewrite(url)
     }
     return NextResponse.next()
+  }
+
+  const v2Match = req.nextUrl.pathname.match(V2_OASIS_RE)
+  if (v2Match) {
+    const url = req.nextUrl.clone()
+    url.pathname = `/oasis/hotels-v2/${v2Match[1]}`
+    return NextResponse.rewrite(url)
   }
 
   const param = req.nextUrl.searchParams.get('ref')

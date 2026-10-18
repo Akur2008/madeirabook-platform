@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import OasisLink from '../(frontend)/components/OasisLink'
 import './oasis.css'
 
@@ -9,13 +9,39 @@ export const metadata: Metadata = {
   title: 'Madeira Oasis — A private collection of Madeira’s finest hotels',
   description:
     'Fifteen hand-picked luxury addresses across Madeira. Oceanfront resorts, historic quintas and boutique suites — booked through the Madeira Oasis concierge.',
+  manifest: '/manifest-oasis.json',
+  icons: { icon: '/icon-512.png', apple: '/apple-touch-icon.png' },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Madeira Oasis',
+  },
   robots: { index: true, follow: true },
   openGraph: {
     title: 'Madeira Oasis',
     description:
       'A private collection of Madeira’s finest hotels, booked through one concierge.',
+    url: 'https://www.madeiraoasis.com',
+    siteName: 'Madeira Oasis',
+    images: [
+      {
+        url: 'https://www.madeiraoasis.com/og-madeiraoasis.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Madeira Oasis — a private collection of Madeira’s finest hotels',
+      },
+    ],
+    locale: 'en_US',
     type: 'website',
   },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['https://www.madeiraoasis.com/og-madeiraoasis.jpg'],
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#D4AF37',
 }
 
 export default function OasisLayout(props: { children: React.ReactNode }) {
