@@ -5,6 +5,10 @@ import { usePathname } from 'next/navigation'
 
 const REF_COOKIE = 'madeirabook_ref'
 
+// Pages can open the concierge with a preset question:
+// window.dispatchEvent(new CustomEvent(ASK_CONCIERGE_EVENT, { detail: { message } }))
+export const ASK_CONCIERGE_EVENT = 'madeirabook:ask-concierge'
+
 type Message = { role: 'user' | 'assistant'; content: string }
 
 const GREETING: Message = {
@@ -83,8 +87,8 @@ export default function AiConciergeWidget() {
     if (open) inputRef.current?.focus()
   }, [open])
 
-  const send = useCallback(async () => {
-    const text = input.trim()
+  const send = useCallback(async (raw?: string) => {
+    const text = (typeof raw === 'string' ? raw : input).trim()
     if (!text || streaming) return
 
     // Refresh attribution — the ref cookie may have been set by middleware
@@ -133,6 +137,17 @@ export default function AiConciergeWidget() {
       setStreaming(false)
     }
   }, [input, messages, pathname, streaming])
+
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      const message = (e as CustomEvent<{ message?: string }>).detail?.message
+      setRefCode(readRefCookie())
+      setOpen(true)
+      if (message) void send(message)
+    }
+    window.addEventListener(ASK_CONCIERGE_EVENT, onAsk)
+    return () => window.removeEventListener(ASK_CONCIERGE_EVENT, onAsk)
+  }, [send])
 
   // The owner cabinet is a back-office tool — no concierge there.
   if (pathname.startsWith('/owner')) return null
