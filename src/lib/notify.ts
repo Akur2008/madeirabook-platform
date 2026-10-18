@@ -36,6 +36,7 @@ export interface ResendEmailOptions {
   subject: string
   html: string
   text?: string
+  cc?: string | string[]
   replyTo?: string
   headers?: Record<string, string>
   attachments?: { filename: string; content: string }[]
@@ -57,6 +58,7 @@ export async function sendResendEmail(
       subject: opts.subject,
       html: opts.html,
       ...(opts.text ? { text: opts.text } : {}),
+      ...(opts.cc ? { cc: opts.cc } : {}),
       ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
       ...(opts.headers ? { headers: opts.headers } : {}),
       ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),

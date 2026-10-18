@@ -11,11 +11,21 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const AUDIENCE_SIZES = new Set(['5k-10k', '10k-30k', '30k-100k', '100k+'])
 const NICHES = new Set(['travel', 'lifestyle', 'portugal-madeira', 'other'])
 const DEDUP_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
+const MIN_PICKS = 3
+const MAX_PICKS = 5
 
 function asStr(value: unknown, max = 500): string | null {
   if (typeof value !== 'string') return null
   const trimmed = value.trim()
   return trimmed ? trimmed.slice(0, max) : null
+}
+
+function asIdList(value: unknown): number[] | null {
+  if (!Array.isArray(value)) return null
+  const ids = value
+    .map((v) => Number(v))
+    .filter((n) => Number.isInteger(n) && n > 0)
+  return ids.length === value.length ? [...new Set(ids)] : null
 }
 
 export async function POST(req: Request) {
@@ -38,6 +48,8 @@ export async function POST(req: Request) {
   const mainCity = asStr(raw.mainCity, 200)
   const sampleReelUrl = asStr(raw.sampleReelUrl, 500)
   const message = asStr(raw.message, 300)
+  const selectedBeaches = asIdList(raw.selectedBeaches)
+  const selectedRestaurants = asIdList(raw.selectedRestaurants)
 
   let instagramHandle = asStr(raw.instagramHandle, 100)
   if (instagramHandle && !instagramHandle.startsWith('@')) {
@@ -65,7 +77,49 @@ export async function POST(req: Request) {
     )
   }
 
+  if (
+    !selectedBeaches ||
+    !selectedRestaurants ||
+    selectedBeaches.length < MIN_PICKS ||
+    selectedBeaches.length > MAX_PICKS ||
+    selectedRestaurants.length < MIN_PICKS ||
+    selectedRestaurants.length > MAX_PICKS
+  ) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: `Pick ${MIN_PICKS}-${MAX_PICKS} beaches and ${MIN_PICKS}-${MAX_PICKS} restaurants`,
+      },
+      { status: 400 },
+    )
+  }
+
   const payload = await getPayload({ config: await config })
+
+  // Reject ids that don't exist — never trust client-supplied relationships.
+  const [beachDocs, restaurantDocs] = await Promise.all([
+    payload.find({
+      collection: 'beaches',
+      where: { id: { in: selectedBeaches } },
+      limit: MAX_PICKS,
+      depth: 0,
+    }),
+    payload.find({
+      collection: 'restaurants',
+      where: { id: { in: selectedRestaurants } },
+      limit: MAX_PICKS,
+      depth: 0,
+    }),
+  ])
+  if (
+    beachDocs.docs.length !== selectedBeaches.length ||
+    restaurantDocs.docs.length !== selectedRestaurants.length
+  ) {
+    return NextResponse.json(
+      { ok: false, error: 'Unknown beach or restaurant selection' },
+      { status: 400 },
+    )
+  }
 
   // Max one application per email per 30 days.
   const recent = await payload.find({
@@ -102,6 +156,8 @@ export async function POST(req: Request) {
       mainCity,
       sampleReelUrl,
       message,
+      selectedBeaches,
+      selectedRestaurants,
       status: 'new',
     },
   })

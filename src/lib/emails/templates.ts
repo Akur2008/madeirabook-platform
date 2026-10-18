@@ -213,3 +213,51 @@ export function ambassadorInvitation(opts: {
 
   return { subject: "You're invited to Madeirabook Ambassadors", html, text }
 }
+
+// Acceptance email sent to the ambassador right after approval. Carries the
+// live map link and the Stripe Express onboarding link for payouts.
+export function ambassadorAccepted(opts: {
+  displayName: string
+  code: string
+  stripeOnboardingUrl: string | null
+  inviteUrl: string
+}): RenderedEmail {
+  const name = opts.displayName.split(/['\s]/)[0] || opts.displayName
+  const nameHtml = name.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
+  const mapUrl = `https://www.madeirabook.com/m/${opts.code}`
+
+  const stripeBlock = opts.stripeOnboardingUrl
+    ? `<p style="margin:24px 0;"><a href="${opts.stripeOnboardingUrl}" style="${BTN}">Set up payouts (Stripe) →</a></p>` +
+      '<p style="color:#6b7280;font-size:13px;">Takes ~5 minutes. Payouts land monthly, on the 1st.</p>'
+    : '<p style="color:#6b7280;font-size:13px;">We are setting up your payout account — expect a separate email with the Stripe link shortly.</p>'
+
+  const text =
+    `Hi ${name},\n\n` +
+    "You're accepted to Madeirabook Ambassadors.\n\n" +
+    `Your map: ${mapUrl}\n` +
+    `Sign the Ambassador Terms: ${opts.inviteUrl}\n` +
+    (opts.stripeOnboardingUrl
+      ? `Set up payouts (Stripe): ${opts.stripeOnboardingUrl}\n`
+      : 'We are setting up your payout account — expect a separate email with the Stripe link shortly.\n') +
+    '\nShare your link. Earn 2% on every booking. Get paid monthly.\n\n' +
+    'Welcome aboard,\nAndrei\nMadeirabook'
+
+  const html =
+    '<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#1f2937;background:#fff;padding:20px;">' +
+    '<h2 style="color:#064e3b;font-size:24px;margin:0 0 16px 0;">You\'re accepted to Madeirabook Ambassadors</h2>' +
+    `<p>Hi ${nameHtml},</p>` +
+    '<p>Your application was approved. Two steps left:</p>' +
+    `<p><b>1. Your map:</b> <a href="${mapUrl}" style="color:#064e3b;">${mapUrl}</a><br>` +
+    `<b>2. Sign the Ambassador Terms:</b> <a href="${opts.inviteUrl}" style="color:#064e3b;">${opts.inviteUrl}</a></p>` +
+    stripeBlock +
+    '<p style="border-left:3px solid #10b981;padding-left:12px;color:#374151;">' +
+    'Share your link. Earn 2% on every booking. Get paid monthly.</p>' +
+    '<p>Welcome aboard,<br>Andrei<br>Madeirabook</p>' +
+    '<p style="color:#9ca3af;font-size:12px;margin-top:32px;border-top:1px solid #e5e7eb;padding-top:16px;">' +
+    'Madeirabook · <a href="https://www.madeirabook.com" style="color:#9ca3af;">madeirabook.com</a><br>' +
+    'You are receiving this because you applied to the ambassador program.' +
+    '</p>' +
+    '</div>'
+
+  return { subject: "You're accepted to Madeirabook Ambassadors", html, text }
+}

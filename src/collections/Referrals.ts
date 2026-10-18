@@ -150,6 +150,27 @@ export const Referrals: CollectionConfig = {
       },
     },
     {
+      name: 'stripeAccountId',
+      type: 'text',
+      admin: {
+        description: 'Stripe Express account id (acct_...) for ambassador payouts.',
+      },
+    },
+    {
+      name: 'payoutSchedule',
+      type: 'select',
+      defaultValue: 'monthly',
+      options: [
+        { label: 'Monthly', value: 'monthly' },
+        { label: 'Weekly', value: 'weekly' },
+        { label: 'Daily', value: 'daily' },
+        { label: 'Manual', value: 'manual' },
+      ],
+      admin: {
+        description: 'Stripe payout schedule for the connected account.',
+      },
+    },
+    {
       name: 'notes',
       type: 'textarea',
     },

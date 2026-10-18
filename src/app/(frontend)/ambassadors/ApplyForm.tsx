@@ -21,7 +21,65 @@ const NICHE_OPTIONS = [
   { label: 'Other', value: 'other' },
 ]
 
-export default function ApplyForm() {
+const MIN_PICKS = 3
+const MAX_PICKS = 5
+
+type SpotOption = { id: string; name: string }
+
+function SpotPicker({
+  label,
+  options,
+  selected,
+  onToggle,
+}: {
+  label: string
+  options: SpotOption[]
+  selected: string[]
+  onToggle: (id: string) => void
+}) {
+  return (
+    <fieldset className="rounded-md border border-white/20 p-3">
+      <legend className="px-1 text-xs text-white/50">
+        {label} ({selected.length}/{MAX_PICKS})
+      </legend>
+      <div className="mt-1 grid max-h-44 grid-cols-1 gap-1 overflow-y-auto pr-1">
+        {options.map((o) => {
+          const checked = selected.includes(o.id)
+          const disabled = !checked && selected.length >= MAX_PICKS
+          return (
+            <label
+              key={o.id}
+              className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors ${
+                checked
+                  ? 'bg-green-500/15 text-white'
+                  : disabled
+                    ? 'text-white/25'
+                    : 'text-white/70 hover:bg-white/5'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                disabled={disabled}
+                onChange={() => onToggle(o.id)}
+                className="h-3.5 w-3.5 shrink-0 accent-green-500"
+              />
+              {o.name}
+            </label>
+          )
+        })}
+      </div>
+    </fieldset>
+  )
+}
+
+export default function ApplyForm({
+  beaches,
+  restaurants,
+}: {
+  beaches: SpotOption[]
+  restaurants: SpotOption[]
+}) {
   const [form, setForm] = useState({
     name: '',
     instagramHandle: '',
@@ -32,6 +90,8 @@ export default function ApplyForm() {
     sampleReelUrl: '',
     message: '',
   })
+  const [selectedBeaches, setSelectedBeaches] = useState<string[]>([])
+  const [selectedRestaurants, setSelectedRestaurants] = useState<string[]>([])
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
 
@@ -41,15 +101,42 @@ export default function ApplyForm() {
     ) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
   }
 
+  function toggle(setter: React.Dispatch<React.SetStateAction<string[]>>) {
+    return (id: string) =>
+      setter((prev) =>
+        prev.includes(id)
+          ? prev.filter((v) => v !== id)
+          : prev.length < MAX_PICKS
+            ? [...prev, id]
+            : prev,
+      )
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
+
+    if (
+      selectedBeaches.length < MIN_PICKS ||
+      selectedBeaches.length > MAX_PICKS ||
+      selectedRestaurants.length < MIN_PICKS ||
+      selectedRestaurants.length > MAX_PICKS
+    ) {
+      setStatus('error')
+      setError(`Pick ${MIN_PICKS}-${MAX_PICKS} beaches and ${MIN_PICKS}-${MAX_PICKS} restaurants.`)
+      return
+    }
+
     setStatus('loading')
     try {
       const res = await fetch('/api/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          selectedBeaches,
+          selectedRestaurants,
+        }),
       })
       const data = (await res.json()) as { ok?: boolean; error?: string }
       if (res.ok && data.ok) {
@@ -164,6 +251,19 @@ export default function ApplyForm() {
         rows={4}
         placeholder="Tell us about your audience (optional)"
         className={`${INPUT} resize-none`}
+      />
+
+      <SpotPicker
+        label="Pick 3-5 beaches for your map"
+        options={beaches}
+        selected={selectedBeaches}
+        onToggle={toggle(setSelectedBeaches)}
+      />
+      <SpotPicker
+        label="Pick 3-5 restaurants for your map"
+        options={restaurants}
+        selected={selectedRestaurants}
+        onToggle={toggle(setSelectedRestaurants)}
       />
 
       {error && <p className="text-sm text-red-400">{error}</p>}

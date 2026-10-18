@@ -23,6 +23,7 @@ import * as migration_20261017_154056_add_owner_subscription_fields from './2026
 import * as migration_20261017_175620_add_pms_fields from './20261017_175620_add_pms_fields';
 import * as migration_20261017_210258_oasis_hotel_fields from './20261017_210258_oasis_hotel_fields';
 import * as migration_20261017_211940_add_agreements_collection from './20261017_211940_add_agreements_collection';
+import * as migration_20261018_173950_ambassador_selections_and_stripe from './20261018_173950_ambassador_selections_and_stripe';
 
 export const migrations = [
   {
@@ -148,6 +149,11 @@ export const migrations = [
   {
     up: migration_20261017_211940_add_agreements_collection.up,
     down: migration_20261017_211940_add_agreements_collection.down,
-    name: '20261017_211940_add_agreements_collection'
+    name: '20261017_211940_add_agreements_collection',
+  },
+  {
+    up: migration_20261018_173950_ambassador_selections_and_stripe.up,
+    down: migration_20261018_173950_ambassador_selections_and_stripe.down,
+    name: '20261018_173950_ambassador_selections_and_stripe'
   },
 ];

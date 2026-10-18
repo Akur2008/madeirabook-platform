@@ -734,6 +734,14 @@ export interface Referral {
    * Ambassador application this referral was created from.
    */
   sourceApplication?: (number | null) | Application;
+  /**
+   * Stripe Express account id (acct_...) for ambassador payouts.
+   */
+  stripeAccountId?: string | null;
+  /**
+   * Stripe payout schedule for the connected account.
+   */
+  payoutSchedule?: ('monthly' | 'weekly' | 'daily' | 'manual') | null;
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -761,6 +769,14 @@ export interface Application {
    * Comment from the creator.
    */
   message?: string | null;
+  /**
+   * Beaches the applicant picked for their map (3-5).
+   */
+  selectedBeaches?: (number | Beach)[] | null;
+  /**
+   * Restaurants the applicant picked for their map (3-5).
+   */
+  selectedRestaurants?: (number | Restaurant)[] | null;
   status: 'new' | 'reviewing' | 'approved' | 'rejected';
   /**
    * Internal notes — never shown to the applicant.
@@ -1567,6 +1583,8 @@ export interface ReferralsSelect<T extends boolean = true> {
   selectedRestaurants?: T;
   displayName?: T;
   sourceApplication?: T;
+  stripeAccountId?: T;
+  payoutSchedule?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1625,6 +1643,8 @@ export interface ApplicationsSelect<T extends boolean = true> {
   mainCity?: T;
   sampleReelUrl?: T;
   message?: T;
+  selectedBeaches?: T;
+  selectedRestaurants?: T;
   status?: T;
   reviewNotes?: T;
   updatedAt?: T;
