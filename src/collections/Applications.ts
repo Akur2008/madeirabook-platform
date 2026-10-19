@@ -1,5 +1,9 @@
 import { randomBytes } from 'node:crypto'
-import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
+import type {
+  CollectionAfterChangeHook,
+  CollectionConfig,
+  Payload,
+} from 'payload'
 import Stripe from 'stripe'
 
 import { ambassadorAccepted } from '@/lib/emails/templates'
@@ -43,14 +47,13 @@ async function createStripeExpressAccount(
   const account = await stripe.accounts.create({
     type: 'express',
     email,
+    business_type: 'individual',
     // Stripe requires card_payments alongside transfers on this platform
     // (transfers-only capability needs manual Stripe approval).
     capabilities: {
       transfers: { requested: true },
       card_payments: { requested: true },
     },
-  })
-  await stripe.accounts.update(account.id, {
     settings: {
       payouts: { schedule: { interval: 'monthly', monthly_anchor: 1 } },
     },
@@ -62,6 +65,62 @@ async function createStripeExpressAccount(
     return_url: welcomeUrl,
   })
   return { accountId: account.id, onboardingUrl: link.url }
+}
+
+// Attaches a Stripe Express account to a referral. Idempotent: a referral
+// that already carries stripeAccountId is skipped. Never throws — failures
+// are logged with full Stripe error details and reported to admin, so a
+// Stripe outage can never block referral creation.
+async function attachStripeAccount(
+  payload: Payload,
+  referral: { id: number; code: string; stripeAccountId?: string | null },
+  opts: { email: string; instagramHandle: string; welcomeUrl: string },
+): Promise<{ accountId: string; onboardingUrl: string } | null> {
+  if (referral.stripeAccountId) return null
+  try {
+    const result = await createStripeExpressAccount(opts.email, opts.welcomeUrl)
+    if (!result) return null
+    await payload.update({
+      collection: 'referrals',
+      id: referral.id,
+      data: {
+        stripeAccountId: result.accountId,
+        payoutSchedule: 'monthly',
+      },
+    })
+    return result
+  } catch (e) {
+    const err = e as {
+      code?: string
+      message?: string
+      type?: string
+      requestId?: string
+      request_id?: string
+    }
+    console.error('Stripe create failed:', {
+      code: err?.code,
+      message: err?.message,
+      type: err?.type,
+      requestId: err?.requestId ?? err?.request_id,
+      referral: referral.code,
+    })
+    if (err?.code === 'platform_capabilities_incomplete') {
+      console.error(
+        'Action required: enable Card Payments (and Transfers) for Express ' +
+          'connected accounts in Stripe Dashboard -> Settings -> Connect.',
+      )
+    }
+    await sendAdminAlert(
+      'Stripe account creation failed for ambassador',
+      [
+        `Handle: ${opts.instagramHandle}`,
+        `Email: ${opts.email}`,
+        `Referral: ${referral.code}`,
+        `Error: ${err?.code ?? ''} ${err?.message ?? e}`,
+      ].join('\n'),
+    )
+    return null
+  }
 }
 
 // Referral code from the Instagram handle: "@Alex.Traveler!" -> "alex_traveler".
@@ -90,7 +149,22 @@ const createAmbassadorInvitation: CollectionAfterChangeHook = async ({
     limit: 1,
     depth: 0,
   })
-  if (existing.docs.length > 0) return doc
+  if (existing.docs.length > 0) {
+    // Self-heal: referral was already created (e.g. status toggled back and
+    // forth) but Stripe setup previously failed — retry it now.
+    const referral = existing.docs[0]
+    if (!referral.stripeAccountId) {
+      const welcomeUrl = referral.invitationToken
+        ? `${APP_URL}/ambassadors/welcome/${referral.invitationToken}`
+        : `${APP_URL}/m/${referral.code}`
+      await attachStripeAccount(req.payload, referral, {
+        email: doc.email,
+        instagramHandle: doc.instagramHandle,
+        welcomeUrl,
+      })
+    }
+    return doc
+  }
 
   const codeBase = makeCodeBase(doc.instagramHandle)
   let code = codeBase
@@ -128,31 +202,11 @@ const createAmbassadorInvitation: CollectionAfterChangeHook = async ({
 
   const welcomeUrl = `${APP_URL}/ambassadors/welcome/${invitationToken}`
 
-  let stripeResult: { accountId: string; onboardingUrl: string } | null = null
-  try {
-    stripeResult = await createStripeExpressAccount(doc.email, welcomeUrl)
-    if (stripeResult) {
-      await req.payload.update({
-        collection: 'referrals',
-        id: referral.id,
-        data: {
-          stripeAccountId: stripeResult.accountId,
-          payoutSchedule: 'monthly',
-        },
-      })
-    }
-  } catch (e) {
-    console.error('Stripe Express account creation failed:', e)
-    await sendAdminAlert(
-      'Stripe account creation failed for ambassador',
-      [
-        `Handle: ${doc.instagramHandle}`,
-        `Email: ${doc.email}`,
-        `Referral: ${code}`,
-        `Error: ${e}`,
-      ].join('\n'),
-    )
-  }
+  const stripeResult = await attachStripeAccount(req.payload, referral, {
+    email: doc.email,
+    instagramHandle: doc.instagramHandle,
+    welcomeUrl,
+  })
 
   try {
     if (!process.env.RESEND_API_KEY) {
