@@ -1,7 +1,7 @@
 import type { Payload } from 'payload'
 
 export const OWNER_TERMS_VERSION = 'v1.0'
-export const AMBASSADOR_TERMS_VERSION = 'v1.0'
+export const AMBASSADOR_TERMS_VERSION = 'v1.1'
 
 export function clientIp(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for')

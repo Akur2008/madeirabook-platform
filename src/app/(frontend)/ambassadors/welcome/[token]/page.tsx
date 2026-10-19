@@ -8,6 +8,7 @@ import DigitalSignature from '@/components/DigitalSignature'
 import { hasSignedAmbassadorTerms } from '@/lib/agreements'
 import AcceptInvite from './AcceptInvite'
 import CopyLinkButton from './CopyLinkButton'
+import EditPicks from './EditPicks'
 
 export const metadata: Metadata = {
   title: 'Madeirabook — Ambassador invitation',
@@ -79,7 +80,7 @@ const NEXT_STEPS = [
   'Get paid.',
 ]
 
-type Spot = { name?: string | null; slug?: string | null }
+type Spot = { id?: number | string; name?: string | null; slug?: string | null }
 
 function spotsOf(list: unknown): Spot[] {
   if (!Array.isArray(list)) return []
@@ -87,6 +88,13 @@ function spotsOf(list: unknown): Spot[] {
     (item): item is Spot =>
       typeof item === 'object' && item !== null && Boolean((item as Spot).slug),
   )
+}
+
+function spotIdsOf(list: unknown): string[] {
+  return spotsOf(list)
+    .map((s) => s.id)
+    .filter((id): id is number | string => id != null)
+    .map(String)
 }
 
 function isExpired(iso: string | null | undefined): boolean {
@@ -186,6 +194,31 @@ export default async function WelcomePage(props: {
     )
   }
 
+  // Options for the "Edit my picks" modal — published madeirabook spots only.
+  // Oasis hotels live in the `properties` collection (brand='madeiraoasis'),
+  // so beaches/restaurants lists can never contain them.
+  const [{ docs: beachDocs }, { docs: restaurantDocs }] = await Promise.all([
+    payload.find({
+      collection: 'beaches',
+      where: { status: { equals: 'published' } },
+      sort: 'name',
+      limit: 200,
+      depth: 0,
+    }),
+    payload.find({
+      collection: 'restaurants',
+      where: { status: { equals: 'published' } },
+      sort: 'name',
+      limit: 200,
+      depth: 0,
+    }),
+  ])
+  const beachOptions = beachDocs.map((d) => ({ id: String(d.id), name: d.name }))
+  const restaurantOptions = restaurantDocs.map((d) => ({
+    id: String(d.id),
+    name: d.name,
+  }))
+
   return (
     <Shell>
       {referral.oasisAccess && (
@@ -269,16 +302,25 @@ export default async function WelcomePage(props: {
         </div>
       )}
 
-      <div className="mt-8">
-        <a
-          href={`/ambassadors/add-pin?token=${token}`}
-          className="block w-full rounded-md border border-[#d4af37]/50 bg-[#d4af37]/10 px-4 py-4 text-center text-sm font-semibold text-[#d4af37] transition-colors hover:bg-[#d4af37]/20"
-        >
-          ➕ Add your own spot
-        </a>
-        <p className="mt-2 text-center text-xs text-white/40">
-          Share a hidden gem — it will appear on your map after a quick review.
-        </p>
+      <div className="mt-8 space-y-3">
+        <EditPicks
+          token={token}
+          beaches={beachOptions}
+          restaurants={restaurantOptions}
+          initialBeachIds={spotIdsOf(referral.selectedBeaches)}
+          initialRestaurantIds={spotIdsOf(referral.selectedRestaurants)}
+        />
+        <div>
+          <a
+            href={`/ambassadors/add-pin?token=${token}`}
+            className="block w-full rounded-md border border-[#d4af37]/50 bg-[#d4af37]/10 px-4 py-4 text-center text-sm font-semibold text-[#d4af37] transition-colors hover:bg-[#d4af37]/20"
+          >
+            ➕ Add your own spot
+          </a>
+          <p className="mt-2 text-center text-xs text-white/40">
+            Share a hidden gem — it will appear on your map after a quick review.
+          </p>
+        </div>
       </div>
 
       <div className="mt-8">

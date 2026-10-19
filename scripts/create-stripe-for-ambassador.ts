@@ -11,8 +11,12 @@ import 'dotenv/config'
 // Usage:
 //   npx tsx scripts/create-stripe-for-ambassador.ts merlin_visual
 //   npx tsx scripts/create-stripe-for-ambassador.ts --backfill-active
+//   npx tsx scripts/create-stripe-for-ambassador.ts --backfill-active --recreate
 //
-// Idempotent: skips referrals that already have stripeAccountId.
+// Idempotent: skips referrals that already have stripeAccountId, unless
+// --recreate is passed — then existing (e.g. test-mode) account ids are
+// cleared first and fresh accounts are created under the current key.
+// Never sends emails in --backfill-active mode.
 
 const APP_URL = process.env.APP_URL || 'https://www.madeirabook.com'
 
@@ -138,29 +142,46 @@ async function createStripeForReferral(
 
 async function main() {
   const arg = process.argv[2] || 'merlin_visual'
+  const recreate = process.argv.includes('--recreate')
   const payload = await getPayload({ config })
 
   if (arg === '--backfill-active') {
     const { docs } = await payload.find({
       collection: 'referrals',
-      where: {
-        and: [
-          { status: { equals: 'active' } },
-          {
-            or: [
-              { stripeAccountId: { exists: false } },
-              { stripeAccountId: { equals: null } },
+      where: recreate
+        ? { status: { equals: 'active' } }
+        : {
+            and: [
+              { status: { equals: 'active' } },
+              {
+                or: [
+                  { stripeAccountId: { exists: false } },
+                  { stripeAccountId: { equals: null } },
+                ],
+              },
             ],
-          },
-        ],
       },
       limit: 100,
       depth: 0,
     })
-    console.log(`Backfill: ${docs.length} active referral(s) without stripeAccountId`)
+    console.log(
+      `Backfill${recreate ? ' (recreate)' : ''}: ${docs.length} active referral(s)` +
+        (recreate ? '' : ' without stripeAccountId'),
+    )
     let created = 0
     for (const referral of docs) {
       try {
+        if (recreate && referral.stripeAccountId) {
+          console.log(
+            `${referral.code}: clearing existing ${referral.stripeAccountId} before recreate`,
+          )
+          await payload.update({
+            collection: 'referrals',
+            id: referral.id,
+            data: { stripeAccountId: null },
+          })
+          referral.stripeAccountId = null
+        }
         const r = await createStripeForReferral(payload, referral as never, {
           sendEmail: false,
         })
