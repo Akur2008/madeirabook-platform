@@ -84,6 +84,7 @@ export interface Config {
     'webhook-events': WebhookEvent;
     bookings: Booking;
     referrals: Referral;
+    'ambassador-pins': AmbassadorPin;
     guides: Guide;
     'affiliate-payouts': AffiliatePayout;
     applications: Application;
@@ -116,6 +117,7 @@ export interface Config {
     'webhook-events': WebhookEventsSelect<false> | WebhookEventsSelect<true>;
     bookings: BookingsSelect<false> | BookingsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
+    'ambassador-pins': AmbassadorPinsSelect<false> | AmbassadorPinsSelect<true>;
     guides: GuidesSelect<false> | GuidesSelect<true>;
     'affiliate-payouts': AffiliatePayoutsSelect<false> | AffiliatePayoutsSelect<true>;
     applications: ApplicationsSelect<false> | ApplicationsSelect<true>;
@@ -789,6 +791,43 @@ export interface Application {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ambassador-pins".
+ */
+export interface AmbassadorPin {
+  id: number;
+  /**
+   * Ambassador who submitted this spot.
+   */
+  referral: number | Referral;
+  title: string;
+  category: 'beach' | 'restaurant' | 'viewpoint' | 'other';
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+  description?: string | null;
+  /**
+   * Photo, max 5 MB.
+   */
+  photo?: (number | null) | Upload;
+  /**
+   * Short video, max 30 MB, mp4/mov.
+   */
+  video?: (number | null) | Upload;
+  status: 'pending' | 'approved' | 'rejected';
+  /**
+   * Show this approved pin on the public /explore map as a Community Pick.
+   */
+  promotedToGlobal?: boolean | null;
+  /**
+   * Internal note, not shown to the ambassador.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "guides".
  */
 export interface Guide {
@@ -1161,6 +1200,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'referrals';
         value: number | Referral;
+      } | null)
+    | ({
+        relationTo: 'ambassador-pins';
+        value: number | AmbassadorPin;
       } | null)
     | ({
         relationTo: 'guides';
@@ -1614,6 +1657,29 @@ export interface ReferralsSelect<T extends boolean = true> {
   stripeAccountId?: T;
   payoutSchedule?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ambassador-pins_select".
+ */
+export interface AmbassadorPinsSelect<T extends boolean = true> {
+  referral?: T;
+  title?: T;
+  category?: T;
+  coordinates?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+      };
+  description?: T;
+  photo?: T;
+  video?: T;
+  status?: T;
+  promotedToGlobal?: T;
+  moderationNote?: T;
   updatedAt?: T;
   createdAt?: T;
 }

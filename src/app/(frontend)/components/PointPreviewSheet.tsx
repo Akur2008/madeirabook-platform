@@ -4,15 +4,24 @@ import { Drawer } from 'vaul'
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
-export type PointType = 'property' | 'beach' | 'restaurant' | 'trail' | 'viewpoint'
+export type PointType =
+  | 'property'
+  | 'beach'
+  | 'restaurant'
+  | 'trail'
+  | 'viewpoint'
+  | 'community'
 
 export interface PointPreview {
   type: PointType
   slug: string
   name: string
   photoUrl?: string | null
+  videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
+  addedBy?: string | null
+  href?: string | null
 }
 
 interface PointPreviewSheetProps {
@@ -27,6 +36,7 @@ const TYPE_LABEL: Record<PointType, string> = {
   restaurant: 'Restaurant',
   trail: 'Trail',
   viewpoint: 'Viewpoint',
+  community: 'Community Pick',
 }
 
 const TYPE_EMOJI: Record<PointType, string> = {
@@ -35,10 +45,12 @@ const TYPE_EMOJI: Record<PointType, string> = {
   restaurant: '🍽️',
   trail: '🥾',
   viewpoint: '👁️',
+  community: '⭐',
 }
 
 const pointHref = (point: PointPreview) =>
-  point.type === 'property' ? `/p/${point.slug}` : `/${point.type}s/${point.slug}`
+  point.href ??
+  (point.type === 'property' ? `/p/${point.slug}` : `/${point.type}s/${point.slug}`)
 
 export default function PointPreviewSheet({
   open,
@@ -68,7 +80,14 @@ export default function PointPreviewSheet({
           {point && (
             <div className="overflow-y-auto px-6 pb-6">
               <div className="mt-2 flex justify-center">
-                {point.photoUrl ? (
+                {point.videoUrl ? (
+                  <video
+                    src={point.videoUrl}
+                    controls
+                    playsInline
+                    className="h-auto max-h-[40vh] w-auto rounded-xl border border-white/10"
+                  />
+                ) : point.photoUrl ? (
                   // photoUrl comes from CMS/Wikimedia — arbitrary host, plain <img>
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -84,7 +103,13 @@ export default function PointPreviewSheet({
               </div>
 
               <p className="mb-0 mt-5 text-center text-xs uppercase tracking-widest text-white/40">
-                {TYPE_LABEL[point.type]}
+                {point.type === 'community' ? (
+                  <span className="rounded-full border border-[#d4af37]/50 bg-[#d4af37]/10 px-3 py-1 text-[#d4af37]">
+                    {TYPE_LABEL[point.type]}
+                  </span>
+                ) : (
+                  TYPE_LABEL[point.type]
+                )}
               </p>
               <h2
                 className="mt-2 text-center text-3xl font-light leading-tight text-white/95"
@@ -102,14 +127,21 @@ export default function PointPreviewSheet({
                   {point.shortDescription}
                 </p>
               )}
+              {point.addedBy && (
+                <p className="mb-0 mt-3 text-center text-xs text-white/45">
+                  Added by {point.addedBy}
+                </p>
+              )}
 
               <div className="mt-6 flex flex-col gap-3">
-                <a
-                  href={pointHref(point)}
-                  className="block w-full rounded-full border border-emerald-600 bg-emerald-600 py-3 text-center text-sm uppercase tracking-widest text-white transition-colors hover:bg-emerald-500"
-                >
-                  View full page →
-                </a>
+                {point.href !== null && (
+                  <a
+                    href={pointHref(point)}
+                    className="block w-full rounded-full border border-emerald-600 bg-emerald-600 py-3 text-center text-sm uppercase tracking-widest text-white transition-colors hover:bg-emerald-500"
+                  >
+                    {point.type === 'community' ? 'See their map →' : 'View full page →'}
+                  </a>
+                )}
                 <Drawer.Close asChild>
                   <button
                     type="button"

@@ -83,16 +83,30 @@ interface AmbassadorBranding {
   selectedRestaurantsSlugs?: string[]
 }
 
+interface AmbassadorPin {
+  id: string | number
+  title: string
+  lat: number
+  lng: number
+  description?: string | null
+  photoUrl?: string | null
+  videoUrl?: string | null
+}
+
 interface ExploreMapProps {
   properties: MapStay[]
   beaches: MapBeach[]
   restaurants: MapRestaurant[]
   trails?: MapTrail[]
   viewpoints?: MapViewpoint[]
+  ambassadorPins?: AmbassadorPin[]
   activeFilter?: MapFilter
   ambassador?: AmbassadorBranding | null
   refCode?: string | null
 }
+
+const escHtml = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 export default function ExploreMap({
   properties,
@@ -100,6 +114,7 @@ export default function ExploreMap({
   restaurants,
   trails = [],
   viewpoints = [],
+  ambassadorPins = [],
   activeFilter = 'all',
   ambassador = null,
   refCode = null,
@@ -235,7 +250,32 @@ export default function ExploreMap({
         addPin(v.lat, v.lng, icon, v.name, `/viewpoints/${v.slug}`),
       )
     }
-  }, [ready, filter, properties, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassador, refCode])
+
+    // Ambassador's own approved spots — gold star pins opening a popup
+    // (title, media, "Added by …") instead of navigating away.
+    if (filter === 'all') {
+      const icon = pin('#d4af37', '⭐')
+      ambassadorPins.forEach((p) => {
+        const marker = L.marker([p.lat, p.lng], { icon, title: p.title })
+        const media = p.videoUrl
+          ? `<video src="${escHtml(p.videoUrl)}" controls playsinline style="width:100%;border-radius:8px;margin-top:6px;"></video>`
+          : p.photoUrl
+            ? `<img src="${escHtml(p.photoUrl)}" alt="" style="width:100%;border-radius:8px;margin-top:6px;" />`
+            : ''
+        marker.bindPopup(
+          `<div style="max-width:220px;">` +
+            `<strong>${escHtml(p.title)}</strong>` +
+            (p.description
+              ? `<p style="margin:4px 0 0;font-size:12px;">${escHtml(p.description)}</p>`
+              : '') +
+            media +
+            `<p style="margin:6px 0 0;font-size:11px;color:#777;">Added by ${escHtml(ambassador?.displayName ?? 'Ambassador')}</p>` +
+            `</div>`,
+        )
+        marker.addTo(layer)
+      })
+    }
+  }, [ready, filter, properties, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode])
 
   return (
     <div className="relative h-full w-full">

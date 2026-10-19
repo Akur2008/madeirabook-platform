@@ -77,6 +77,19 @@ export default async function ExplorePage() {
     depth: 1,
   })
 
+  // Approved ambassador pins promoted to the global map ("Community Pick").
+  const { docs: communityPins } = await payload.find({
+    collection: 'ambassador-pins',
+    where: {
+      and: [
+        { status: { equals: 'approved' } },
+        { promotedToGlobal: { equals: true } },
+      ],
+    },
+    limit: 200,
+    depth: 1,
+  })
+
   const mapStays = mapProperties.flatMap((p) => {
     const loc = typeof p.location === 'object' ? p.location : null
     if (loc?.geoCoordinates?.lat == null || loc?.geoCoordinates?.lng == null) return []
@@ -183,6 +196,25 @@ export default async function ExplorePage() {
     ]
   })
 
+  const mapCommunityPins = communityPins.flatMap((p) => {
+    if (p.coordinates?.lat == null || p.coordinates?.lng == null) return []
+    const owner =
+      typeof p.referral === 'object' && p.referral !== null ? p.referral : null
+    return [
+      {
+        id: p.id,
+        title: p.title,
+        lat: p.coordinates.lat,
+        lng: p.coordinates.lng,
+        photoUrl: uploadUrl(p.photo),
+        videoUrl: uploadUrl(p.video),
+        shortDescription: p.description,
+        addedBy: owner?.displayName || owner?.creatorName || null,
+        refCode: owner?.code ?? null,
+      },
+    ]
+  })
+
   return (
     <div className="h-dvh overflow-hidden bg-[#0a1420] text-white">
       {/* Cormorant Garamond for headings; falls back to serif if the CDN is unreachable */}
@@ -213,6 +245,7 @@ export default async function ExplorePage() {
           restaurants={mapRestaurants}
           trails={mapTrails}
           viewpoints={mapViewpoints}
+          communityPins={mapCommunityPins}
         />
       </div>
     </div>

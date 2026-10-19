@@ -86,7 +86,8 @@ export default async function AmbassadorMapPage(props: {
   const restaurantSlugs = new Set(slugsOf(referral.selectedRestaurants))
 
   const payload = await getPayload({ config: await config })
-  const [{ docs: beaches }, { docs: restaurants }] = await Promise.all([
+  const [{ docs: beaches }, { docs: restaurants }, { docs: ambassadorPins }] =
+    await Promise.all([
     beachSlugs.size
       ? payload.find({
           collection: 'beaches',
@@ -113,7 +114,38 @@ export default async function AmbassadorMapPage(props: {
           depth: 1,
         })
       : Promise.resolve({ docs: [] }),
+    payload.find({
+      collection: 'ambassador-pins',
+      where: {
+        and: [
+          { referral: { equals: referral.id } },
+          { status: { equals: 'approved' } },
+        ],
+      },
+      limit: 100,
+      depth: 1,
+    }),
   ])
+
+  const uploadUrl = (u: unknown): string | null =>
+    typeof u === 'object' && u !== null && 'url' in u
+      ? ((u as { url?: string | null }).url ?? null)
+      : null
+
+  const mapPins = ambassadorPins.flatMap((p) => {
+    if (p.coordinates?.lat == null || p.coordinates?.lng == null) return []
+    return [
+      {
+        id: p.id,
+        title: p.title,
+        lat: p.coordinates.lat,
+        lng: p.coordinates.lng,
+        description: p.description,
+        photoUrl: uploadUrl(p.photo),
+        videoUrl: uploadUrl(p.video),
+      },
+    ]
+  })
 
   const mapBeaches = beaches.flatMap((b) => {
     if (b.geoCoordinates?.lat == null || b.geoCoordinates?.lng == null) return []
@@ -188,7 +220,7 @@ export default async function AmbassadorMapPage(props: {
             </p>
           )}
           <p className="mt-3 text-[11px] uppercase tracking-widest text-white/45">
-            {mapBeaches.length + mapRestaurants.length} handpicked places ·
+            {mapBeaches.length + mapRestaurants.length + mapPins.length} handpicked places ·
             Powered by Madeirabook
           </p>
         </div>
@@ -200,6 +232,7 @@ export default async function AmbassadorMapPage(props: {
           properties={[]}
           beaches={mapBeaches}
           restaurants={mapRestaurants}
+          ambassadorPins={mapPins}
           refCode={referral.code}
           ambassador={{
             displayName,

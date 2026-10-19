@@ -265,6 +265,18 @@ export default async function WelcomePage(props: {
       )}
 
       <div className="mt-8">
+        <a
+          href={`/ambassadors/add-pin?token=${token}`}
+          className="block w-full rounded-md border border-[#d4af37]/50 bg-[#d4af37]/10 px-4 py-4 text-center text-sm font-semibold text-[#d4af37] transition-colors hover:bg-[#d4af37]/20"
+        >
+          ➕ Add your own spot
+        </a>
+        <p className="mt-2 text-center text-xs text-white/40">
+          Share a hidden gem — it will appear on your map after a quick review.
+        </p>
+      </div>
+
+      <div className="mt-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-white/50">
           What&apos;s next
         </p>

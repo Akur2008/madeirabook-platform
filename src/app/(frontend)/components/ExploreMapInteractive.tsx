@@ -30,6 +30,7 @@ const TYPE_STYLE: Record<PointType, { color: string; emoji: string }> = {
   restaurant: { color: '#d4af37', emoji: '🍽️' },
   trail: { color: '#f97316', emoji: '🥾' },
   viewpoint: { color: '#a855f7', emoji: '👁️' },
+  community: { color: '#d4af37', emoji: '⭐' },
 }
 
 interface MapStay {
@@ -97,12 +98,25 @@ interface MapViewpoint {
   meta?: string | null
 }
 
+interface MapCommunityPin {
+  id: string | number
+  title: string
+  lat: number
+  lng: number
+  photoUrl?: string | null
+  videoUrl?: string | null
+  shortDescription?: string | null
+  addedBy?: string | null
+  refCode?: string | null
+}
+
 interface ExploreMapInteractiveProps {
   properties: MapStay[]
   beaches: MapBeach[]
   restaurants: MapRestaurant[]
   trails?: MapTrail[]
   viewpoints?: MapViewpoint[]
+  communityPins?: MapCommunityPin[]
   activeFilter?: MapFilter
 }
 
@@ -126,6 +140,7 @@ export default function ExploreMapInteractive({
   restaurants,
   trails = [],
   viewpoints = [],
+  communityPins = [],
   activeFilter = 'all',
 }: ExploreMapInteractiveProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -223,8 +238,11 @@ export default function ExploreMapInteractive({
         lat: number
         lng: number
         photoUrl?: string | null
+        videoUrl?: string | null
         shortDescription?: string | null
         meta?: string | null
+        addedBy?: string | null
+        href?: string | null
       },
       name: string,
     ) =>
@@ -236,8 +254,11 @@ export default function ExploreMapInteractive({
         lat: item.lat,
         lng: item.lng,
         photoUrl: item.photoUrl ?? null,
+        videoUrl: item.videoUrl ?? null,
         shortDescription: item.shortDescription ?? null,
         meta: item.meta ?? null,
+        addedBy: item.addedBy ?? null,
+        href: item.href,
       })
 
     if (filter === 'all' || filter === 'stays') {
@@ -261,6 +282,25 @@ export default function ExploreMapInteractive({
     if (filter === 'all' || filter === 'views') {
       viewpoints.forEach((v) => push('viewpoint', v, v.name))
     }
+    if (filter === 'all') {
+      communityPins.forEach((p) =>
+        push(
+          'community',
+          {
+            id: p.id,
+            slug: '',
+            lat: p.lat,
+            lng: p.lng,
+            photoUrl: p.photoUrl,
+            videoUrl: p.videoUrl,
+            shortDescription: p.shortDescription,
+            addedBy: p.addedBy,
+            href: p.refCode ? `/m/${p.refCode}` : null,
+          },
+          p.title,
+        ),
+      )
+    }
 
     points.forEach((point) => {
       const { color, emoji } = TYPE_STYLE[point.type]
@@ -272,8 +312,11 @@ export default function ExploreMapInteractive({
           slug: point.slug,
           name: point.name,
           photoUrl: point.photoUrl,
+          videoUrl: point.videoUrl,
           shortDescription: point.shortDescription,
           meta: point.meta,
+          addedBy: point.addedBy,
+          href: point.href,
         })
         setSheetOpen(true)
       })
@@ -320,7 +363,7 @@ export default function ExploreMapInteractive({
 
     syncRef.current = syncIcons
     syncIcons()
-  }, [ready, filter, properties, beaches, restaurants, trails, viewpoints])
+  }, [ready, filter, properties, beaches, restaurants, trails, viewpoints, communityPins])
 
   return (
     <div className="relative h-full w-full">
