@@ -92,15 +92,19 @@ export default async function ExplorePage() {
 
   const mapStays = mapProperties.flatMap((p) => {
     const loc = typeof p.location === 'object' ? p.location : null
-    if (loc?.geoCoordinates?.lat == null || loc?.geoCoordinates?.lng == null) return []
+    const geo =
+      p.geoCoordinates?.lat != null && p.geoCoordinates?.lng != null
+        ? p.geoCoordinates
+        : loc?.geoCoordinates
+    if (geo?.lat == null || geo?.lng == null) return []
     const cover = p.media?.[0]?.image
     return [
       {
         id: p.id,
         slug: p.slug,
         title: p.title,
-        lat: loc.geoCoordinates.lat,
-        lng: loc.geoCoordinates.lng,
+        lat: geo.lat,
+        lng: geo.lng,
         pricePerNight: p.pricePerNight,
         coverImage: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
         photoUrl: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
