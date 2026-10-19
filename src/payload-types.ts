@@ -681,6 +681,10 @@ export interface Booking {
 export interface Referral {
   id: number;
   /**
+   * Hand-picked ambassadors only: shows gold Oasis hotel pins on their map and unlocks Oasis commissions.
+   */
+  oasisAccess?: boolean | null;
+  /**
    * Canonical referral code used in ?ref= links.
    */
   code: string;
@@ -1638,6 +1642,7 @@ export interface BookingsSelect<T extends boolean = true> {
  * via the `definition` "referrals_select".
  */
 export interface ReferralsSelect<T extends boolean = true> {
+  oasisAccess?: T;
   code?: T;
   aliases?: T;
   creatorName?: T;

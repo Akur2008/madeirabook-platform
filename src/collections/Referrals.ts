@@ -6,7 +6,7 @@ export const Referrals: CollectionConfig = {
   slug: 'referrals',
   admin: {
     useAsTitle: 'code',
-    defaultColumns: ['code', 'creatorName', 'commissionRate', 'status'],
+    defaultColumns: ['code', 'creatorName', 'oasisAccess', 'commissionRate', 'status'],
   },
   access: {
     read: ({ req }) => Boolean(req.user),
@@ -14,6 +14,19 @@ export const Referrals: CollectionConfig = {
     delete: ({ req }) => Boolean(req.user),
   },
   fields: [
+    {
+      name: 'oasisAccess',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      access: {
+        update: ({ req }) => Boolean(req.user),
+      },
+      admin: {
+        description:
+          'Hand-picked ambassadors only: shows gold Oasis hotel pins on their map and unlocks Oasis commissions.',
+      },
+    },
     {
       name: 'code',
       type: 'text',

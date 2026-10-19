@@ -86,8 +86,12 @@ export default async function AmbassadorMapPage(props: {
   const restaurantSlugs = new Set(slugsOf(referral.selectedRestaurants))
 
   const payload = await getPayload({ config: await config })
-  const [{ docs: beaches }, { docs: restaurants }, { docs: ambassadorPins }] =
-    await Promise.all([
+  const [
+    { docs: beaches },
+    { docs: restaurants },
+    { docs: ambassadorPins },
+    { docs: oasisProperties },
+  ] = await Promise.all([
     beachSlugs.size
       ? payload.find({
           collection: 'beaches',
@@ -125,6 +129,21 @@ export default async function AmbassadorMapPage(props: {
       limit: 100,
       depth: 1,
     }),
+    // Gold Oasis pins are a privilege — only fetched for hand-picked
+    // ambassadors (referrals.oasisAccess in /admin).
+    referral.oasisAccess
+      ? payload.find({
+          collection: 'properties',
+          where: {
+            and: [
+              { brand: { equals: 'madeiraoasis' } },
+              { status: { equals: 'published' } },
+            ],
+          },
+          limit: 200,
+          depth: 1,
+        })
+      : Promise.resolve({ docs: [] }),
   ])
 
   const uploadUrl = (u: unknown): string | null =>
@@ -173,6 +192,29 @@ export default async function AmbassadorMapPage(props: {
         cuisine: r.cuisine,
         averagePrice: r.averagePrice,
         heroImage: r.heroImage,
+      },
+    ]
+  })
+
+  const mapOasisStays = oasisProperties.flatMap((p) => {
+    const geo =
+      p.geoCoordinates?.lat != null && p.geoCoordinates?.lng != null
+        ? p.geoCoordinates
+        : typeof p.location === 'object'
+          ? p.location?.geoCoordinates
+          : null
+    if (geo?.lat == null || geo?.lng == null) return []
+    const cover = p.media?.[0]?.image
+    return [
+      {
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        lat: geo.lat,
+        lng: geo.lng,
+        shortDescription: p.shortDescription,
+        coverImage:
+          cover && typeof cover === 'object' ? (cover.url ?? null) : null,
       },
     ]
   })
@@ -233,6 +275,7 @@ export default async function AmbassadorMapPage(props: {
           beaches={mapBeaches}
           restaurants={mapRestaurants}
           ambassadorPins={mapPins}
+          oasisStays={mapOasisStays}
           refCode={referral.code}
           ambassador={{
             displayName,

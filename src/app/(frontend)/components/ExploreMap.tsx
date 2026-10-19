@@ -6,6 +6,8 @@ import type * as Leaflet from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
+import { oasisBase } from '@/lib/oasis-domain'
+
 import BookingDrawer from './BookingDrawer'
 
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
@@ -93,6 +95,16 @@ interface AmbassadorPin {
   videoUrl?: string | null
 }
 
+interface MapOasisStay {
+  id: string | number
+  slug: string
+  title: string
+  lat: number
+  lng: number
+  shortDescription?: string | null
+  coverImage?: string | null
+}
+
 interface ExploreMapProps {
   properties: MapStay[]
   beaches: MapBeach[]
@@ -100,6 +112,7 @@ interface ExploreMapProps {
   trails?: MapTrail[]
   viewpoints?: MapViewpoint[]
   ambassadorPins?: AmbassadorPin[]
+  oasisStays?: MapOasisStay[]
   activeFilter?: MapFilter
   ambassador?: AmbassadorBranding | null
   refCode?: string | null
@@ -115,6 +128,7 @@ export default function ExploreMap({
   trails = [],
   viewpoints = [],
   ambassadorPins = [],
+  oasisStays = [],
   activeFilter = 'all',
   ambassador = null,
   refCode = null,
@@ -229,6 +243,37 @@ export default function ExploreMap({
     if (filter === 'all' || filter === 'stays') {
       const icon = pin('#10b981', '🏠')
       properties.forEach((p) => addPin(p.lat, p.lng, icon, p.title, `/p/${p.slug}`))
+
+      // Oasis stays — gold star pins, popup with a tracked "View hotel →" link
+      // instead of the instant navigation used by regular pins.
+      if (oasisStays.length) {
+        const base = oasisBase(window.location.hostname)
+        const oasisIcon = L.divIcon({
+          className: 'explore-pin',
+          html: `<div style="width:34px;height:34px;border-radius:9999px;background:linear-gradient(135deg,#f5d76e,#b8952e);border:2px solid #1c1a16;box-shadow:0 2px 10px rgba(184,149,46,0.65);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;cursor:pointer;color:#1c1a16;">★</div>`,
+          iconSize: [34, 34],
+          iconAnchor: [17, 17],
+        })
+        oasisStays.forEach((h) => {
+          const marker = L.marker([h.lat, h.lng], {
+            icon: oasisIcon,
+            title: h.title,
+          })
+          marker.bindPopup(
+            `<div style="max-width:220px;">` +
+              (h.coverImage
+                ? `<img src="${escHtml(h.coverImage)}" alt="" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;" />`
+                : '') +
+              `<strong>${escHtml(h.title)}</strong>` +
+              (h.shortDescription
+                ? `<p style="margin:4px 0 0;font-size:12px;">${escHtml(h.shortDescription)}</p>`
+                : '') +
+              `<a href="${escHtml(withRef(`${base}/hotels/${h.slug}`))}" style="display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View hotel →</a>` +
+              `</div>`,
+          )
+          marker.addTo(layer)
+        })
+      }
     }
     if (filter === 'all' || filter === 'beaches') {
       const icon = pin(ambassador?.accentColor || '#3b82f6', '🏖️')
@@ -275,7 +320,7 @@ export default function ExploreMap({
         marker.addTo(layer)
       })
     }
-  }, [ready, filter, properties, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode])
+  }, [ready, filter, properties, oasisStays, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode])
 
   return (
     <div className="relative h-full w-full">
@@ -321,7 +366,7 @@ export default function ExploreMap({
         {FILTERS.filter(
           (f) =>
             f.key === 'all' ||
-            (f.key === 'stays' && properties.length > 0) ||
+            (f.key === 'stays' && (properties.length > 0 || oasisStays.length > 0)) ||
             (f.key === 'beaches' && visibleBeaches.length > 0) ||
             (f.key === 'food' && visibleRestaurants.length > 0) ||
             (f.key === 'trails' && trails.length > 0) ||

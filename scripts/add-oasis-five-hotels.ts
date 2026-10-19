@@ -349,10 +349,10 @@ async function main() {
       limit: 1,
     })
     if (existing.docs.length > 0) {
-      await payload.update({ collection: 'properties', id: existing.docs[0].id, data })
+      await payload.update({ collection: 'properties', id: existing.docs[0].id, data: data as never })
       console.log(`UPDATED ${h.slug} -> ${mediaIds.length} photos, id=${existing.docs[0].id}`)
     } else {
-      const created = await payload.create({ collection: 'properties', data })
+      const created = await payload.create({ collection: 'properties', data: data as never })
       console.log(`CREATED ${h.slug} -> ${mediaIds.length} photos, id=${created.id}`)
     }
   }

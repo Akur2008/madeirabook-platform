@@ -280,7 +280,13 @@ async function handleCheckoutCompleted(
         depth: 0,
       })
       const referral = foundRef.docs[0]
-      if (referral) {
+      const isOasisStay =
+        property?.brand === 'madeiraoasis' || property?.brand === 'both'
+      if (referral && isOasisStay && !referral.oasisAccess) {
+        console.log(
+          `webhook: oasis booking ${propertySlug} — referral '${refCode}' has no oasisAccess, payout skipped`,
+        )
+      } else if (referral) {
         const payoutCents = calcFee(
           amountCents,
           referral.commissionRate ?? 0,

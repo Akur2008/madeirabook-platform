@@ -188,6 +188,11 @@ export default async function WelcomePage(props: {
 
   return (
     <Shell>
+      {referral.oasisAccess && (
+        <p className="mb-6 rounded-full border border-[#d4af37]/50 bg-[#d4af37]/10 px-4 py-2 text-center text-xs font-semibold uppercase tracking-widest text-[#d4af37]">
+          🌟 Oasis Access — Premium Collection
+        </p>
+      )}
       <h1 className="text-center text-4xl font-medium tracking-tight" style={SERIF}>
         Welcome, {displayName}.
       </h1>
