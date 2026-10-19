@@ -334,6 +334,28 @@ Rooms have balconies or terraces facing the ocean. The infinity pool, wellness s
     lat: 32.679756,
     lng: -17.103612,
   },
+  {
+    slug: 'saccharum-resort',
+    alt: 'Saccharum Resort & Spa — Calheta, Madeira',
+    photos: [
+      'saccharum-resort-photo-2.jpg',
+      'saccharum-resort-pool-1.jpg',
+      'saccharum-resort-room-2.jpg',
+      'saccharum-resort-room-3.jpg',
+      'saccharum-resort-restaurant-1.jpg',
+      'saccharum-resort-spa-1.jpg',
+      'saccharum-resort-photo-1.jpg',
+      'saccharum-resort-room-8.jpg',
+    ],
+    shortDescription:
+      'A wellness design resort in a natural shelter on Madeira’s southwest coast — an infinity pool suspended over the ocean, an Ayurveda-inspired spa and the Calheta marina at its feet.',
+    description: `Located in Calheta, on Madeira Island, Saccharum is an elegant and comfortable hotel combining contemporary technology and design. The resort was conceived within a natural landscape of exceptional quality — between the mountains and the sea, next to the marina and the sandy beach.
+
+The Saccharum Spa philosophy is inspired by traditional Ayurveda medicine, offering unique sensory experiences in a refined environment — heated indoor pool, sauna, Turkish bath, jacuzzi, sensorial showers and a halotherapy room. Four pools crown the stay, led by an infinity pool suspended between sky and ocean, with dining at the Engenho and Alambique restaurants and the Trapiche bar.`,
+    amenityKeys: ['oceanView', 'infinityPool', 'spa', 'fineDining', 'seaAccess', 'rooftop'],
+    lat: 32.7172553,
+    lng: -17.1679051,
+  },
 ]
 
 async function main() {
