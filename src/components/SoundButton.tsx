@@ -36,6 +36,10 @@ export default function SoundButton() {
     }
   }, [])
 
+  // `isStarted` is only a persisted "user enabled sound" flag — it survives
+  // reloads while the AudioContext does not. Real playback state lives on the
+  // ambient channel; toggling on it keeps the button honest (one click to
+  // play, one click to pause).
   const ambientPlaying = engine.state?.channels.globalAmbient.playing ?? false
 
   const playOcean = useCallback(async () => {
@@ -50,7 +54,7 @@ export default function SoundButton() {
   }, [engine])
 
   const toggle = useCallback(async () => {
-    if (engine.isStarted) {
+    if (ambientPlaying) {
       userMutedRef.current = true
       await engine.stop()
       return
@@ -58,7 +62,7 @@ export default function SoundButton() {
     userMutedRef.current = false
     await engine.start()
     await playOcean()
-  }, [engine, playOcean])
+  }, [engine, playOcean, ambientPlaying])
 
   // Browsers only treat click/tap/keypress as a user gesture for autoplay —
   // scroll does not count. Start ambient on the first tap anywhere on the
@@ -80,21 +84,21 @@ export default function SoundButton() {
       <button
         ref={btnRef}
         type="button"
-        aria-label={engine.isStarted ? 'Mute sound' : 'Enable sound'}
+        aria-label={ambientPlaying ? 'Mute sound' : 'Enable sound'}
         onClick={() => void toggle()}
         className="fixed bottom-6 right-6 z-[2000] flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-[22px] backdrop-blur-sm transition-colors hover:bg-black/80"
         style={{
-          animation: engine.isStarted ? 'soundButtonPulse 2s infinite' : 'none',
+          animation: ambientPlaying ? 'soundButtonPulse 2s infinite' : 'none',
         }}
       >
         <span
           className={
-            engine.isStarted
+            ambientPlaying
               ? 'opacity-100 drop-shadow-[0_0_6px_rgba(34,197,94,0.9)]'
               : 'opacity-50 grayscale'
           }
         >
-          {engine.isStarted ? '🔊' : '🔇'}
+          {ambientPlaying ? '🔊' : '🔇'}
         </span>
       </button>
     </>

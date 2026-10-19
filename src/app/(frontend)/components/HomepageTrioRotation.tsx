@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import Link from 'next/link'
+import { useEffect, useRef } from 'react'
 
 import { useAutoplayVideo } from '@/components/useAutoplayVideo'
 
@@ -13,22 +14,51 @@ export interface TrioVideo {
 
 const SERIF = { fontFamily: 'Playfair Display, Cormorant Garamond, serif' } as const
 
-// Fixed vertical order: top → bottom.
+const R2 = 'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev'
+
+// Fixed vertical order: top → bottom. Videos are frozen — no rotation.
 const BLOCKS = [
-  { category: 'mountains', heading: 'Mountains & Viewpoints' },
-  { category: 'forest', heading: 'Forest & Levadas' },
-  { category: 'ocean', heading: 'Ocean & Sunsets' },
+  {
+    category: 'mountains',
+    heading: 'Mountains & Viewpoints',
+    video: {
+      category: 'mountains',
+      videoUrl: `${R2}/homepage-video-mountains-3.mp4`,
+      posterUrl: `${R2}/homepage-video-mountains-3-poster.jpg`,
+      title: 'Mountains & Viewpoints',
+    },
+  },
+  {
+    category: 'forest',
+    heading: 'Forest & Levadas',
+    video: {
+      category: 'forest',
+      videoUrl: `${R2}/homepage-video-forest-3.mp4`,
+      posterUrl: `${R2}/homepage-video-forest-3-poster.jpg`,
+      title: 'Forest & Levadas',
+    },
+  },
+  {
+    category: 'ocean',
+    heading: 'Ocean & Sunsets',
+    video: {
+      category: 'ocean',
+      videoUrl: `${R2}/homepage-video-ocean-3.mp4`,
+      posterUrl: `${R2}/homepage-video-ocean-3-poster.jpg`,
+      title: 'Ocean & Sunsets',
+    },
+  },
 ] as const
 
-type Picked = Record<(typeof BLOCKS)[number]['category'], TrioVideo | null>
-
-function pickRandom(videos: TrioVideo[], category: string): TrioVideo | null {
-  const pool = videos.filter((v) => v.category === category)
-  if (pool.length === 0) return null
-  return pool[Math.floor(Math.random() * pool.length)]
-}
-
-function TrioBlock({ video, heading }: { video: TrioVideo | null; heading: string }) {
+function TrioBlock({
+  video,
+  heading,
+  category,
+}: {
+  video: TrioVideo
+  heading: string
+  category: string
+}) {
   const { videoRef, needsTap, playNow } = useAutoplayVideo()
   const blockRef = useRef<HTMLDivElement>(null)
 
@@ -52,21 +82,18 @@ function TrioBlock({ video, heading }: { video: TrioVideo | null; heading: strin
 
   return (
     <div ref={blockRef} className="relative h-[45vh] w-full overflow-hidden md:h-[65vh]">
-      {video && (
-        <video
-          key={video.videoUrl}
-          ref={videoRef}
-          src={video.videoUrl}
-          poster={video.posterUrl}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-label={video.title ?? heading}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      )}
+      <video
+        ref={videoRef}
+        src={video.videoUrl}
+        poster={video.posterUrl}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-label={video.title ?? heading}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
       <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/50" />
       <div className="absolute inset-0 flex items-center justify-center px-6">
         <h3
@@ -76,45 +103,30 @@ function TrioBlock({ video, heading }: { video: TrioVideo | null; heading: strin
           {heading}
         </h3>
       </div>
-      {needsTap && video && (
+      {needsTap && (
         <button
           type="button"
           onClick={playNow}
-          className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/25 bg-[#0a1420]/80 px-5 py-2 text-xs text-white/90 backdrop-blur-md transition-colors hover:bg-white/10"
+          className="absolute bottom-16 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/25 bg-[#0a1420]/80 px-5 py-2 text-xs text-white/90 backdrop-blur-md transition-colors hover:bg-white/10"
         >
           Tap to play
         </button>
       )}
+      <Link
+        href={`/collections/${category}`}
+        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/25 bg-black/40 px-5 py-2 text-xs text-white/85 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white"
+      >
+        View all in gallery →
+      </Link>
     </div>
   )
 }
 
-// Client-only render flag: SSR and the hydration pass return false, so
-// no <video> is rendered server-side and the random pick below can never
-// mismatch the hydrated DOM.
-const emptySubscribe = () => () => {}
-const onClient = () => true
-const onServer = () => false
-
-export default function HomepageTrioRotation({ videos }: { videos: TrioVideo[] }) {
-  const mounted = useSyncExternalStore(emptySubscribe, onClient, onServer)
-
-  // Random pick per category, computed once on mount — every page load
-  // rotates the selection while block order stays fixed.
-  const [picked] = useState<Picked>(() => ({
-    mountains: pickRandom(videos, 'mountains'),
-    forest: pickRandom(videos, 'forest'),
-    ocean: pickRandom(videos, 'ocean'),
-  }))
-
+export default function HomepageTrioRotation() {
   return (
     <section aria-label="Madeira landscapes">
       {BLOCKS.map((b) => (
-        <TrioBlock
-          key={b.category}
-          video={mounted ? picked[b.category] : null}
-          heading={b.heading}
-        />
+        <TrioBlock key={b.category} video={b.video} heading={b.heading} category={b.category} />
       ))}
     </section>
   )

@@ -11,9 +11,7 @@ import AcquisitionSection from './components/AcquisitionSection'
 import EscapeCard from './components/EscapeCard'
 import ExploreMap from './components/ExploreMap'
 import HomepageHeroVideo from './components/HomepageHeroVideo'
-import HomepageTrioRotation, {
-  type TrioVideo,
-} from './components/HomepageTrioRotation'
+import HomepageTrioRotation from './components/HomepageTrioRotation'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,6 +53,7 @@ const NAV_LINKS = [
   { label: 'Stays', href: 'https://www.madeirabook.com/madeira-apartment-rentals.html' },
   { label: 'Flights', href: 'https://www.madeirabook.com/flights-to-madeira.html' },
   { label: 'Guides', href: 'https://www.madeirabook.com/madeira-guide.html' },
+  { label: 'Collections', href: '/collections' },
   { label: 'Weather', href: '#weather' },
 ]
 
@@ -85,11 +84,6 @@ const HEADER_BTN =
 
 const REF_COOKIE = 'madeirabook_ref'
 const REF_CODE_RE = /^[a-z0-9_-]{2,50}$/
-
-// One clip per request: the page is force-dynamic, so the hero rotates
-// on every load (the trio re-rolls client-side on mount).
-const pickOne = <T,>(arr: readonly T[]): T | undefined =>
-  arr[Math.floor(Math.random() * arr.length)]
 
 export default async function HomePage({
   searchParams,
@@ -151,24 +145,6 @@ export default async function HomePage({
       }
     }
   }
-
-  const { docs: homepageVideos } = await payload.find({
-    collection: 'homepage-videos',
-    where: { isActive: { equals: true } },
-    limit: 50,
-    depth: 0,
-    sort: 'order',
-  })
-
-  const trioVideos: TrioVideo[] = homepageVideos.map((v) => ({
-    category: v.category,
-    videoUrl: v.videoUrl,
-    posterUrl: v.posterUrl,
-    title: v.title,
-  }))
-
-  const oceanPool = trioVideos.filter((v) => v.category === 'ocean')
-  const heroVideo = pickOne(oceanPool) ?? pickOne(trioVideos) ?? null
 
   const { docs: properties } = await payload.find({
     collection: 'properties',
@@ -352,14 +328,9 @@ export default async function HomePage({
         </nav>
       </header>
 
-      {/* 2. Hero: rotating ocean loop + always-visible escape card */}
+      {/* 2. Hero: fixed ocean loop + always-visible escape card */}
       <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-6 py-16">
-        {heroVideo && (
-          <HomepageHeroVideo
-            videoUrl={heroVideo.videoUrl}
-            posterUrl={heroVideo.posterUrl}
-          />
-        )}
+        <HomepageHeroVideo />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-[#0a1420]" />
         <div className="relative z-10 flex w-full max-w-3xl flex-col items-center text-center">
           <h1
@@ -494,8 +465,8 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* 4. Landscape trio: mountains → forest → ocean, random clip per load */}
-      <HomepageTrioRotation videos={trioVideos} />
+      {/* 4. Landscape trio: mountains → forest → ocean, fixed clips */}
+      <HomepageTrioRotation />
 
       {/* 5. Why guests come back — light contrast block */}
       <section className="bg-[#f8fafc] px-6 py-16 text-[#0f172a] md:py-24">

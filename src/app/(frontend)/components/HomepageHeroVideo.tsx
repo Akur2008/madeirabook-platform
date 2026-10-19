@@ -2,21 +2,20 @@
 
 import { useAutoplayVideo } from '@/components/useAutoplayVideo'
 
-export default function HomepageHeroVideo({
-  videoUrl,
-  posterUrl,
-}: {
-  videoUrl: string
-  posterUrl: string
-}) {
+const HERO_VIDEO_URL =
+  'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev/homepage-video-ocean-1.mp4'
+const HERO_POSTER_URL =
+  'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev/homepage-video-ocean-1-poster.jpg'
+
+export default function HomepageHeroVideo() {
   const { videoRef, needsTap, playNow } = useAutoplayVideo()
 
   return (
     <>
       <video
         ref={videoRef}
-        src={videoUrl}
-        poster={posterUrl}
+        src={HERO_VIDEO_URL}
+        poster={HERO_POSTER_URL}
         autoPlay
         muted
         loop
