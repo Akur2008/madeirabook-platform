@@ -10,8 +10,10 @@ import SubscribeForm from '@/components/SubscribeForm'
 import AcquisitionSection from './components/AcquisitionSection'
 import EscapeCard from './components/EscapeCard'
 import ExploreMap from './components/ExploreMap'
-import GatewayCard from './components/GatewayCard'
-import HeroForestVideo from './components/HeroForestVideo'
+import HomepageHeroVideo from './components/HomepageHeroVideo'
+import HomepageTrioRotation, {
+  type TrioVideo,
+} from './components/HomepageTrioRotation'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,6 +86,11 @@ const HEADER_BTN =
 const REF_COOKIE = 'madeirabook_ref'
 const REF_CODE_RE = /^[a-z0-9_-]{2,50}$/
 
+// One clip per request: the page is force-dynamic, so the hero rotates
+// on every load (the trio re-rolls client-side on mount).
+const pickOne = <T,>(arr: readonly T[]): T | undefined =>
+  arr[Math.floor(Math.random() * arr.length)]
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -145,12 +152,23 @@ export default async function HomePage({
     }
   }
 
-  const { docs: gateways } = await payload.find({
-    collection: 'sluice-pages',
-    where: { status: { equals: 'published' } },
-    limit: 3,
+  const { docs: homepageVideos } = await payload.find({
+    collection: 'homepage-videos',
+    where: { isActive: { equals: true } },
+    limit: 50,
     depth: 0,
+    sort: 'order',
   })
+
+  const trioVideos: TrioVideo[] = homepageVideos.map((v) => ({
+    category: v.category,
+    videoUrl: v.videoUrl,
+    posterUrl: v.posterUrl,
+    title: v.title,
+  }))
+
+  const oceanPool = trioVideos.filter((v) => v.category === 'ocean')
+  const heroVideo = pickOne(oceanPool) ?? pickOne(trioVideos) ?? null
 
   const { docs: properties } = await payload.find({
     collection: 'properties',
@@ -287,7 +305,7 @@ export default async function HomePage({
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap"
       />
 
       {/* 1. Header */}
@@ -334,9 +352,14 @@ export default async function HomePage({
         </nav>
       </header>
 
-      {/* 2. Hero: Madeira mountain loop + always-visible escape card */}
+      {/* 2. Hero: rotating ocean loop + always-visible escape card */}
       <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-6 py-16">
-        <HeroForestVideo />
+        {heroVideo && (
+          <HomepageHeroVideo
+            videoUrl={heroVideo.videoUrl}
+            posterUrl={heroVideo.posterUrl}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-[#0a1420]" />
         <div className="relative z-10 flex w-full max-w-3xl flex-col items-center text-center">
           <h1
@@ -471,20 +494,8 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* 4. Emotional gateways triad */}
-      <section className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <h2
-          className="mb-12 text-center text-3xl font-light text-white/90 md:text-4xl"
-          style={SERIF}
-        >
-          Three paths into silence
-        </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {gateways.map((page) => (
-            <GatewayCard key={page.id} page={page} />
-          ))}
-        </div>
-      </section>
+      {/* 4. Landscape trio: mountains → forest → ocean, random clip per load */}
+      <HomepageTrioRotation videos={trioVideos} />
 
       {/* 5. Why guests come back — light contrast block */}
       <section className="bg-[#f8fafc] px-6 py-16 text-[#0f172a] md:py-24">

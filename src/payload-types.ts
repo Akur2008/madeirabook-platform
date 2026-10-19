@@ -91,6 +91,7 @@ export interface Config {
     viewpoints: Viewpoint;
     leads: Lead;
     agreements: Agreement;
+    'homepage-videos': HomepageVideo;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -122,6 +123,7 @@ export interface Config {
     viewpoints: ViewpointsSelect<false> | ViewpointsSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
     agreements: AgreementsSelect<false> | AgreementsSelect<true>;
+    'homepage-videos': HomepageVideosSelect<false> | HomepageVideosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1048,6 +1050,28 @@ export interface Agreement {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage-videos".
+ */
+export interface HomepageVideo {
+  id: number;
+  category: 'mountains' | 'forest' | 'ocean';
+  slot: 'hero' | 'trio-1' | 'trio-2' | 'trio-3';
+  /**
+   * R2 URL of the compressed mp4.
+   */
+  videoUrl: string;
+  /**
+   * R2 URL of the poster frame (jpg).
+   */
+  posterUrl: string;
+  title?: string | null;
+  isActive?: boolean | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1165,6 +1189,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'agreements';
         value: number | Agreement;
+      } | null)
+    | ({
+        relationTo: 'homepage-videos';
+        value: number | HomepageVideo;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1768,6 +1796,21 @@ export interface AgreementsSelect<T extends boolean = true> {
   signedName?: T;
   ipAddress?: T;
   signedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage-videos_select".
+ */
+export interface HomepageVideosSelect<T extends boolean = true> {
+  category?: T;
+  slot?: T;
+  videoUrl?: T;
+  posterUrl?: T;
+  title?: T;
+  isActive?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }

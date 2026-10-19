@@ -30,6 +30,7 @@ import { Trails } from './collections/Trails'
 import { Viewpoints } from './collections/Viewpoints'
 import { Leads } from './collections/Leads'
 import { Agreements } from './collections/Agreements'
+import { HomepageVideos } from './collections/HomepageVideos'
 import { PrivacyPolicy } from './globals/PrivacyPolicy'
 import { TermsOfService } from './globals/TermsOfService'
 import { CookiePolicy } from './globals/CookiePolicy'
@@ -75,6 +76,7 @@ export default buildConfig({
     Viewpoints,
     Leads,
     Agreements,
+    HomepageVideos,
   ],
   globals: [PrivacyPolicy, TermsOfService, CookiePolicy, LegalInfo],
   editor: lexicalEditor(),
