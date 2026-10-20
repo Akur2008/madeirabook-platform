@@ -215,20 +215,21 @@ export function ambassadorInvitation(opts: {
 }
 
 // Acceptance email sent to the ambassador right after approval. Carries the
-// live map link and the Stripe Express onboarding link for payouts.
+// live map link. Payout setup always goes through the ambassador page —
+// Stripe onboarding links expire within minutes, so we never embed one.
 export function ambassadorAccepted(opts: {
   displayName: string
   code: string
-  stripeOnboardingUrl: string | null
+  stripeAccountReady: boolean
   inviteUrl: string
 }): RenderedEmail {
   const name = opts.displayName.split(/['\s]/)[0] || opts.displayName
   const nameHtml = name.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
   const mapUrl = `https://www.madeirabook.com/m/${opts.code}`
 
-  const stripeBlock = opts.stripeOnboardingUrl
-    ? `<p style="margin:24px 0;"><a href="${opts.stripeOnboardingUrl}" style="${BTN}">Set up payouts (Stripe) →</a></p>` +
-      '<p style="color:#6b7280;font-size:13px;">Takes ~5 minutes. Payouts land monthly, on the 1st.</p>'
+  const stripeBlock = opts.stripeAccountReady
+    ? `<p style="margin:24px 0;"><a href="${opts.inviteUrl}" style="${BTN}">Set up payouts (Stripe) →</a></p>` +
+      '<p style="color:#6b7280;font-size:13px;">Takes ~5 minutes. Payouts land monthly, on the 1st. The link is always valid — a fresh Stripe session opens on every click.</p>'
     : '<p style="color:#6b7280;font-size:13px;">We are setting up your payout account — expect a separate email with the Stripe link shortly.</p>'
 
   const text =
@@ -236,8 +237,8 @@ export function ambassadorAccepted(opts: {
     "You're accepted to Madeirabook Ambassadors.\n\n" +
     `Your map: ${mapUrl}\n` +
     `Sign the Ambassador Terms: ${opts.inviteUrl}\n` +
-    (opts.stripeOnboardingUrl
-      ? `Set up payouts (Stripe): ${opts.stripeOnboardingUrl}\n`
+    (opts.stripeAccountReady
+      ? `Click here to set up payouts (link is always valid): ${opts.inviteUrl}\n`
       : 'We are setting up your payout account — expect a separate email with the Stripe link shortly.\n') +
     '\nShare your link. Earn 2% on every booking. Get paid monthly.\n\n' +
     'Welcome aboard,\nAndrei\nMadeirabook'

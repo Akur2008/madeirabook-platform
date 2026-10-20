@@ -111,7 +111,8 @@ async function createStripeForReferral(
         `<p>Hi ${firstName},</p>` +
         `<p>Your Madeirabook map is ready: <a href="${mapUrl}" style="color:#064e3b;">${mapUrl}</a></p>` +
         '<p>One step left — connect your payout account with Stripe (takes ~5 minutes). Payouts land monthly, on the 1st.</p>' +
-        `<p style="margin:24px 0;"><a href="${link.url}" style="display:inline-block;padding:14px 28px;background:#10b981;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;">Set up payouts (Stripe) &rarr;</a></p>` +
+        `<p style="margin:24px 0;"><a href="${welcomeUrl}" style="display:inline-block;padding:14px 28px;background:#10b981;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;">Set up payouts (Stripe) &rarr;</a></p>` +
+        '<p style="color:#6b7280;font-size:13px;">Click here to set up payouts — the link is always valid, a fresh Stripe session opens each time.</p>' +
         `<p>Your ambassador page &amp; terms: <a href="${welcomeUrl}" style="color:#064e3b;">${welcomeUrl}</a></p>` +
         '<p>Welcome aboard,<br>Andrei<br>Madeirabook</p>' +
         '<p style="color:#9ca3af;font-size:12px;margin-top:32px;border-top:1px solid #e5e7eb;padding-top:16px;">' +
@@ -123,7 +124,7 @@ async function createStripeForReferral(
         `Hi ${firstName},\n\n` +
         `Your Madeirabook map is ready: ${mapUrl}\n\n` +
         'One step left — connect your payout account with Stripe (~5 min). Payouts land monthly, on the 1st.\n' +
-        `Set up payouts: ${link.url}\n\n` +
+        `Click here to set up payouts (link is always valid): ${welcomeUrl}\n\n` +
         `Your ambassador page & terms: ${welcomeUrl}\n\n` +
         'Welcome aboard,\nAndrei\nMadeirabook'
       await sendResendEmail(resendKey, {

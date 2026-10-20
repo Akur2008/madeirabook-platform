@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import React from 'react'
+import Stripe from 'stripe'
 
 import config from '@payload-config'
 import DigitalSignature from '@/components/DigitalSignature'
@@ -9,6 +10,7 @@ import { hasSignedAmbassadorTerms } from '@/lib/agreements'
 import AcceptInvite from './AcceptInvite'
 import CopyLinkButton from './CopyLinkButton'
 import EditPicks from './EditPicks'
+import SetupPayouts from './SetupPayouts'
 
 export const metadata: Metadata = {
   title: 'Madeirabook — Ambassador invitation',
@@ -116,8 +118,10 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 export default async function WelcomePage(props: {
   params: Promise<{ token: string }>
+  searchParams: Promise<{ stripe?: string }>
 }) {
   const { token } = await props.params
+  const { stripe: stripeReturn } = await props.searchParams
   const payload = await getPayload({ config: await config })
 
   const { docs } = await payload.find({
@@ -141,6 +145,42 @@ export default async function WelcomePage(props: {
     year: 'numeric',
   })
 
+  // Referrals store only the Stripe account id — charges_enabled is
+  // fetched live so this page is always the source of truth for payouts.
+  let stripeChargesEnabled = false
+  if (referral.stripeAccountId && process.env.STRIPE_SECRET_KEY) {
+    try {
+      const account = await new Stripe(
+        process.env.STRIPE_SECRET_KEY,
+      ).accounts.retrieve(referral.stripeAccountId)
+      stripeChargesEnabled = Boolean(account.charges_enabled)
+    } catch (e) {
+      console.warn(`welcome/${token}: Stripe account retrieve failed`, e)
+    }
+  }
+
+  const payoutBlock = !referral.stripeAccountId ? (
+    <p className="mt-8 rounded-lg border border-white/10 bg-white/5 p-4 text-center text-sm text-white/60">
+      Stripe account not created yet — contact{' '}
+      <a href="mailto:hello@madeirabook.com" className="underline">
+        hello@madeirabook.com
+      </a>
+    </p>
+  ) : stripeChargesEnabled ? (
+    <p className="mt-8 rounded-full border border-green-500/40 bg-green-500/10 px-4 py-2 text-center text-xs font-semibold uppercase tracking-widest text-green-400">
+      ✅ Payouts active
+    </p>
+  ) : (
+    <div className="mt-8">
+      <SetupPayouts token={token} />
+      <p className="mt-2 text-center text-xs text-white/40">
+        {stripeReturn === 'done'
+          ? 'Details submitted — Stripe is reviewing your account.'
+          : 'Takes ~5 minutes. A fresh link is generated on every click, so it never expires.'}
+      </p>
+    </div>
+  )
+
   if (referral.invitationUsedAt) {
     return (
       <Shell>
@@ -153,6 +193,7 @@ export default async function WelcomePage(props: {
             hello@madeirabook.com
           </a>
         </p>
+        {payoutBlock}
       </Shell>
     )
   }
@@ -266,6 +307,8 @@ export default async function WelcomePage(props: {
           </span>
         </p>
       </div>
+
+      {payoutBlock}
 
       {(spotsOf(referral.selectedBeaches).length > 0 ||
         spotsOf(referral.selectedRestaurants).length > 0) && (

@@ -215,7 +215,7 @@ const createAmbassadorInvitation: CollectionAfterChangeHook = async ({
       const rendered = ambassadorAccepted({
         displayName,
         code,
-        stripeOnboardingUrl: stripeResult?.onboardingUrl ?? null,
+        stripeAccountReady: stripeResult !== null,
         inviteUrl: welcomeUrl,
       })
       await sendResendEmail(process.env.RESEND_API_KEY, {
