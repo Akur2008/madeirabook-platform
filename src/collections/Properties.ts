@@ -83,6 +83,29 @@ export const Properties: CollectionConfig = {
       },
     },
     {
+      name: 'address',
+      type: 'group',
+      fields: [
+        {
+          name: 'street',
+          type: 'text',
+        },
+        {
+          name: 'city',
+          type: 'text',
+        },
+        {
+          name: 'postal',
+          type: 'text',
+        },
+        {
+          name: 'country',
+          type: 'text',
+          defaultValue: 'PT',
+        },
+      ],
+    },
+    {
       name: 'pmsPropertyId',
       type: 'text',
     },

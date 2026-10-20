@@ -126,20 +126,25 @@ export default async function PropertyPage({
     ...(p.maxGuests && {
       occupancy: { '@type': 'QuantitativeValue', maxValue: p.maxGuests },
     }),
+    ...((p.address || (p.location && typeof p.location === 'object')) && {
+      address: {
+        '@type': 'PostalAddress',
+        ...(p.address?.street && { streetAddress: p.address.street }),
+        addressLocality:
+          p.address?.city ??
+          (p.location && typeof p.location === 'object' ? p.location.name : undefined),
+        ...(p.address?.postal && { postalCode: p.address.postal }),
+        addressCountry: p.address?.country ?? 'PT',
+      },
+    }),
     ...(p.location &&
-      typeof p.location === 'object' && {
-        address: {
-          '@type': 'PostalAddress',
-          addressLocality: p.location.name,
-          addressCountry: 'PT',
+      typeof p.location === 'object' &&
+      p.location.geoCoordinates && {
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: p.location.geoCoordinates.lat,
+          longitude: p.location.geoCoordinates.lng,
         },
-        ...(p.location.geoCoordinates && {
-          geo: {
-            '@type': 'GeoCoordinates',
-            latitude: p.location.geoCoordinates.lat,
-            longitude: p.location.geoCoordinates.lng,
-          },
-        }),
       }),
     ...(amenities.length > 0 && {
       amenityFeature: amenities.map((a) => ({

@@ -4,10 +4,6 @@
 // application is pending. Complements the live-query ARI engine in
 // src/lib/googleAri.ts.
 //
-// The Properties collection has no address field yet (schema change
-// requires approval), so the pilot address lives in PILOT_HOTEL below.
-// Move it into the collection when the schema is extended.
-
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
@@ -17,17 +13,10 @@ export const HOTEL_CENTER_PILOT_SLUG = 'hotel-orquidea'
 export const HOTEL_CENTER_ROOM_ID = 'standard-room'
 export const HOTEL_CENTER_OCCUPANCY = 2
 
-// Real-world address of Hotel Orquídea, Funchal (hotelorquidea.com).
 export const PILOT_HOTEL = {
   slug: HOTEL_CENTER_PILOT_SLUG,
   roomId: HOTEL_CENTER_ROOM_ID,
   occupancy: HOTEL_CENTER_OCCUPANCY,
-  address: {
-    street: 'Rua dos Netos 69-71',
-    city: 'Funchal',
-    postal: '9000-084',
-    country: 'PT',
-  },
 } as const
 
 export interface HotelCenterQuery {
@@ -86,6 +75,12 @@ interface FeedPropertyDoc {
   status: string
   shortDescription?: string | null
   geoCoordinates?: { lat?: number | null; lng?: number | null } | null
+  address?: {
+    street?: string | null
+    city?: string | null
+    postal?: string | null
+    country?: string | null
+  } | null
   pricePerNight?: number | null
   cleaningFee?: number | null
   maxGuests?: number | null
@@ -144,7 +139,12 @@ export async function generateHotelCenterFeed(
     propertyId: doc.slug,
     name: doc.title,
     description: doc.shortDescription ?? null,
-    address: { ...PILOT_HOTEL.address },
+    address: {
+      street: doc.address?.street ?? '',
+      city: doc.address?.city ?? '',
+      postal: doc.address?.postal ?? '',
+      country: doc.address?.country ?? '',
+    },
     latitude: doc.geoCoordinates?.lat ?? null,
     longitude: doc.geoCoordinates?.lng ?? null,
     landingPageUrl: hotelCenterLandingUrl(doc.slug),

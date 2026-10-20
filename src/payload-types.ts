@@ -336,6 +336,12 @@ export interface Property {
     lat?: number | null;
     lng?: number | null;
   };
+  address?: {
+    street?: string | null;
+    city?: string | null;
+    postal?: string | null;
+    country?: string | null;
+  };
   pmsPropertyId?: string | null;
   /**
    * PMS backend for this property. Empty = legacy Smoobu. Set automatically by "Publish to Zeevou".
@@ -1400,6 +1406,14 @@ export interface PropertiesSelect<T extends boolean = true> {
     | {
         lat?: T;
         lng?: T;
+      };
+  address?:
+    | T
+    | {
+        street?: T;
+        city?: T;
+        postal?: T;
+        country?: T;
       };
   pmsPropertyId?: T;
   pms?: T;

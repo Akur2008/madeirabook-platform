@@ -27,6 +27,7 @@ import * as migration_20261018_173950_ambassador_selections_and_stripe from './2
 import * as migration_20261018_224134_homepage_videos from './20261018_224134_homepage_videos';
 import * as migration_20261019_100834_add_ambassador_pins_collection from './20261019_100834_add_ambassador_pins_collection';
 import * as migration_20261019_120000_add_oasis_access_to_referrals from './20261019_120000_add_oasis_access_to_referrals';
+import * as migration_20261020_201346_add_address_to_properties from './20261020_201346_add_address_to_properties';
 
 export const migrations = [
   {
@@ -167,11 +168,16 @@ export const migrations = [
   {
     up: migration_20261019_100834_add_ambassador_pins_collection.up,
     down: migration_20261019_100834_add_ambassador_pins_collection.down,
-    name: '20261019_100834_add_ambassador_pins_collection'
+    name: '20261019_100834_add_ambassador_pins_collection',
   },
   {
     up: migration_20261019_120000_add_oasis_access_to_referrals.up,
     down: migration_20261019_120000_add_oasis_access_to_referrals.down,
-    name: '20261019_120000_add_oasis_access_to_referrals'
+    name: '20261019_120000_add_oasis_access_to_referrals',
+  },
+  {
+    up: migration_20261020_201346_add_address_to_properties.up,
+    down: migration_20261020_201346_add_address_to_properties.down,
+    name: '20261020_201346_add_address_to_properties'
   },
 ];
