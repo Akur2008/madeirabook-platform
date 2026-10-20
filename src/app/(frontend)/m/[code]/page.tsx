@@ -131,7 +131,7 @@ export default async function AmbassadorMapPage(props: {
     }),
     // Gold Oasis pins are a privilege — only fetched for hand-picked
     // ambassadors (referrals.oasisAccess in /admin).
-    referral.oasisAccess
+    referral.oasisAccess === true
       ? payload.find({
           collection: 'properties',
           where: {
