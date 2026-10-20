@@ -6,6 +6,7 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Amenity, Media } from '@/payload-types'
+import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import OasisInquiryForm from '../../../../(frontend)/components/OasisInquiryForm'
 import OasisLink from '../../../../(frontend)/components/OasisLink'
 
@@ -298,6 +299,7 @@ export default async function OasisHotelV2Page({
           >
             Powered by Madeirabook
           </a>
+          <SaveAsAppSheet variant="light" />
         </div>
       </footer>
     </div>

@@ -7,6 +7,8 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Upload } from '@/payload-types'
+import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+
 import PropertyMap from '../../components/PropertyMapLoader'
 import VideoOnDemand from '../../components/VideoOnDemand'
 
@@ -263,10 +265,20 @@ export default async function TrailPage({
               latitude={trail.geoCoordinates.lat}
               longitude={trail.geoCoordinates.lng}
               title={trail.startPoint ?? trail.name}
+              address={trail.startPoint ?? locationName ?? undefined}
               imageUrl={photoUrl ?? undefined}
               endLatitude={trail.isLinear ? (trail.endCoordinates?.lat ?? undefined) : undefined}
               endLongitude={trail.isLinear ? (trail.endCoordinates?.lng ?? undefined) : undefined}
               endTitle={`${trail.name} — end`}
+            />
+          </div>
+          <div className="mt-4">
+            <GetDirectionsSheet
+              lat={trail.geoCoordinates.lat}
+              lng={trail.geoCoordinates.lng}
+              name={trail.startPoint ?? trail.name}
+              address={trail.startPoint ?? locationName}
+              theme="dark"
             />
           </div>
           {trail.trailheadUrl && (

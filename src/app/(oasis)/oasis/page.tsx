@@ -14,7 +14,18 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
-export default async function OasisPage() {
+export default async function OasisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lat?: string; lng?: string; zoom?: string }>
+}) {
+  const { lat, lng, zoom } = await searchParams
+  const parsedLat = Number(lat)
+  const parsedLng = Number(lng)
+  const parsedZoom = Number(zoom)
+  const hasCenter =
+    lat != null && lng != null && Number.isFinite(parsedLat) && Number.isFinite(parsedLng)
+
   const payload = await getPayload({ config: await config })
 
   // "tenant: oasis" maps to brand = madeiraoasis on the shared Properties collection
@@ -60,7 +71,12 @@ export default async function OasisPage() {
 
   return (
     <div className="h-dvh overflow-hidden bg-[#fdfbf7]">
-      <OasisMap hotels={hotels} />
+      <OasisMap
+        hotels={hotels}
+        initialLat={hasCenter ? parsedLat : undefined}
+        initialLng={hasCenter ? parsedLng : undefined}
+        initialZoom={zoom != null && Number.isFinite(parsedZoom) ? parsedZoom : undefined}
+      />
     </div>
   )
 }

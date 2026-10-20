@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { oasisBase } from '@/lib/oasis-domain'
+import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 
 // CartoDB Positron as a vector GL style (same Positron design as the raster
 // tiles, but served without the API-key watermark).
@@ -29,6 +30,9 @@ export interface OasisHotelPin {
 
 interface OasisMapProps {
   hotels: OasisHotelPin[]
+  initialLat?: number
+  initialLng?: number
+  initialZoom?: number
 }
 
 const escapeHtml = (s: string) =>
@@ -38,7 +42,12 @@ const escapeHtml = (s: string) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
-export default function OasisMap({ hotels }: OasisMapProps) {
+export default function OasisMap({
+  hotels,
+  initialLat,
+  initialLng,
+  initialZoom,
+}: OasisMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Leaflet.Map | null>(null)
   const layerRef = useRef<Leaflet.LayerGroup | null>(null)
@@ -46,6 +55,12 @@ export default function OasisMap({ hotels }: OasisMapProps) {
   const [ready, setReady] = useState(false)
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('all')
+  const [dirTarget, setDirTarget] = useState<{
+    lat: number
+    lng: number
+    name: string
+  } | null>(null)
+  const [dirOpen, setDirOpen] = useState(false)
 
   const locations = useMemo(
     () =>
@@ -88,8 +103,11 @@ export default function OasisMap({ hotels }: OasisMapProps) {
       setWorkerUrl('/vendor/maplibre-gl-worker.mjs')
 
       const map = L.map(containerRef.current, {
-        center: MADEIRA_CENTER,
-        zoom: MADEIRA_ZOOM,
+        center:
+          initialLat != null && initialLng != null
+            ? [initialLat, initialLng]
+            : MADEIRA_CENTER,
+        zoom: initialZoom ?? MADEIRA_ZOOM,
         scrollWheelZoom: false,
       })
 
@@ -110,7 +128,7 @@ export default function OasisMap({ hotels }: OasisMapProps) {
       layerRef.current = null
       leafletRef.current = null
     }
-  }, [])
+  }, [initialLat, initialLng, initialZoom])
 
   // Rebuild markers whenever the search filter or the data changes
   useEffect(() => {
@@ -145,15 +163,29 @@ export default function OasisMap({ hotels }: OasisMapProps) {
               : ''
           }
           <a href="${base}/hotels/${escapeHtml(h.slug)}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View residence →</a>
+          <button type="button" class="js-get-directions" data-lat="${h.lat}" data-lng="${h.lng}" data-name="${escapeHtml(h.title)}" style="display:inline-block;margin-top:10px;margin-left:10px;font-size:12px;font-weight:600;color:#8a7020;background:none;border:none;border-bottom:1px solid #d4af37;padding:0 0 1px;cursor:pointer;">Get Directions →</button>
         </div>`
       marker.bindPopup(popupHtml, { maxWidth: 260, closeButton: false })
       marker.addTo(layer)
     })
   }, [ready, visible])
 
+  const onMapClick = (e: React.MouseEvent) => {
+    // Delegated bridge: Leaflet popups are plain HTML inside the map
+    // container — read the pin data off the button's data attributes.
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('.js-get-directions')
+    if (!btn?.dataset.lat || !btn.dataset.lng) return
+    setDirTarget({
+      lat: Number(btn.dataset.lat),
+      lng: Number(btn.dataset.lng),
+      name: btn.dataset.name ?? '',
+    })
+    setDirOpen(true)
+  }
+
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full" />
+      <div ref={containerRef} className="h-full w-full" onClick={onMapClick} />
 
       {/* Floating search / filter bar */}
       <div className="absolute left-1/2 top-20 z-[1001] flex w-[min(92vw,640px)] -translate-x-1/2 items-center gap-2 rounded-full border border-[#1c1a16]/10 bg-[#fdfbf7]/95 px-4 py-2 shadow-lg shadow-[#1c1a16]/5 backdrop-blur">
@@ -195,6 +227,17 @@ export default function OasisMap({ hotels }: OasisMapProps) {
       <div className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 rounded-full border border-[#1c1a16]/10 bg-[#fdfbf7]/95 px-4 py-1.5 text-xs text-[#1c1a16]/60 backdrop-blur">
         {visible.length} {visible.length === 1 ? 'residence' : 'residences'}
       </div>
+      {dirTarget && (
+        <GetDirectionsSheet
+          hideTrigger
+          open={dirOpen}
+          onOpenChange={setDirOpen}
+          lat={dirTarget.lat}
+          lng={dirTarget.lng}
+          name={dirTarget.name}
+          theme="gold"
+        />
+      )}
     </div>
   )
 }

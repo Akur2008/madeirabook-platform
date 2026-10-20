@@ -7,6 +7,8 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Upload } from '@/payload-types'
+import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+
 import PropertyMap from '../../components/PropertyMapLoader'
 import VideoOnDemand from '../../components/VideoOnDemand'
 
@@ -230,7 +232,17 @@ export default async function BeachPage({
               latitude={beach.geoCoordinates.lat}
               longitude={beach.geoCoordinates.lng}
               title={beach.name}
+              address={locationName ?? undefined}
               imageUrl={photoUrl ?? undefined}
+            />
+          </div>
+          <div className="mt-4">
+            <GetDirectionsSheet
+              lat={beach.geoCoordinates.lat}
+              lng={beach.geoCoordinates.lng}
+              name={beach.name}
+              address={locationName}
+              theme="dark"
             />
           </div>
         </section>

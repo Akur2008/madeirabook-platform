@@ -4,6 +4,8 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import SaveAsAppSheet from '@/components/SaveAsAppSheet'
+
 export default function Footer() {
   const pathname = usePathname()
   // The landing page renders its own minimal footer (3 links only);
@@ -66,6 +68,9 @@ export default function Footer() {
 
         <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm">
           <p>&copy; {new Date().getFullYear()} Madeirabook. All rights reserved.</p>
+          <div className="mt-4">
+            <SaveAsAppSheet variant="dark" />
+          </div>
         </div>
       </div>
     </footer>

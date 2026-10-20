@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { oasisBase } from '@/lib/oasis-domain'
+import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 
 import BookingDrawer from './BookingDrawer'
 
@@ -142,6 +143,12 @@ export default function ExploreMap({
   const [ready, setReady] = useState(false)
   const [escapeCity, setEscapeCity] = useState(FALLBACK_CITY)
   const [escapeOpen, setEscapeOpen] = useState(false)
+  const [dirTarget, setDirTarget] = useState<{
+    lat: number
+    lng: number
+    name: string
+  } | null>(null)
+  const [dirOpen, setDirOpen] = useState(false)
 
   // Same geo-city lookup as the hero EscapeCard (/api/escape-card reads
   // Vercel IP headers; falls back to Lisbon when unknown).
@@ -269,6 +276,7 @@ export default function ExploreMap({
                 ? `<p style="margin:4px 0 0;font-size:12px;">${escHtml(h.shortDescription)}</p>`
                 : '') +
               `<a href="${escHtml(withRef(`${base}/hotels/${h.slug}`))}" style="display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View hotel →</a>` +
+              `<button type="button" class="js-get-directions" data-lat="${h.lat}" data-lng="${h.lng}" data-name="${escHtml(h.title)}" style="display:inline-block;margin-top:8px;margin-left:10px;font-size:12px;font-weight:600;color:#1c1a16;background:none;border:none;border-bottom:1px solid #10b981;padding:0 0 1px;cursor:pointer;">Get Directions →</button>` +
               `</div>`,
           )
           marker.addTo(layer)
@@ -315,6 +323,7 @@ export default function ExploreMap({
               : '') +
             media +
             `<p style="margin:6px 0 0;font-size:11px;color:#777;">Added by ${escHtml(ambassador?.displayName ?? 'Ambassador')}</p>` +
+            `<button type="button" class="js-get-directions" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${escHtml(p.title)}" style="display:inline-block;margin-top:6px;font-size:12px;font-weight:600;color:#10b981;background:none;border:none;border-bottom:1px solid #10b981;padding:0 0 1px;cursor:pointer;">Get Directions →</button>` +
             `</div>`,
         )
         marker.addTo(layer)
@@ -322,9 +331,22 @@ export default function ExploreMap({
     }
   }, [ready, filter, properties, oasisStays, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode])
 
+  const onMapClick = (e: React.MouseEvent) => {
+    // Delegated bridge: Leaflet popups are plain HTML inside the map
+    // container — read the pin data off the button's data attributes.
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('.js-get-directions')
+    if (!btn?.dataset.lat || !btn.dataset.lng) return
+    setDirTarget({
+      lat: Number(btn.dataset.lat),
+      lng: Number(btn.dataset.lng),
+      name: btn.dataset.name ?? '',
+    })
+    setDirOpen(true)
+  }
+
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full" />
+      <div ref={containerRef} className="h-full w-full" onClick={onMapClick} />
       {ambassador && (
         <div className="absolute left-3 top-14 z-[1001] flex items-center gap-3 rounded-2xl border border-white/15 bg-[#0a1420]/90 px-3 py-2 backdrop-blur sm:top-3">
           {ambassador.avatarUrl ? (
@@ -396,6 +418,17 @@ export default function ExploreMap({
         Escape from {escapeCity} →
       </button>
       <BookingDrawer open={escapeOpen} onOpenChange={setEscapeOpen} />
+      {dirTarget && (
+        <GetDirectionsSheet
+          hideTrigger
+          open={dirOpen}
+          onOpenChange={setDirOpen}
+          lat={dirTarget.lat}
+          lng={dirTarget.lng}
+          name={dirTarget.name}
+          theme="dark"
+        />
+      )}
     </div>
   )
 }

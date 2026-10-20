@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 
 import AiConciergeWidget from '@/components/AiConciergeWidget'
+import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import OasisLink from '../../../../(frontend)/components/OasisLink'
 import { BookingLink, ConciergeAskButton } from './V3Actions'
 import V3ReelVideo from './V3ReelVideo'
@@ -313,6 +314,7 @@ export default function QuintaDaSerraV3Page() {
           >
             Powered by Madeirabook
           </a>
+          <SaveAsAppSheet variant="light" />
         </div>
       </footer>
 

@@ -7,6 +7,8 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Upload } from '@/payload-types'
+import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+
 import PropertyMap from '../../components/PropertyMapLoader'
 import VideoOnDemand from '../../components/VideoOnDemand'
 
@@ -255,7 +257,17 @@ export default async function RestaurantPage({
               latitude={restaurant.geoCoordinates.lat}
               longitude={restaurant.geoCoordinates.lng}
               title={restaurant.name}
+              address={restaurant.address ?? locationName ?? undefined}
               imageUrl={photoUrl ?? undefined}
+            />
+          </div>
+          <div className="mt-4">
+            <GetDirectionsSheet
+              lat={restaurant.geoCoordinates.lat}
+              lng={restaurant.geoCoordinates.lng}
+              name={restaurant.name}
+              address={restaurant.address ?? locationName}
+              theme="dark"
             />
           </div>
         </section>

@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { setWorkerUrl } from 'maplibre-gl'
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet'
+
+import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 
 // Next.js webpack breaks maplibre's import.meta.url worker resolution;
 // serve the worker from public/ instead.
@@ -28,6 +30,7 @@ interface PropertyMapProps {
   longitude: number
   title: string
   imageUrl?: string
+  address?: string
   endLatitude?: number
   endLongitude?: number
   endTitle?: string
@@ -38,12 +41,14 @@ export default function PropertyMap({
   longitude,
   title,
   imageUrl,
+  address,
   endLatitude,
   endLongitude,
   endTitle,
 }: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
+  const [directionsOpen, setDirectionsOpen] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -59,12 +64,14 @@ export default function PropertyMap({
     // OpenFreeMap via MapLibre GL (vector tiles)
     maplibreGL({ style: OPENFREEMAP_STYLE }).addTo(map)
 
+    const directionsBtn = `<button type="button" class="js-get-directions" style="margin-top:8px;font-size:12px;font-weight:600;color:#10b981;background:none;border:none;border-bottom:1px solid #10b981;padding:0 0 1px;cursor:pointer;">Get Directions →</button>`
     const popupHtml = imageUrl
       ? `<div style="font-family: 'Cormorant Garamond', serif; font-size: 15px; text-align: center;">
            <img src="${imageUrl}" alt="${title}" style="width: 180px; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; display: block;" />
            <div style="color: #111827; font-weight: 500;">${title}</div>
+           ${directionsBtn}
          </div>`
-      : `<div style="font-family: 'Cormorant Garamond', serif; font-size: 15px; color: #111827;">${title}</div>`
+      : `<div style="font-family: 'Cormorant Garamond', serif; font-size: 15px; color: #111827; text-align: center;">${title}<br/>${directionsBtn}</div>`
 
     L.marker([latitude, longitude], { icon: customIcon })
       .addTo(map)
@@ -94,7 +101,31 @@ export default function PropertyMap({
       map.remove()
       mapRef.current = null
     }
-  }, [latitude, longitude, title, endLatitude, endLongitude, endTitle])
+  }, [latitude, longitude, title, imageUrl, endLatitude, endLongitude, endTitle])
 
-  return <div ref={containerRef} className="w-full h-[400px] rounded-xl overflow-hidden border border-white/10" />
+  return (
+    <>
+      <div
+        ref={containerRef}
+        className="w-full h-[400px] rounded-xl overflow-hidden border border-white/10"
+        onClick={(e) => {
+          // Leaflet popups live inside this container — delegated click
+          // bridges the popup's plain-HTML button into React state.
+          if ((e.target as HTMLElement).closest('.js-get-directions')) {
+            setDirectionsOpen(true)
+          }
+        }}
+      />
+      <GetDirectionsSheet
+        hideTrigger
+        open={directionsOpen}
+        onOpenChange={setDirectionsOpen}
+        lat={latitude}
+        lng={longitude}
+        name={title}
+        address={address}
+        theme="dark"
+      />
+    </>
+  )
 }

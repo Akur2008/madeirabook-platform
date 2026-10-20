@@ -16,6 +16,7 @@ interface PropertyMapLoaderProps {
   longitude: number
   title: string
   imageUrl?: string
+  address?: string
   endLatitude?: number
   endLongitude?: number
   endTitle?: string

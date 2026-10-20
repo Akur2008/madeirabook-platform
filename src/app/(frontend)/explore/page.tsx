@@ -34,7 +34,21 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function ExplorePage() {
+export default async function ExplorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lat?: string; lng?: string; zoom?: string }>
+}) {
+  const { lat, lng, zoom } = await searchParams
+  const parsedLat = Number(lat)
+  const parsedLng = Number(lng)
+  const parsedZoom = Number(zoom)
+  const initialCenter =
+    lat != null && lng != null && Number.isFinite(parsedLat) && Number.isFinite(parsedLng)
+      ? { lat: parsedLat, lng: parsedLng }
+      : null
+  const initialZoom = zoom != null && Number.isFinite(parsedZoom) ? parsedZoom : undefined
+
   const payload = await getPayload({ config: await config })
 
   const { docs: mapProperties } = await payload.find({
@@ -250,6 +264,9 @@ export default async function ExplorePage() {
           trails={mapTrails}
           viewpoints={mapViewpoints}
           communityPins={mapCommunityPins}
+          initialLat={initialCenter?.lat}
+          initialLng={initialCenter?.lng}
+          initialZoom={initialZoom}
         />
       </div>
     </div>

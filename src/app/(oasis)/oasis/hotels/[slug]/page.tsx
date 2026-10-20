@@ -6,6 +6,8 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Amenity, Media } from '@/payload-types'
+import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import OasisInquiryForm from '../../../../(frontend)/components/OasisInquiryForm'
 import OasisLink from '../../../../(frontend)/components/OasisLink'
 
@@ -151,6 +153,12 @@ export default async function OasisHotelPage({
   )
   const locationName =
     p.location && typeof p.location === 'object' ? p.location.name : null
+  const geo =
+    p.geoCoordinates?.lat != null && p.geoCoordinates?.lng != null
+      ? p.geoCoordinates
+      : typeof p.location === 'object'
+        ? p.location?.geoCoordinates
+        : null
 
   return (
     <div className="min-h-dvh bg-[#fdfbf7] pt-16 text-[#1c1a16]">
@@ -182,6 +190,17 @@ export default async function OasisHotelPage({
             <p className="mt-3 text-sm tracking-wide text-white/80">
               {locationName}, Madeira
             </p>
+          )}
+          {geo?.lat != null && geo?.lng != null && (
+            <div className="mt-5">
+              <GetDirectionsSheet
+                lat={geo.lat}
+                lng={geo.lng}
+                name={p.title}
+                address={locationName ? `${locationName}, Madeira` : null}
+                theme="gold"
+              />
+            </div>
           )}
         </div>
       </section>
@@ -271,6 +290,7 @@ export default async function OasisHotelPage({
           >
             Powered by Madeirabook
           </a>
+          <SaveAsAppSheet variant="light" />
         </div>
       </footer>
     </div>

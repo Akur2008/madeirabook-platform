@@ -7,6 +7,8 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Amenity, HouseRule, Media } from '@/payload-types'
+import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+
 import BookingDrawer from '../../components/BookingDrawer'
 import PropertyMap from '../../components/PropertyMapLoader'
 
@@ -263,12 +265,22 @@ export default async function PropertyPage({
                   latitude={p.location.geoCoordinates.lat}
                   longitude={p.location.geoCoordinates.lng}
                   title={p.title}
+                  address={locationName ?? undefined}
                   imageUrl={
                     Array.isArray(p.media) && p.media[0]?.image &&
                     typeof p.media[0].image === 'object'
                       ? (p.media[0].image as { url: string }).url
                       : undefined
                   }
+                />
+              </div>
+              <div className="mt-4">
+                <GetDirectionsSheet
+                  lat={p.location.geoCoordinates.lat}
+                  lng={p.location.geoCoordinates.lng}
+                  name={p.title}
+                  address={locationName}
+                  theme="dark"
                 />
               </div>
             </section>

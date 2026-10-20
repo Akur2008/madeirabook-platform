@@ -118,6 +118,9 @@ interface ExploreMapInteractiveProps {
   viewpoints?: MapViewpoint[]
   communityPins?: MapCommunityPin[]
   activeFilter?: MapFilter
+  initialLat?: number
+  initialLng?: number
+  initialZoom?: number
 }
 
 interface MapPoint extends PointPreview {
@@ -142,6 +145,9 @@ export default function ExploreMapInteractive({
   viewpoints = [],
   communityPins = [],
   activeFilter = 'all',
+  initialLat,
+  initialLng,
+  initialZoom,
 }: ExploreMapInteractiveProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Leaflet.Map | null>(null)
@@ -172,8 +178,11 @@ export default function ExploreMapInteractive({
       setWorkerUrl('/vendor/maplibre-gl-worker.mjs')
 
       const map = L.map(containerRef.current, {
-        center: MADEIRA_CENTER,
-        zoom: MADEIRA_ZOOM,
+        center:
+          initialLat != null && initialLng != null
+            ? [initialLat, initialLng]
+            : MADEIRA_CENTER,
+        zoom: initialZoom ?? MADEIRA_ZOOM,
         scrollWheelZoom: false,
       })
       maplibreGL({ style: OPENFREEMAP_STYLE }).addTo(map)
@@ -202,7 +211,7 @@ export default function ExploreMapInteractive({
       layerRef.current = null
       leafletRef.current = null
     }
-  }, [])
+  }, [initialLat, initialLng, initialZoom])
 
   // Rebuild markers whenever the layer filter or the data changes
   useEffect(() => {
