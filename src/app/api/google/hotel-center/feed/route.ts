@@ -19,9 +19,10 @@ function plusDays(n: number): string {
 //   ?checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&guests=2&format=xml|json
 //
 // Pilot Hotel Center feed for Hotel Orquídea: one <Hotel> with a <Property>
-// block (id, name, address, geo, landing page, image) and one <Room> with
-// occupancy + stay price. Defaults to a 5-night window 30 days out when
-// dates are omitted, so the bare URL always returns a usable feed.
+// block (id, name, address, geo, landing page, image) and one <Room> per
+// active UnitType (price from its RatePlan). Defaults to a 5-night window
+// 30 days out when dates are omitted, so the bare URL always returns a
+// usable feed.
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams
   const format = (sp.get('format') || 'xml').trim().toLowerCase()

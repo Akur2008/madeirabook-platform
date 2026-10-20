@@ -64,8 +64,24 @@ export interface HotelCenterFeed {
   generatedAt: string
   hotel: {
     property: HotelCenterProperty
-    room: HotelCenterRoom
+    rooms: HotelCenterRoom[]
   }
+}
+
+interface FeedUnitTypeDoc {
+  id: number
+  name: string
+  capacity?: number | null
+  status?: string | null
+}
+
+interface FeedRatePlanDoc {
+  id: number
+  name: string
+  unitType: number | { id: number }
+  basePrice?: number | null
+  minNights?: number | null
+  status?: string | null
 }
 
 interface FeedPropertyDoc {
@@ -116,8 +132,54 @@ function firstMediaUrl(doc: FeedPropertyDoc): string | null {
   return null
 }
 
+// Active unit types of the property, each with the first active rate plan
+// (lowest basePrice wins when several exist). Unit types without a rate
+// plan fall back to property.pricePerNight.
+async function findRooms(
+  doc: FeedPropertyDoc,
+): Promise<{ unitType: FeedUnitTypeDoc; ratePlan: FeedRatePlanDoc | null }[]> {
+  const payload = await getPayload({ config: await config })
+  const unitTypes = await payload.find({
+    collection: 'unit-types',
+    where: {
+      and: [{ property: { equals: doc.id } }, { status: { equals: 'active' } }],
+    },
+    limit: 100,
+    depth: 0,
+  })
+  const uts = unitTypes.docs as unknown as FeedUnitTypeDoc[]
+  if (!uts.length) return []
+
+  const ratePlans = await payload.find({
+    collection: 'rate-plans',
+    where: {
+      and: [
+        { unitType: { in: uts.map((u) => u.id) } },
+        { status: { equals: 'active' } },
+      ],
+    },
+    limit: 500,
+    depth: 0,
+    sort: 'basePrice',
+  })
+  const plans = ratePlans.docs as unknown as FeedRatePlanDoc[]
+
+  return uts.map((unitType) => ({
+    unitType,
+    ratePlan:
+      plans.find(
+        (rp) =>
+          (typeof rp.unitType === 'object' ? rp.unitType.id : rp.unitType) ===
+          unitType.id,
+      ) ?? null,
+  }))
+}
+
 // Builds the pilot feed for a single stay window. Returns null when the
 // property is missing/unpublished or the date window is invalid.
+// Emits one <Room> per active UnitType (price from its RatePlan). Falls back
+// to a single room priced at property.pricePerNight when the property has
+// no unit types yet.
 export async function generateHotelCenterFeed(
   q: HotelCenterQuery,
 ): Promise<HotelCenterFeed | null> {
@@ -130,8 +192,7 @@ export async function generateHotelCenterFeed(
   const doc = await findPilotProperty(PILOT_HOTEL.slug)
   if (!doc) return null
 
-  const pricePerNight = Number(doc.pricePerNight) || 0
-  const baserate = pricePerNight * nights
+  const fallbackPrice = Number(doc.pricePerNight) || 0
   const tax = 0 // pilot rates are tax-inclusive, same convention as googleAri
   const otherFees = Number(doc.cleaningFee) || 0
 
@@ -154,21 +215,37 @@ export async function generateHotelCenterFeed(
     bathrooms: doc.bathrooms ?? null,
   }
 
-  const room: HotelCenterRoom = {
-    roomId: PILOT_HOTEL.roomId,
-    occupancy: q.guests ?? PILOT_HOTEL.occupancy,
-    checkinDate: q.checkin,
-    checkoutDate: q.checkout,
-    nights,
-    pricePerNight,
-    baserate,
-    tax,
-    otherFees,
-    total: baserate + tax + otherFees,
-    currency: BASE_CURRENCY,
+  const roomSpecs = (await findRooms(doc)).map(({ unitType, ratePlan }) => ({
+    roomId: `unit-type-${unitType.id}`,
+    occupancy: unitType.capacity ?? PILOT_HOTEL.occupancy,
+    pricePerNight: Number(ratePlan?.basePrice) || fallbackPrice,
+  }))
+  if (!roomSpecs.length) {
+    roomSpecs.push({
+      roomId: PILOT_HOTEL.roomId,
+      occupancy: q.guests ?? PILOT_HOTEL.occupancy,
+      pricePerNight: fallbackPrice,
+    })
   }
 
-  return { generatedAt: new Date().toISOString(), hotel: { property, room } }
+  const rooms: HotelCenterRoom[] = roomSpecs.map((spec) => {
+    const baserate = spec.pricePerNight * nights
+    return {
+      roomId: spec.roomId,
+      occupancy: spec.occupancy,
+      checkinDate: q.checkin,
+      checkoutDate: q.checkout,
+      nights,
+      pricePerNight: spec.pricePerNight,
+      baserate,
+      tax,
+      otherFees,
+      total: baserate + tax + otherFees,
+      currency: BASE_CURRENCY,
+    }
+  })
+
+  return { generatedAt: new Date().toISOString(), hotel: { property, rooms } }
 }
 
 // ---------------------------------------------------------------------------
@@ -189,11 +266,27 @@ function money(n: number): string {
 
 export function toHotelCenterXml(feed: HotelCenterFeed): string {
   const p = feed.hotel.property
-  const r = feed.hotel.room
   const opt = (v: string | number | null, tag: string) =>
     v === null || v === undefined || v === ''
       ? ''
       : `      <${tag}>${xmlEscape(String(v))}</${tag}>\n`
+  const roomsXml = feed.hotel.rooms
+    .map(
+      (r) => `    <Room>
+      <RoomID>${xmlEscape(r.roomId)}</RoomID>
+      <Occupancy>${r.occupancy}</Occupancy>
+      <CheckinDate>${r.checkinDate}</CheckinDate>
+      <CheckoutDate>${r.checkoutDate}</CheckoutDate>
+      <Nights>${r.nights}</Nights>
+      <Price currency="${r.currency}">
+        <Baserate>${money(r.baserate)}</Baserate>
+        <Tax>${money(r.tax)}</Tax>
+        <OtherFees>${money(r.otherFees)}</OtherFees>
+        <Total>${money(r.total)}</Total>
+      </Price>
+    </Room>`,
+    )
+    .join('\n')
   return `<?xml version="1.0" encoding="UTF-8"?>
 <HotelCenterFeed timestamp="${feed.generatedAt}" partner="madeirabook">
   <Hotel>
@@ -210,19 +303,7 @@ ${opt(p.description, 'Description')}      <Address>
       <Longitude>${p.longitude ?? ''}</Longitude>
       <LandingPageURL>${xmlEscape(p.landingPageUrl)}</LandingPageURL>
 ${opt(p.imageUrl, 'ImageURL')}${opt(p.maxGuests, 'MaxGuests')}${opt(p.bedrooms, 'Bedrooms')}${opt(p.bathrooms, 'Bathrooms')}    </Property>
-    <Room>
-      <RoomID>${xmlEscape(r.roomId)}</RoomID>
-      <Occupancy>${r.occupancy}</Occupancy>
-      <CheckinDate>${r.checkinDate}</CheckinDate>
-      <CheckoutDate>${r.checkoutDate}</CheckoutDate>
-      <Nights>${r.nights}</Nights>
-      <Price currency="${r.currency}">
-        <Baserate>${money(r.baserate)}</Baserate>
-        <Tax>${money(r.tax)}</Tax>
-        <OtherFees>${money(r.otherFees)}</OtherFees>
-        <Total>${money(r.total)}</Total>
-      </Price>
-    </Room>
+${roomsXml}
   </Hotel>
 </HotelCenterFeed>`
 }

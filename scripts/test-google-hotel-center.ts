@@ -57,7 +57,7 @@ async function main() {
   const prices = count(xml.body, /<Price[\s>]/g)
   console.log(`  counts: hotels=${hotels} properties=${properties} rooms=${rooms} prices=${prices}`)
   check('1 hotel / 1 property', hotels === 1 && properties === 1)
-  check('1 room / 1 price', rooms === 1 && prices === 1)
+  check('>=1 room / matching prices', rooms >= 1 && prices === rooms)
 
   check('property id', xml.body.includes('<PropertyID>hotel-orquidea</PropertyID>'))
   check('name', xml.body.includes('<Name>Hotel Orqu'))
@@ -65,7 +65,7 @@ async function main() {
   check('geo coords', /<Latitude>\d/.test(xml.body) && /<Longitude>-\d/.test(xml.body))
   check('landing page', xml.body.includes('<LandingPageURL>') && xml.body.includes('/p/hotel-orquidea'))
   check('image url', /<ImageURL>https:\/\//.test(xml.body))
-  check('room id', xml.body.includes('<RoomID>standard-room</RoomID>'))
+  check('room id', /<RoomID>(unit-type-\d+|standard-room)<\/RoomID>/.test(xml.body))
   check('occupancy 2', xml.body.includes('<Occupancy>2</Occupancy>'))
   check(
     'stay dates',
@@ -83,7 +83,7 @@ async function main() {
     hotelCenterFeed?: {
       hotel?: {
         property?: Record<string, unknown>
-        room?: Record<string, unknown>
+        rooms?: Record<string, unknown>[]
       }
     }
   } = {}
@@ -93,9 +93,9 @@ async function main() {
     /* handled below */
   }
   const property = parsed.hotelCenterFeed?.hotel?.property
-  const room = parsed.hotelCenterFeed?.hotel?.room
+  const room = parsed.hotelCenterFeed?.hotel?.rooms?.[0]
   check('json property', property?.propertyId === 'hotel-orquidea')
-  check('json room', room?.roomId === 'standard-room' && room?.nights === 5)
+  check('json room', typeof room?.roomId === 'string' && room?.nights === 5)
   check('json price', typeof room?.total === 'number' && (room.total as number) > 0, `total=${room?.total}`)
 
   console.log('\n=== 3. Defaults + error handling ===')

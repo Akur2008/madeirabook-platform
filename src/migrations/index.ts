@@ -28,6 +28,7 @@ import * as migration_20261018_224134_homepage_videos from './20261018_224134_ho
 import * as migration_20261019_100834_add_ambassador_pins_collection from './20261019_100834_add_ambassador_pins_collection';
 import * as migration_20261019_120000_add_oasis_access_to_referrals from './20261019_120000_add_oasis_access_to_referrals';
 import * as migration_20261020_201346_add_address_to_properties from './20261020_201346_add_address_to_properties';
+import * as migration_20261020_212935_add_rooms_structure from './20261020_212935_add_rooms_structure';
 
 export const migrations = [
   {
@@ -178,6 +179,11 @@ export const migrations = [
   {
     up: migration_20261020_201346_add_address_to_properties.up,
     down: migration_20261020_201346_add_address_to_properties.down,
-    name: '20261020_201346_add_address_to_properties'
+    name: '20261020_201346_add_address_to_properties',
+  },
+  {
+    up: migration_20261020_212935_add_rooms_structure.up,
+    down: migration_20261020_212935_add_rooms_structure.down,
+    name: '20261020_212935_add_rooms_structure'
   },
 ];

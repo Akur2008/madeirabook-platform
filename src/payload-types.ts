@@ -74,6 +74,9 @@ export interface Config {
     amenities: Amenity;
     'house-rules': HouseRule;
     properties: Property;
+    'unit-types': UnitType;
+    units: Unit;
+    'rate-plans': RatePlan;
     gateways: Gateway;
     'sluice-pages': SluicePage;
     cities: City;
@@ -107,6 +110,9 @@ export interface Config {
     amenities: AmenitiesSelect<false> | AmenitiesSelect<true>;
     'house-rules': HouseRulesSelect<false> | HouseRulesSelect<true>;
     properties: PropertiesSelect<false> | PropertiesSelect<true>;
+    'unit-types': UnitTypesSelect<false> | UnitTypesSelect<true>;
+    units: UnitsSelect<false> | UnitsSelect<true>;
+    'rate-plans': RatePlansSelect<false> | RatePlansSelect<true>;
     gateways: GatewaysSelect<false> | GatewaysSelect<true>;
     'sluice-pages': SluicePagesSelect<false> | SluicePagesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
@@ -402,6 +408,76 @@ export interface Property {
    */
   isVerified?: boolean | null;
   status: 'draft' | 'published' | 'archived';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "unit-types".
+ */
+export interface UnitType {
+  id: number;
+  property: number | Property;
+  /**
+   * E.g. "Standard Double", "Ocean View Suite".
+   */
+  name: string;
+  capacity?: number | null;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  description?: string | null;
+  photos?:
+    | {
+        image?: (number | null) | Upload;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Zeevou unit_type_id.
+   */
+  externalId?: string | null;
+  status: 'active' | 'draft';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "units".
+ */
+export interface Unit {
+  id: number;
+  unitType: number | UnitType;
+  /**
+   * E.g. "Standard-1", "Standard-2".
+   */
+  name: string;
+  /**
+   * Zeevou unit_id.
+   */
+  externalId?: string | null;
+  status: 'active' | 'draft';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate-plans".
+ */
+export interface RatePlan {
+  id: number;
+  unitType: number | UnitType;
+  /**
+   * E.g. "Standard with breakfast".
+   */
+  name: string;
+  basePrice: number;
+  minNights?: number | null;
+  includesBreakfast?: boolean | null;
+  /**
+   * Zeevou rate_plan_id.
+   */
+  externalId?: string | null;
+  status: 'active' | 'draft';
   updatedAt: string;
   createdAt: string;
 }
@@ -1172,6 +1248,18 @@ export interface PayloadLockedDocument {
         value: number | Property;
       } | null)
     | ({
+        relationTo: 'unit-types';
+        value: number | UnitType;
+      } | null)
+    | ({
+        relationTo: 'units';
+        value: number | Unit;
+      } | null)
+    | ({
+        relationTo: 'rate-plans';
+        value: number | RatePlan;
+      } | null)
+    | ({
         relationTo: 'gateways';
         value: number | Gateway;
       } | null)
@@ -1448,6 +1536,55 @@ export interface PropertiesSelect<T extends boolean = true> {
       };
   featured?: T;
   isVerified?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "unit-types_select".
+ */
+export interface UnitTypesSelect<T extends boolean = true> {
+  property?: T;
+  name?: T;
+  capacity?: T;
+  bedrooms?: T;
+  bathrooms?: T;
+  description?: T;
+  photos?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  externalId?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "units_select".
+ */
+export interface UnitsSelect<T extends boolean = true> {
+  unitType?: T;
+  name?: T;
+  externalId?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate-plans_select".
+ */
+export interface RatePlansSelect<T extends boolean = true> {
+  unitType?: T;
+  name?: T;
+  basePrice?: T;
+  minNights?: T;
+  includesBreakfast?: T;
+  externalId?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;

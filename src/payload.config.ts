@@ -13,6 +13,9 @@ import { Locations } from './collections/Locations'
 import { Amenities } from './collections/Amenities'
 import { HouseRules } from './collections/HouseRules'
 import { Properties } from './collections/Properties'
+import { UnitTypes } from './collections/UnitTypes'
+import { Units } from './collections/Units'
+import { RatePlans } from './collections/RatePlans'
 import { Gateways } from './collections/Gateways'
 import { SluicePages } from './collections/SluicePages'
 import { Cities } from './collections/Cities'
@@ -60,6 +63,9 @@ export default buildConfig({
     Amenities,
     HouseRules,
     Properties,
+    UnitTypes,
+    Units,
+    RatePlans,
     Gateways,
     SluicePages,
     Cities,

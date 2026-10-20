@@ -256,6 +256,138 @@ export async function createProperty(
 }
 
 // ---------------------------------------------------------------------------
+// createComplex — Zeevou "Complex" (hotel-style) provisioning:
+//   POST /apis/properties        (is_single_unit: false)
+//   POST /apis/unit_types        (one per UnitType; embeds the default
+//                                 rate plan — required at creation time)
+//   POST /apis/rate_plans        (additional, non-default plans)
+//   POST /apis/units             (one per physical room of the UnitType)
+// Mirrors our Payload structure Property -> UnitType -> Unit -> RatePlan.
+
+export interface ZeevouRatePlanInput {
+  name: string
+  basePrice: number
+  minNights?: number
+  isDefault?: boolean
+}
+
+export interface ZeevouUnitTypeInput {
+  name: string
+  capacity?: number
+  description?: string
+  ratePlans?: ZeevouRatePlanInput[]
+  units?: { name: string }[]
+}
+
+export interface ZeevouComplexUnitTypeResult {
+  unitTypeId: number | null
+  unitIds: number[]
+  ratePlanIds: number[]
+  defaultRatePlanId: number | null
+}
+
+export interface ZeevouComplexResult {
+  propertyId: number
+  unitTypes: ZeevouComplexUnitTypeResult[]
+}
+
+export async function createComplex(
+  property: ZeevouPropertyInput,
+  unitTypes: ZeevouUnitTypeInput[],
+): Promise<ZeevouComplexResult> {
+  const ids = await getZeevouIds()
+
+  const created = (await apiPost('/apis/properties', {
+    name: property.name,
+    short_name: (property.shortName || property.name || '').slice(0, 50),
+    description: property.description || '',
+    address: {
+      first_line: property.address?.street || '-',
+      postal_code: property.address?.postalCode || '-',
+      city: property.address?.city || 'Funchal',
+      country: property.address?.country || 'PT',
+    },
+    area: ids.area,
+    default_currency: ids.currency,
+    is_single_unit: false,
+    is_active: true,
+    allow_direct_booking: true,
+  })) as Record<string, unknown>
+  const propertyId = toId(created.id)
+  if (!propertyId) {
+    throw new Error(
+      `Zeevou did not return a property id: ${JSON.stringify(created).slice(0, 300)}`,
+    )
+  }
+  const propertyIri = `/apis/properties/${propertyId}`
+
+  const results: ZeevouComplexUnitTypeResult[] = []
+  for (const ut of unitTypes) {
+    // Unit-type names must be unique org-wide — prefix with the property name.
+    const utName = `${property.name} — ${ut.name}`.slice(0, 50)
+    const defaultPlan =
+      ut.ratePlans?.find((rp) => rp.isDefault) ?? ut.ratePlans?.[0]
+
+    const unitType = (await apiPost('/apis/unit_types', {
+      property: propertyIri,
+      name: utName,
+      description: ut.description || '',
+      maximum_capacity: ut.capacity || 2,
+      rate_plans: [
+        {
+          name: defaultPlan?.name || 'Standard',
+          type: 'Nightly',
+          is_default: true,
+          min_stay: defaultPlan?.minNights || 1,
+          weekday_price: defaultPlan?.basePrice || property.basePrice || 100,
+          weekend_price: defaultPlan?.basePrice || property.basePrice || 100,
+        },
+      ],
+    })) as Record<string, unknown>
+    const unitTypeId = toId(unitType.id)
+    const embedded = Array.isArray(unitType.rate_plans)
+      ? (unitType.rate_plans as Record<string, unknown>[])
+      : []
+    const defaultRatePlanId = toId(
+      (embedded.find((rp) => rp.is_default === true) ?? embedded[0])?.id,
+    )
+    const unitTypeIri = unitTypeId
+      ? `/apis/unit_types/${unitTypeId}`
+      : (unitType['@id'] as string)
+
+    const ratePlanIds: number[] = defaultRatePlanId ? [defaultRatePlanId] : []
+    for (const rp of ut.ratePlans ?? []) {
+      if (rp === defaultPlan) continue // already created embedded
+      const plan = (await apiPost('/apis/rate_plans', {
+        unit_type: unitTypeIri,
+        name: rp.name,
+        type: 'Nightly',
+        is_default: false,
+        min_stay: rp.minNights || 1,
+        weekday_price: rp.basePrice,
+        weekend_price: rp.basePrice,
+      })) as Record<string, unknown>
+      const rpId = toId(plan.id)
+      if (rpId) ratePlanIds.push(rpId)
+    }
+
+    const unitIds: number[] = []
+    for (const u of ut.units ?? []) {
+      const unit = (await apiPost('/apis/units', {
+        unit_type: unitTypeIri,
+        name: u.name,
+      })) as Record<string, unknown>
+      const unitId = toId(unit.id)
+      if (unitId) unitIds.push(unitId)
+    }
+
+    results.push({ unitTypeId, unitIds, ratePlanIds, defaultRatePlanId })
+  }
+
+  return { propertyId, unitTypes: results }
+}
+
+// ---------------------------------------------------------------------------
 // Rates
 
 export interface ZeevouRateDay {
