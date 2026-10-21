@@ -49,6 +49,15 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(dirname),
   },
+  async redirects() {
+    return [
+      {
+        source: '/legal/privacy-policy',
+        destination: '/legal/privacy',
+        permanent: true,
+      },
+    ]
+  },
   async rewrites() {
     return [
       { source: '/amsterdam-to-madeira', destination: '/amsterdam-to-madeira.html' },
