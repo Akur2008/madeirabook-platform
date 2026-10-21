@@ -3,7 +3,8 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
-import OasisMap, { type OasisHotelPin } from '../../(frontend)/components/OasisMap'
+import type { OasisHotelPin } from '../../(frontend)/components/OasisMap'
+import InteractiveHero from './InteractiveHero'
 
 export const revalidate = 60
 
@@ -70,8 +71,8 @@ export default async function OasisPage({
   })
 
   return (
-    <div className="h-dvh overflow-hidden bg-[#fdfbf7]">
-      <OasisMap
+    <div className="h-dvh overflow-hidden bg-[#171310]">
+      <InteractiveHero
         hotels={hotels}
         initialLat={hasCenter ? parsedLat : undefined}
         initialLng={hasCenter ? parsedLng : undefined}

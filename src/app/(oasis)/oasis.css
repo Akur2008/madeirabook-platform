@@ -55,3 +55,71 @@ img {
   background: var(--oasis-bg);
   font-family: var(--font-sans);
 }
+
+/* ------------------------------------------------------------------
+   Interactive hero — hotspots are anchored with CSS vars so positions
+   can differ between mobile and desktop without duplicating markup.
+   --x-m/--y-m  mobile coords, --x-d/--y-d desktop coords (percentages),
+   --s-m/--s-d  circle size.
+------------------------------------------------------------------- */
+.oasis-anchored {
+  position: absolute;
+  left: var(--x-m);
+  top: var(--y-m);
+  transform: translate(-50%, -50%);
+}
+.oasis-spot {
+  width: var(--s-m, 60px);
+  height: var(--s-m, 60px);
+}
+@media (min-width: 768px) {
+  .oasis-anchored {
+    left: var(--x-d, var(--x-m));
+    top: var(--y-d, var(--y-m));
+  }
+  .oasis-spot {
+    width: var(--s-d, var(--s-m, 104px));
+    height: var(--s-d, var(--s-m, 104px));
+  }
+}
+
+@keyframes oasisPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  70% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+.oasis-pulse {
+  animation: oasisPulse 2.6s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .oasis-pulse {
+    animation: none;
+  }
+}
+
+/* 3D tray button — perspective on the stage, tilt on the tray itself */
+.oasis-tray-stage {
+  perspective: 1200px;
+}
+.oasis-tray {
+  transform: rotateX(10deg) rotateY(-5deg);
+  transform-style: preserve-3d;
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4);
+}
+.oasis-tray:hover,
+.oasis-tray:focus-visible {
+  transform: rotateX(10deg) rotateY(-5deg) translateZ(20px) scale(1.05);
+  box-shadow: 0 34px 64px rgba(0, 0, 0, 0.6);
+}
