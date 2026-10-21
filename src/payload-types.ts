@@ -1109,6 +1109,18 @@ export interface Viewpoint {
  */
 export interface Lead {
   id: number;
+  /**
+   * B2B lead type from the /ambassador and /owners landing pages.
+   */
+  type?: ('ambassador' | 'owner') | null;
+  /**
+   * WhatsApp number (B2B lead forms).
+   */
+  whatsapp?: string | null;
+  /**
+   * Instagram URL (ambassador) or property name/link (owner).
+   */
+  instagramOrProperty?: string | null;
   source: 'whatsapp' | 'instagram' | 'direct_web' | 'oasis_inquiry';
   /**
    * Guest name (Oasis inquiry form).
@@ -1991,6 +2003,9 @@ export interface ViewpointsSelect<T extends boolean = true> {
  * via the `definition` "leads_select".
  */
 export interface LeadsSelect<T extends boolean = true> {
+  type?: T;
+  whatsapp?: T;
+  instagramOrProperty?: T;
   source?: T;
   name?: T;
   dates?: T;

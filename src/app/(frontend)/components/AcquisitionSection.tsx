@@ -8,7 +8,7 @@ export default function AcquisitionSection() {
     <section className="mx-auto max-w-6xl px-6 py-16">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <Link
-          href="/owner"
+          href="/owners"
           className="block rounded-2xl border border-white/10 bg-white/[0.02] p-8 transition-colors hover:border-[#d4af37]/50"
         >
           <p className="text-xs uppercase tracking-wider text-[#d4af37]/80">
@@ -22,12 +22,12 @@ export default function AcquisitionSection() {
             Express. Transparent analytics, no routine, personal care.
           </p>
           <span className="mt-6 inline-block text-sm font-medium text-[#d4af37]">
-            Become a partner →
+            Owner Login / PMS →
           </span>
         </Link>
 
-        <a
-          href="mailto:hello@madeirabook.com?subject=Ambassador%20application"
+        <Link
+          href="/ambassador"
           className="block rounded-2xl border border-white/10 bg-white/[0.02] p-8 transition-colors hover:border-[#10b981]/50"
         >
           <p className="text-xs uppercase tracking-wider text-[#10b981]/80">
@@ -42,9 +42,9 @@ export default function AcquisitionSection() {
             link.
           </p>
           <span className="mt-6 inline-block text-sm font-medium text-[#10b981]">
-            Apply now →
+            Become an Ambassador →
           </span>
-        </a>
+        </Link>
       </div>
     </section>
   )

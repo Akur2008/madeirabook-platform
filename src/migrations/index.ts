@@ -29,6 +29,7 @@ import * as migration_20261019_100834_add_ambassador_pins_collection from './202
 import * as migration_20261019_120000_add_oasis_access_to_referrals from './20261019_120000_add_oasis_access_to_referrals';
 import * as migration_20261020_201346_add_address_to_properties from './20261020_201346_add_address_to_properties';
 import * as migration_20261020_212935_add_rooms_structure from './20261020_212935_add_rooms_structure';
+import * as migration_20261021_212730_add_b2b_lead_fields from './20261021_212730_add_b2b_lead_fields';
 
 export const migrations = [
   {
@@ -184,6 +185,11 @@ export const migrations = [
   {
     up: migration_20261020_212935_add_rooms_structure.up,
     down: migration_20261020_212935_add_rooms_structure.down,
-    name: '20261020_212935_add_rooms_structure'
+    name: '20261020_212935_add_rooms_structure',
+  },
+  {
+    up: migration_20261021_212730_add_b2b_lead_fields.up,
+    down: migration_20261021_212730_add_b2b_lead_fields.down,
+    name: '20261021_212730_add_b2b_lead_fields'
   },
 ];
