@@ -51,7 +51,7 @@ const WEBSITE_JSONLD = {
 const NAV_LINKS = [
   { label: 'Explore', href: '/explore' },
   { label: 'Stays', href: 'https://www.madeirabook.com/madeira-apartment-rentals.html' },
-  { label: 'Flights', href: 'https://www.madeirabook.com/flights-to-madeira.html' },
+  { label: 'Flights', href: '/flights' },
   { label: 'Guides', href: 'https://www.madeirabook.com/madeira-guide.html' },
   { label: 'Collections', href: '/collections' },
   { label: 'Weather', href: '#weather' },
