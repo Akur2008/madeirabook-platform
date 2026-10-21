@@ -29,6 +29,7 @@
     "cross-env": "^7.0.3",
     "date-fns": "^4.4.0",
     "dotenv": "16.4.7",
+    "googleapis": "^186.0.0",
     "graphql": "^16.8.1",
     "jose": "^5.10.0",
     "leaflet": "^1.9.4",

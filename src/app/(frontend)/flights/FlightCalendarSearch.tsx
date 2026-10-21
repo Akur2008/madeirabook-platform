@@ -1,7 +1,17 @@
 'use client'
 
-import { addDays, format } from 'date-fns'
-import { useCallback, useRef, useState } from 'react'
+import {
+  addDays,
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameMonth,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Drawer } from 'vaul'
 
 import { useAudioEngine } from '@/audio/useAudioEngine'
@@ -10,7 +20,8 @@ const SHEET_MS = 400
 const DESTINATION_IATA = 'FNC'
 const AVIASALES_MARKER = '779585'
 const TRIP_NIGHTS = 7
-const WINDOW_DAYS = 14
+const MAX_MONTHS_AHEAD = 6
+const ORIGIN_DEBOUNCE_MS = 400
 const IATA_RE = /^[a-zA-Z]{3}$/
 
 // Cities that have dedicated "-to-madeira" pages on the site.
@@ -35,9 +46,9 @@ const CITY_TO_IATA: Record<string, string> = {
 }
 
 const DEFAULT_ORIGIN = 'LIS'
+const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
 type PriceRow = { date: string; price: number }
-type Status = 'idle' | 'loading' | 'results' | 'empty' | 'error'
 
 function toISODate(d: Date): string {
   const y = d.getFullYear()
@@ -62,15 +73,44 @@ function aviasalesUrl(origin: string, depISO: string): string {
   return `https://www.aviasales.com/search/${origin}${ddmm(dep)}${DESTINATION_IATA}${ddmm(ret)}?marker=${AVIASALES_MARKER}`
 }
 
+// Aviasales-style price calendar. The official Travelpayouts calendar widget
+// is a sealed embed that always redirects to Aviasales on click — it exposes
+// no date-select hook. This grid renders the same per-day lowest fares from
+// our /api/travelpayouts/calendar proxy instead, so picking a date opens our
+// own BottomSheet and Aviasales is only reached via the Book CTA.
 export default function FlightCalendarSearch() {
   const engine = useAudioEngine()
   const [originInput, setOriginInput] = useState('Lisbon')
-  const [status, setStatus] = useState<Status>('idle')
-  const [rows, setRows] = useState<PriceRow[]>([])
   const [origin, setOrigin] = useState(DEFAULT_ORIGIN)
+  const [monthCursor, setMonthCursor] = useState(() => startOfMonth(new Date()))
+  // Stamped with the origin so stale fares never render for a new one.
+  const [priceData, setPriceData] = useState<{
+    origin: string
+    map: Map<string, number>
+  }>({ origin: DEFAULT_ORIGIN, map: new Map() })
+  const [loading, setLoading] = useState(false)
+  const [failed, setFailed] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
-  const searchSeq = useRef(0)
+  // `${origin}:${YYYY-MM}` -> rows; the single source of truth for `prices`.
+  const cacheRef = useRef(new Map<string, PriceRow[]>())
+  const seqRef = useRef(0)
+
+  const prices = useMemo(
+    () => (priceData.origin === origin ? priceData.map : new Map<string, number>()),
+    [priceData, origin],
+  )
+  const today = useMemo(() => startOfMonth(new Date()), [])
+  const todayISO = toISODate(new Date())
+
+  const collectPrices = useCallback((o: string) => {
+    const next = new Map<string, number>()
+    for (const [key, rows] of cacheRef.current) {
+      if (!key.startsWith(`${o}:`)) continue
+      for (const r of rows) next.set(r.date, r.price)
+    }
+    return next
+  }, [])
 
   const handleSheetOpenChange = useCallback(
     (next: boolean) => {
@@ -84,58 +124,92 @@ export default function FlightCalendarSearch() {
     [engine],
   )
 
-  const handleSearch = useCallback(async () => {
-    const seq = ++searchSeq.current
-    const resolved = resolveOrigin(originInput)
-    setOrigin(resolved)
-    setStatus('loading')
-    setRows([])
-    handleSheetOpenChange(true)
+  // Debounce the free-text origin into a resolved IATA code.
+  useEffect(() => {
+    const t = setTimeout(() => setOrigin(resolveOrigin(originInput)), ORIGIN_DEBOUNCE_MS)
+    return () => clearTimeout(t)
+  }, [originInput])
 
-    const today = new Date()
-    const fromISO = toISODate(today)
-    const toISO = toISODate(addDays(today, WINDOW_DAYS - 1))
-    const months = [...new Set([fromISO.slice(0, 7), toISO.slice(0, 7)])]
-
-    try {
-      const payloads = await Promise.all(
-        months.map(async (month) => {
-          const res = await fetch(
-            `/api/travelpayouts/calendar?origin=${resolved}&month=${month}`,
-          )
-          if (!res.ok) throw new Error(`calendar ${res.status}`)
-          return (await res.json()) as { prices?: PriceRow[] }
-        }),
-      )
-      if (seq !== searchSeq.current) return
-      const byDate = new Map<string, number>()
-      for (const p of payloads) {
-        for (const r of Array.isArray(p.prices) ? p.prices : []) {
-          if (r.date >= fromISO && r.date <= toISO) byDate.set(r.date, r.price)
+  // Load the visible month (plus a warm prefetch of the next one) whenever
+  // the origin or the cursor moves.
+  useEffect(() => {
+    const seq = ++seqRef.current
+    const months = [monthCursor, addMonths(monthCursor, 1)].map((d) => format(d, 'yyyy-MM'))
+    const missing = months.filter((m) => !cacheRef.current.has(`${origin}:${m}`))
+    if (!missing.length) {
+      // All cached — still republish so an origin switch repaints the grid.
+      Promise.resolve().then(() => {
+        if (seq === seqRef.current) {
+          setPriceData({ origin, map: collectPrices(origin) })
         }
-      }
-      const inWindow = [...byDate.entries()]
-        .map(([date, price]) => ({ date, price }))
-        .sort((a, b) => a.date.localeCompare(b.date))
-      setRows(inWindow)
-      // Pre-select the cheapest fare so the single Book CTA is ready to use.
-      const cheapest = inWindow.reduce<PriceRow | null>(
-        (min, r) => (min == null || r.price < min.price ? r : min),
-        null,
-      )
-      setSelected(cheapest?.date ?? null)
-      setStatus(inWindow.length > 0 ? 'results' : 'empty')
-    } catch {
-      if (seq === searchSeq.current) setStatus('error')
+      })
+      return
     }
-  }, [originInput, handleSheetOpenChange])
+    setLoading(true)
+    setFailed(false)
+    Promise.all(
+      missing.map(async (month) => {
+        const res = await fetch(`/api/travelpayouts/calendar?origin=${origin}&month=${month}`)
+        if (!res.ok) throw new Error(`calendar ${res.status}`)
+        const body = (await res.json()) as { prices?: PriceRow[] }
+        return { month, rows: Array.isArray(body.prices) ? body.prices : [] }
+      }),
+    )
+      .then((payloads) => {
+        if (seq !== seqRef.current) return
+        const cache = cacheRef.current
+        for (const { month, rows } of payloads) cache.set(`${origin}:${month}`, rows)
+        setPriceData({ origin, map: collectPrices(origin) })
+      })
+      .catch(() => {
+        if (seq === seqRef.current) setFailed(true)
+      })
+      .finally(() => {
+        if (seq === seqRef.current) setLoading(false)
+      })
+  }, [origin, monthCursor, collectPrices])
 
-  const handleBook = useCallback(
-    (date: string) => {
-      window.open(aviasalesUrl(origin, date), '_blank', 'noopener,noreferrer')
-    },
-    [origin],
+  const days = useMemo(
+    () =>
+      eachDayOfInterval({
+        start: startOfWeek(startOfMonth(monthCursor), { weekStartsOn: 1 }),
+        end: endOfWeek(endOfMonth(monthCursor), { weekStartsOn: 1 }),
+      }),
+    [monthCursor],
   )
+
+  const monthPrices = useMemo(
+    () =>
+      days
+        .filter((d) => isSameMonth(d, monthCursor))
+        .map((d) => prices.get(toISODate(d)))
+        .filter((p): p is number => p != null),
+    [days, monthCursor, prices],
+  )
+  const minPrice = monthPrices.length ? Math.min(...monthPrices) : null
+
+  const cheapest = useMemo(
+    () =>
+      [...prices.entries()]
+        .filter(([date]) => date >= todayISO)
+        .sort((a, b) => a[1] - b[1])
+        .slice(0, 5)
+        .map(([date, price]) => ({ date, price })),
+    [prices, todayISO],
+  )
+
+  const pickDay = useCallback(
+    (iso: string) => {
+      setSelected(iso)
+      handleSheetOpenChange(true)
+    },
+    [handleSheetOpenChange],
+  )
+
+  const canPrev = monthCursor > today
+  const canNext = monthCursor < addMonths(today, MAX_MONTHS_AHEAD - 1)
+  const selectedDate = selected ? new Date(`${selected}T12:00:00`) : null
+  const selectedPrice = selected ? (prices.get(selected) ?? null) : null
 
   return (
     <div className="mt-6">
@@ -153,17 +227,92 @@ export default function FlightCalendarSearch() {
         />
       </label>
 
-      <button
-        type="button"
-        onClick={handleSearch}
-        disabled={status === 'loading'}
-        className="mt-4 block w-full rounded-full border border-white/30 bg-white/10 py-3 text-sm uppercase tracking-widest text-white transition-colors hover:bg-white/20 disabled:opacity-40"
-      >
-        {status === 'loading' ? 'Searching…' : 'Search by calendar'}
-      </button>
-      <p className="mb-0 mt-3 text-center text-xs text-white/40">
-        Cheapest one-way fares to Funchal (FNC) for the next {WINDOW_DAYS} days.
-      </p>
+      <div className="mt-4 rounded-2xl border border-white/15 bg-white/5 p-4">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => canPrev && setMonthCursor((m) => addMonths(m, -1))}
+            disabled={!canPrev}
+            aria-label="Previous month"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 disabled:opacity-25"
+          >
+            ‹
+          </button>
+          <p className="mb-0 text-sm font-medium uppercase tracking-widest text-white/80">
+            {format(monthCursor, 'MMMM yyyy')}
+          </p>
+          <button
+            type="button"
+            onClick={() => canNext && setMonthCursor((m) => addMonths(m, 1))}
+            disabled={!canNext}
+            aria-label="Next month"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 disabled:opacity-25"
+          >
+            ›
+          </button>
+        </div>
+
+        <div className="mt-3 grid grid-cols-7 gap-1">
+          {WEEKDAYS.map((w) => (
+            <p
+              key={w}
+              className="mb-0 py-1 text-center text-[10px] uppercase tracking-wider text-white/40"
+            >
+              {w}
+            </p>
+          ))}
+          {days.map((day) => {
+            const iso = toISODate(day)
+            const inMonth = isSameMonth(day, monthCursor)
+            const past = iso < todayISO
+            const price = prices.get(iso)
+            const isSelected = iso === selected
+            const disabled = !inMonth || past
+            return (
+              <button
+                key={iso}
+                type="button"
+                disabled={disabled}
+                onClick={() => pickDay(iso)}
+                aria-label={`${format(day, 'd MMMM')}${price != null ? `, €${Math.round(price)}` : ''}`}
+                aria-pressed={isSelected}
+                className={`flex min-h-[52px] flex-col items-center justify-center rounded-lg border px-1 py-1.5 transition-colors ${
+                  isSelected
+                    ? 'border-emerald-500 bg-emerald-500/20'
+                    : disabled
+                      ? 'border-transparent'
+                      : price != null && price === minPrice
+                        ? 'border-emerald-500/60 bg-white/5 hover:bg-white/10'
+                        : 'border-white/10 bg-white/5 hover:bg-white/10'
+                } ${disabled ? 'opacity-25' : ''}`}
+              >
+                <span
+                  className={`text-xs ${inMonth ? 'text-white/85' : 'text-white/30'}`}
+                >
+                  {format(day, 'd')}
+                </span>
+                {inMonth && !past && price != null && (
+                  <span
+                    className={`mt-0.5 text-[10px] leading-none ${
+                      price === minPrice ? 'font-semibold text-emerald-400' : 'text-white/50'
+                    }`}
+                  >
+                    €{Math.round(price)}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        <p className="mb-0 mt-3 text-center text-xs text-white/40">
+          {failed
+            ? 'Prices failed to load — tap a day to search live on Aviasales.'
+            : loading
+              ? `Loading ${origin} → ${DESTINATION_IATA} fares…`
+              : `Lowest one-way fares ${origin} → ${DESTINATION_IATA} · tap a day`}
+        </p>
+      </div>
 
       <Drawer.Root open={sheetOpen} onOpenChange={handleSheetOpenChange}>
         <Drawer.Portal>
@@ -177,92 +326,87 @@ export default function FlightCalendarSearch() {
             >
               ✕
             </Drawer.Close>
-            <Drawer.Title className="sr-only">Cheapest flight dates</Drawer.Title>
+            <Drawer.Title className="sr-only">Selected flight dates</Drawer.Title>
             <Drawer.Description className="sr-only">
-              Cheapest one-way fares to Funchal for the next {WINDOW_DAYS} days.
+              Fare for the picked date and the cheapest alternatives.
             </Drawer.Description>
 
             <div className="overflow-y-auto px-6 pb-4 pt-4">
               <p className="mb-0 text-center text-xs uppercase tracking-widest text-white/40">
-                {origin} → {DESTINATION_IATA} · next {WINDOW_DAYS} days ·{' '}
-                {TRIP_NIGHTS}-night return
+                {origin} → {DESTINATION_IATA} · {TRIP_NIGHTS}-night return
               </p>
 
-              {status === 'loading' && (
-                <p className="mb-0 mt-6 text-center text-sm text-white/60">
-                  Loading prices…
-                </p>
+              {selectedDate && (
+                <div className="mt-4 rounded-xl border border-emerald-500/50 bg-emerald-500/10 p-4 text-center">
+                  <p className="mb-0 text-sm text-white/60">Depart</p>
+                  <p className="mb-0 mt-1 text-lg font-semibold text-white">
+                    {format(selectedDate, 'EEE d MMM yyyy')}
+                  </p>
+                  <p className="mb-0 mt-2 text-sm text-white/60">
+                    Return {format(addDays(selectedDate, TRIP_NIGHTS), 'EEE d MMM yyyy')}
+                  </p>
+                  <p className="mb-0 mt-3 text-2xl font-semibold text-emerald-400">
+                    {selectedPrice != null ? `€${Math.round(selectedPrice)}` : '—'}
+                  </p>
+                  <p className="mb-0 mt-1 text-xs text-white/50">
+                    {selectedPrice != null
+                      ? 'lowest cached one-way fare'
+                      : 'no cached fare — check live prices'}
+                  </p>
+                </div>
               )}
 
-              {status === 'empty' && (
-                <p className="mb-0 mt-6 text-center text-sm text-white/60">
-                  No fares found. Try another origin city.
-                </p>
-              )}
-
-              {status === 'error' && (
-                <p className="mb-0 mt-6 text-center text-sm text-red-400">
-                  Something went wrong. Try again.
-                </p>
-              )}
-
-              {status === 'results' && (
-                <div className="mt-4 flex flex-col gap-2">
-                  {rows.map((row) => {
-                    const isSelected = row.date === selected
-                    return (
-                      <button
-                        key={row.date}
-                        type="button"
-                        onClick={() => setSelected(row.date)}
-                        aria-pressed={isSelected}
-                        className={`flex items-center gap-4 rounded-xl border p-3 text-left transition-colors ${
-                          isSelected
-                            ? 'border-emerald-500 bg-emerald-500/15'
-                            : 'border-white/15 bg-white/5 hover:bg-white/10'
-                        }`}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="mb-0 text-sm font-medium text-white/90">
+              {cheapest.length > 0 && (
+                <div className="mt-5">
+                  <p className="mb-2 text-xs uppercase tracking-widest text-white/40">
+                    Cheapest dates
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {cheapest.map((row) => {
+                      const isSelected = row.date === selected
+                      return (
+                        <button
+                          key={row.date}
+                          type="button"
+                          onClick={() => setSelected(row.date)}
+                          aria-pressed={isSelected}
+                          className={`flex items-center justify-between rounded-xl border p-3 text-left transition-colors ${
+                            isSelected
+                              ? 'border-emerald-500 bg-emerald-500/15'
+                              : 'border-white/15 bg-white/5 hover:bg-white/10'
+                          }`}
+                        >
+                          <span className="text-sm font-medium text-white/90">
                             {format(new Date(`${row.date}T12:00:00`), 'EEE d MMM')}
-                          </p>
-                          <p className="mb-0 mt-1 text-sm text-white/60">
+                          </span>
+                          <span className="text-sm text-white/60">
                             <span className="font-semibold text-white/90">
                               €{Math.round(row.price)}
                             </span>
                             {' one-way'}
-                          </p>
-                        </div>
-                        <span
-                          aria-hidden
-                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] ${
-                            isSelected
-                              ? 'border-emerald-500 bg-emerald-500 text-white'
-                              : 'border-white/30 text-transparent'
-                          }`}
-                        >
-                          ✓
-                        </span>
-                      </button>
-                    )
-                  })}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
             </div>
 
             {/* The only Aviasales exit on the page: books the selected date. */}
-            {status === 'results' && (
-              <div className="shrink-0 border-t border-white/10 px-6 pb-8 pt-4">
-                <button
-                  type="button"
-                  onClick={() => selected && handleBook(selected)}
-                  disabled={selected == null}
-                  className="block w-full whitespace-nowrap rounded-full border border-emerald-600 bg-emerald-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-40"
-                >
-                  Book on Aviasales →
-                </button>
-              </div>
-            )}
+            <div className="shrink-0 border-t border-white/10 px-6 pb-8 pt-4">
+              <button
+                type="button"
+                onClick={() =>
+                  selected &&
+                  window.open(aviasalesUrl(origin, selected), '_blank', 'noopener,noreferrer')
+                }
+                disabled={selected == null}
+                className="block w-full whitespace-nowrap rounded-full border border-emerald-600 bg-emerald-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-40"
+              >
+                Book on Aviasales →
+              </button>
+            </div>
           </Drawer.Content>
         </Drawer.Portal>
       </Drawer.Root>

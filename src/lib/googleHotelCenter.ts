@@ -1,28 +1,45 @@
-// Google Hotel Center pilot feed for Hotel Orquídea.
-// Builds a static <Hotel>/<Room> price feed (XML or JSON) that can be
+// Google Hotel Center feed for the Madeirabook pilot hotels.
+// Builds a multi-hotel price + availability feed (XML or JSON) that can be
 // submitted to Google Hotel Center while the Connectivity Partner
 // application is pending. Complements the live-query ARI engine in
 // src/lib/googleAri.ts.
 //
+// Prices come from the PMS router (Smoobu/Zeevou) when the property has a
+// pmsPropertyId; otherwise the DB rate (rate plan basePrice, falling back
+// to property.pricePerNight) is used. Availability is reported per night
+// for the requested window — by default the next 30 days.
+
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { getRates } from '@/lib/pms'
 import { BASE_CURRENCY, isValidDate, nightsBetween } from '@/lib/googleAri'
 
-export const HOTEL_CENTER_PILOT_SLUG = 'hotel-orquidea'
+// Hotels published to the Google feed. Overridable per request via the
+// `hotels` query param, or globally via GOOGLE_HOTEL_FEED_SLUGS.
+export const FEED_HOTEL_SLUGS = ['hotel-orquidea', 'barcelo-funchal-oldtown']
+
 export const HOTEL_CENTER_ROOM_ID = 'standard-room'
 export const HOTEL_CENTER_OCCUPANCY = 2
+export const FEED_MAX_NIGHTS = 62
 
-export const PILOT_HOTEL = {
-  slug: HOTEL_CENTER_PILOT_SLUG,
-  roomId: HOTEL_CENTER_ROOM_ID,
-  occupancy: HOTEL_CENTER_OCCUPANCY,
-} as const
+export function feedHotelSlugs(): string[] {
+  const raw = process.env.GOOGLE_HOTEL_FEED_SLUGS
+  if (raw && raw.trim()) {
+    const slugs = raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    if (slugs.length) return slugs
+  }
+  return [...FEED_HOTEL_SLUGS]
+}
 
 export interface HotelCenterQuery {
   checkin: string
   checkout: string
   guests?: number
+  hotels?: string[]
 }
 
 export interface HotelCenterAddress {
@@ -46,6 +63,12 @@ export interface HotelCenterProperty {
   bathrooms: number | null
 }
 
+export interface HotelCenterNight {
+  date: string
+  price: number
+  available: boolean
+}
+
 export interface HotelCenterRoom {
   roomId: string
   occupancy: number
@@ -58,14 +81,19 @@ export interface HotelCenterRoom {
   otherFees: number
   total: number
   currency: string
+  available: boolean
+  unavailableReason: string | null
+  nightly: HotelCenterNight[]
+}
+
+export interface HotelCenterHotel {
+  property: HotelCenterProperty
+  rooms: HotelCenterRoom[]
 }
 
 export interface HotelCenterFeed {
   generatedAt: string
-  hotel: {
-    property: HotelCenterProperty
-    rooms: HotelCenterRoom[]
-  }
+  hotels: HotelCenterHotel[]
 }
 
 interface FeedUnitTypeDoc {
@@ -89,6 +117,9 @@ interface FeedPropertyDoc {
   slug: string
   title: string
   status: string
+  pms?: string | null
+  pmsPropertyId?: string | number | null
+  pmsMeta?: unknown
   shortDescription?: string | null
   geoCoordinates?: { lat?: number | null; lng?: number | null } | null
   address?: {
@@ -113,15 +144,22 @@ export function hotelCenterLandingUrl(slug: string): string {
   return `${siteBase()}/p/${slug}`
 }
 
-async function findPilotProperty(slug: string): Promise<FeedPropertyDoc | null> {
+// Published properties matching the requested slugs, in slug-list order.
+async function findFeedProperties(slugs: string[]): Promise<FeedPropertyDoc[]> {
   const payload = await getPayload({ config: await config })
   const found = await payload.find({
     collection: 'properties',
-    where: { and: [{ status: { equals: 'published' } }, { slug: { equals: slug } }] },
-    limit: 1,
+    where: {
+      and: [{ status: { equals: 'published' } }, { slug: { in: slugs } }],
+    },
+    limit: slugs.length,
     depth: 2,
   })
-  return (found.docs[0] as FeedPropertyDoc | undefined) ?? null
+  const docs = found.docs as unknown as FeedPropertyDoc[]
+  const order = new Map(slugs.map((slug, i) => [slug, i]))
+  return docs.sort(
+    (a, b) => (order.get(a.slug) ?? slugs.length) - (order.get(b.slug) ?? slugs.length),
+  )
 }
 
 function firstMediaUrl(doc: FeedPropertyDoc): string | null {
@@ -175,28 +213,8 @@ async function findRooms(
   }))
 }
 
-// Builds the pilot feed for a single stay window. Returns null when the
-// property is missing/unpublished or the date window is invalid.
-// Emits one <Room> per active UnitType (price from its RatePlan). Falls back
-// to a single room priced at property.pricePerNight when the property has
-// no unit types yet.
-export async function generateHotelCenterFeed(
-  q: HotelCenterQuery,
-): Promise<HotelCenterFeed | null> {
-  if (!isValidDate(q.checkin) || !isValidDate(q.checkout) || q.checkin >= q.checkout) {
-    return null
-  }
-  const nights = nightsBetween(q.checkin, q.checkout).length
-  if (!nights) return null
-
-  const doc = await findPilotProperty(PILOT_HOTEL.slug)
-  if (!doc) return null
-
-  const fallbackPrice = Number(doc.pricePerNight) || 0
-  const tax = 0 // pilot rates are tax-inclusive, same convention as googleAri
-  const otherFees = Number(doc.cleaningFee) || 0
-
-  const property: HotelCenterProperty = {
+function toFeedProperty(doc: FeedPropertyDoc): HotelCenterProperty {
+  return {
     propertyId: doc.slug,
     name: doc.title,
     description: doc.shortDescription ?? null,
@@ -214,22 +232,83 @@ export async function generateHotelCenterFeed(
     bedrooms: doc.bedrooms ?? null,
     bathrooms: doc.bathrooms ?? null,
   }
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100
+}
+
+// Builds the feed entry for one property: a room per active unit type
+// (single fallback room when none exist) with per-night price and
+// availability across the stay window.
+//
+// Nightly prices come from the PMS when the property is linked
+// (pmsPropertyId); days missing from the PMS response fall back to the DB
+// rate and stay sellable — checkout re-validates before payment. A failed
+// PMS call marks the room blocked instead of serving guessed prices
+// (Google penalizes inaccurate pricing).
+async function buildHotelEntry(
+  doc: FeedPropertyDoc,
+  q: HotelCenterQuery,
+  dates: string[],
+): Promise<HotelCenterHotel> {
+  const property = toFeedProperty(doc)
+  const fallbackPrice = Number(doc.pricePerNight) || 0
+  const tax = 0 // rates are tax-inclusive, same convention as googleAri
+  const otherFees = Number(doc.cleaningFee) || 0
 
   const roomSpecs = (await findRooms(doc)).map(({ unitType, ratePlan }) => ({
     roomId: `unit-type-${unitType.id}`,
-    occupancy: unitType.capacity ?? PILOT_HOTEL.occupancy,
+    occupancy: unitType.capacity ?? HOTEL_CENTER_OCCUPANCY,
     pricePerNight: Number(ratePlan?.basePrice) || fallbackPrice,
   }))
   if (!roomSpecs.length) {
     roomSpecs.push({
-      roomId: PILOT_HOTEL.roomId,
-      occupancy: q.guests ?? PILOT_HOTEL.occupancy,
+      roomId: HOTEL_CENTER_ROOM_ID,
+      occupancy: q.guests ?? HOTEL_CENTER_OCCUPANCY,
       pricePerNight: fallbackPrice,
     })
   }
 
+  const pmsId = Number(doc.pmsPropertyId)
+  const hasPms = Number.isFinite(pmsId) && pmsId > 0
+  let pmsError = false
+  let rates: Awaited<ReturnType<typeof getRates>> = {}
+  if (hasPms) {
+    try {
+      rates = await getRates(doc, q.checkin, q.checkout)
+    } catch (e) {
+      pmsError = true
+      console.warn(
+        `hotelCenterFeed: PMS rates failed for property ${doc.id}:`,
+        e instanceof Error ? e.message : e,
+      )
+    }
+  }
+
+  const nights = dates.length
   const rooms: HotelCenterRoom[] = roomSpecs.map((spec) => {
-    const baserate = spec.pricePerNight * nights
+    const nightly: HotelCenterNight[] = dates.map((date) => {
+      const day = rates[date]
+      const price = Number.isFinite(day?.price)
+        ? Number(day!.price)
+        : spec.pricePerNight
+      const available = hasPms
+        ? !pmsError && (day ? day.available !== false : price > 0)
+        : price > 0
+      return { date, price, available }
+    })
+
+    const available = nightly.every((n) => n.available)
+    const reason = available
+      ? null
+      : pmsError
+        ? 'pms_unavailable'
+        : spec.pricePerNight <= 0
+          ? 'no_price'
+          : 'closed_or_unpriced_night'
+    const baserate = round2(nightly.reduce((sum, n) => sum + n.price, 0))
+
     return {
       roomId: spec.roomId,
       occupancy: spec.occupancy,
@@ -240,12 +319,38 @@ export async function generateHotelCenterFeed(
       baserate,
       tax,
       otherFees,
-      total: baserate + tax + otherFees,
+      total: round2(baserate + tax + otherFees),
       currency: BASE_CURRENCY,
+      available,
+      unavailableReason: reason,
+      nightly,
     }
   })
 
-  return { generatedAt: new Date().toISOString(), hotel: { property, rooms } }
+  return { property, rooms }
+}
+
+// Builds the feed for a single stay window (default: the next 30 days).
+// Returns null when the window is invalid or no feed property resolves.
+export async function generateHotelCenterFeed(
+  q: HotelCenterQuery,
+): Promise<HotelCenterFeed | null> {
+  if (!isValidDate(q.checkin) || !isValidDate(q.checkout) || q.checkin >= q.checkout) {
+    return null
+  }
+  const dates = nightsBetween(q.checkin, q.checkout)
+  if (!dates.length || dates.length > FEED_MAX_NIGHTS) return null
+
+  const slugs = q.hotels?.length ? q.hotels : feedHotelSlugs()
+  const docs = await findFeedProperties(slugs)
+  if (!docs.length) return null
+
+  // Sequential: each hotel may trigger one PMS rates call.
+  const hotels: HotelCenterHotel[] = []
+  for (const doc of docs) {
+    hotels.push(await buildHotelEntry(doc, q, dates))
+  }
+  return { generatedAt: new Date().toISOString(), hotels }
 }
 
 // ---------------------------------------------------------------------------
@@ -264,32 +369,44 @@ function money(n: number): string {
   return n.toFixed(2)
 }
 
-export function toHotelCenterXml(feed: HotelCenterFeed): string {
-  const p = feed.hotel.property
-  const opt = (v: string | number | null, tag: string) =>
-    v === null || v === undefined || v === ''
-      ? ''
-      : `      <${tag}>${xmlEscape(String(v))}</${tag}>\n`
-  const roomsXml = feed.hotel.rooms
+function roomToXml(r: HotelCenterRoom): string {
+  const unavailableNights = r.nightly.filter((n) => !n.available).length
+  const reasonAttr = r.unavailableReason
+    ? ` reason="${xmlEscape(r.unavailableReason)}"`
+    : ''
+  const nightlyXml = r.nightly
     .map(
-      (r) => `    <Room>
+      (n) =>
+        `        <Night date="${n.date}" price="${money(n.price)}" available="${n.available}"/>`,
+    )
+    .join('\n')
+  return `    <Room>
       <RoomID>${xmlEscape(r.roomId)}</RoomID>
       <Occupancy>${r.occupancy}</Occupancy>
       <CheckinDate>${r.checkinDate}</CheckinDate>
       <CheckoutDate>${r.checkoutDate}</CheckoutDate>
       <Nights>${r.nights}</Nights>
+      <Availability status="${r.available ? 'available' : 'blocked'}" unavailableNights="${unavailableNights}"${reasonAttr}/>
       <Price currency="${r.currency}">
         <Baserate>${money(r.baserate)}</Baserate>
         <Tax>${money(r.tax)}</Tax>
         <OtherFees>${money(r.otherFees)}</OtherFees>
         <Total>${money(r.total)}</Total>
       </Price>
-    </Room>`,
-    )
-    .join('\n')
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<HotelCenterFeed timestamp="${feed.generatedAt}" partner="madeirabook">
-  <Hotel>
+      <NightlyRates>
+${nightlyXml}
+      </NightlyRates>
+    </Room>`
+}
+
+function hotelToXml(h: HotelCenterHotel): string {
+  const p = h.property
+  const opt = (v: string | number | null, tag: string) =>
+    v === null || v === undefined || v === ''
+      ? ''
+      : `      <${tag}>${xmlEscape(String(v))}</${tag}>\n`
+  const roomsXml = h.rooms.map(roomToXml).join('\n')
+  return `  <Hotel>
     <Property>
       <PropertyID>${xmlEscape(p.propertyId)}</PropertyID>
       <Name>${xmlEscape(p.name)}</Name>
@@ -304,7 +421,14 @@ ${opt(p.description, 'Description')}      <Address>
       <LandingPageURL>${xmlEscape(p.landingPageUrl)}</LandingPageURL>
 ${opt(p.imageUrl, 'ImageURL')}${opt(p.maxGuests, 'MaxGuests')}${opt(p.bedrooms, 'Bedrooms')}${opt(p.bathrooms, 'Bathrooms')}    </Property>
 ${roomsXml}
-  </Hotel>
+  </Hotel>`
+}
+
+export function toHotelCenterXml(feed: HotelCenterFeed): string {
+  const hotelsXml = feed.hotels.map(hotelToXml).join('\n')
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<HotelCenterFeed timestamp="${feed.generatedAt}" partner="madeirabook">
+${hotelsXml}
 </HotelCenterFeed>`
 }
 
