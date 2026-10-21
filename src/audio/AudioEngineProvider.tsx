@@ -11,7 +11,7 @@ import React, {
   useSyncExternalStore,
 } from 'react'
 import { AudioEngine } from './audioEngine'
-import { ChannelName, EngineState } from './types'
+import { AmbientLayer, ChannelName, EngineState } from './types'
 
 export const AUDIO_STARTED_KEY = 'madeirabook_audio_started'
 
@@ -54,6 +54,16 @@ export interface AudioEngineContextValue {
   stop: () => Promise<void>
   preload: (urls: string[]) => void
   playAmbient: (url: string | string[], options?: { loop?: boolean; volume?: number }) => Promise<void>
+  playAmbientLayers: (
+    layers: AmbientLayer[],
+    options?: { loop?: boolean; masterVolume?: number; fadeInMs?: number },
+  ) => Promise<void>
+  crossfadeToLayers: (
+    layers: AmbientLayer[],
+    duration?: number,
+    options?: { masterVolume?: number },
+  ) => Promise<void>
+  stopAmbient: (fadeMs?: number) => void
   playSluice: (url: string | string[], durationSec?: number) => Promise<void>
   playVideo: (url: string | string[], options?: { loop?: boolean }) => Promise<void>
   stopVideo: () => void
@@ -109,6 +119,10 @@ export function AudioEngineProvider({ children }: { children: React.ReactNode })
       stop,
       preload: (urls) => engine().preload(urls),
       playAmbient: (url, options) => engine().playAmbient(url, options),
+      playAmbientLayers: (layers, options) => engine().playAmbientLayers(layers, options),
+      crossfadeToLayers: (layers, duration, options) =>
+        engine().crossfadeToLayers(layers, duration, options),
+      stopAmbient: (fadeMs) => engine().stopAmbient(fadeMs),
       playSluice: (url, durationSec) => engine().playSluice(url, durationSec),
       playVideo: (url, options) => engine().playVideo(url, options),
       stopVideo: () => engine().stopVideo(),

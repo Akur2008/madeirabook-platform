@@ -130,14 +130,15 @@ export default async function AmbassadorMapPage(props: {
       depth: 1,
     }),
     // Gold Oasis pins are a privilege — only fetched for hand-picked
-    // ambassadors (referrals.oasisAccess in /admin).
+    // ambassadors (referrals.oasisAccess in /admin). Orquídea is the only
+    // Oasis address shown publicly for now.
     referral.oasisAccess === true
       ? payload.find({
           collection: 'properties',
           where: {
             and: [
-              { brand: { equals: 'madeiraoasis' } },
               { status: { equals: 'published' } },
+              { slug: { contains: 'orquidea' } },
             ],
           },
           limit: 200,

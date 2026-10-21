@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './styles.css'
 import Footer from './components/Footer'
 import { AudioEngineProvider } from '@/audio/AudioEngineProvider'
+import GlobalAmbient from '@/components/GlobalAmbient'
 import SoundButton from '@/components/SoundButton'
 import WhatsAppConciergeButton from '@/components/WhatsAppConciergeButton'
 import AiConciergeWidget from '@/components/AiConciergeWidget'
@@ -56,6 +57,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en">
       <body>
         <AudioEngineProvider>
+          <GlobalAmbient />
           <main>{children}</main>
           <Footer />
           <WhatsAppConciergeButton />

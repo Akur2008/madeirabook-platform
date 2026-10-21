@@ -3,7 +3,8 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
-import OasisMap, { type OasisHotelPin } from '../../(frontend)/components/OasisMap'
+import type { OasisHotelPin } from '../../(frontend)/components/OasisMap'
+import InteractiveHero from './InteractiveHero'
 
 export const revalidate = 60
 
@@ -28,14 +29,15 @@ export default async function OasisPage({
 
   const payload = await getPayload({ config: await config })
 
-  // "tenant: oasis" maps to brand = madeiraoasis on the shared Properties collection
+  // "tenant: oasis" maps to brand = madeiraoasis on the shared Properties
+  // collection. Only published madeiraoasis inventory reaches the map —
+  // Orquídea and the rest of the madeirabook catalogue stay off it.
   const { docs: properties } = await payload.find({
     collection: 'properties',
     where: {
       and: [
         { brand: { equals: 'madeiraoasis' } },
         { status: { equals: 'published' } },
-        { hotelType: { equals: 'hotel' } },
       ],
     },
     limit: 200,
@@ -70,8 +72,8 @@ export default async function OasisPage({
   })
 
   return (
-    <div className="h-dvh overflow-hidden bg-[#fdfbf7]">
-      <OasisMap
+    <div className="h-dvh overflow-hidden bg-[#171310]">
+      <InteractiveHero
         hotels={hotels}
         initialLat={hasCenter ? parsedLat : undefined}
         initialLng={hasCenter ? parsedLng : undefined}

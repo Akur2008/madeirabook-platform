@@ -69,6 +69,7 @@ export default function FlightCalendarSearch() {
   const [rows, setRows] = useState<PriceRow[]>([])
   const [origin, setOrigin] = useState(DEFAULT_ORIGIN)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [selected, setSelected] = useState<string | null>(null)
   const searchSeq = useRef(0)
 
   const handleSheetOpenChange = useCallback(
@@ -117,6 +118,12 @@ export default function FlightCalendarSearch() {
         .map(([date, price]) => ({ date, price }))
         .sort((a, b) => a.date.localeCompare(b.date))
       setRows(inWindow)
+      // Pre-select the cheapest fare so the single Book CTA is ready to use.
+      const cheapest = inWindow.reduce<PriceRow | null>(
+        (min, r) => (min == null || r.price < min.price ? r : min),
+        null,
+      )
+      setSelected(cheapest?.date ?? null)
       setStatus(inWindow.length > 0 ? 'results' : 'empty')
     } catch {
       if (seq === searchSeq.current) setStatus('error')
@@ -175,7 +182,7 @@ export default function FlightCalendarSearch() {
               Cheapest one-way fares to Funchal for the next {WINDOW_DAYS} days.
             </Drawer.Description>
 
-            <div className="overflow-y-auto px-6 pb-10 pt-4">
+            <div className="overflow-y-auto px-6 pb-4 pt-4">
               <p className="mb-0 text-center text-xs uppercase tracking-widest text-white/40">
                 {origin} → {DESTINATION_IATA} · next {WINDOW_DAYS} days ·{' '}
                 {TRIP_NIGHTS}-night return
@@ -200,35 +207,62 @@ export default function FlightCalendarSearch() {
               )}
 
               {status === 'results' && (
-                <div className="mt-4 flex flex-col gap-3">
-                  {rows.map((row) => (
-                    <div
-                      key={row.date}
-                      className="flex items-center gap-4 rounded-xl border border-white/15 bg-white/5 p-3"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="mb-0 text-sm font-medium text-white/90">
-                          {format(new Date(`${row.date}T12:00:00`), 'EEE d MMM')}
-                        </p>
-                        <p className="mb-0 mt-1 text-sm text-white/60">
-                          <span className="font-semibold text-white/90">
-                            €{Math.round(row.price)}
-                          </span>
-                          {' one-way'}
-                        </p>
-                      </div>
+                <div className="mt-4 flex flex-col gap-2">
+                  {rows.map((row) => {
+                    const isSelected = row.date === selected
+                    return (
                       <button
+                        key={row.date}
                         type="button"
-                        onClick={() => handleBook(row.date)}
-                        className="shrink-0 rounded-full border border-emerald-600 bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-500"
+                        onClick={() => setSelected(row.date)}
+                        aria-pressed={isSelected}
+                        className={`flex items-center gap-4 rounded-xl border p-3 text-left transition-colors ${
+                          isSelected
+                            ? 'border-emerald-500 bg-emerald-500/15'
+                            : 'border-white/15 bg-white/5 hover:bg-white/10'
+                        }`}
                       >
-                        Book →
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-0 text-sm font-medium text-white/90">
+                            {format(new Date(`${row.date}T12:00:00`), 'EEE d MMM')}
+                          </p>
+                          <p className="mb-0 mt-1 text-sm text-white/60">
+                            <span className="font-semibold text-white/90">
+                              €{Math.round(row.price)}
+                            </span>
+                            {' one-way'}
+                          </p>
+                        </div>
+                        <span
+                          aria-hidden
+                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] ${
+                            isSelected
+                              ? 'border-emerald-500 bg-emerald-500 text-white'
+                              : 'border-white/30 text-transparent'
+                          }`}
+                        >
+                          ✓
+                        </span>
                       </button>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
+
+            {/* The only Aviasales exit on the page: books the selected date. */}
+            {status === 'results' && (
+              <div className="shrink-0 border-t border-white/10 px-6 pb-8 pt-4">
+                <button
+                  type="button"
+                  onClick={() => selected && handleBook(selected)}
+                  disabled={selected == null}
+                  className="block w-full whitespace-nowrap rounded-full border border-emerald-600 bg-emerald-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-40"
+                >
+                  Book on Aviasales →
+                </button>
+              </div>
+            )}
           </Drawer.Content>
         </Drawer.Portal>
       </Drawer.Root>

@@ -1,4 +1,5 @@
 import {
+  AmbientLayer,
   CROSSFADE_DURATION_MS,
   ChannelName,
   ChannelState,
@@ -44,7 +45,11 @@ export class AudioEngine {
   private channelGains: Record<ChannelName, GainNode> | null = null
   private buffers = new Map<string, Promise<AudioBuffer>>()
   private rawBuffers = new Map<string, Promise<ArrayBuffer>>()
-  private ambientSource: ActiveSource | null = null
+  private ambientSources: ActiveSource[] = []
+  // Bumped on every ambient operation; async loads started under an older
+  // sequence number are dropped so a stale play/crossfade can't resurrect
+  // sources after a newer call already replaced them.
+  private ambientSeq = 0
   private sluiceSource: ActiveSource | null = null
   private videoSource: ActiveSource | null = null
   private backgroundFilter: BiquadFilterNode | null = null
@@ -186,7 +191,7 @@ export class AudioEngine {
       started: this.ctx !== null && this.ctx.state === 'running',
       contextState: this.ctx?.state ?? 'uninitialized',
       channels: {
-        globalAmbient: channel(this.ambientSource, 'globalAmbient'),
+        globalAmbient: channel(this.ambientSources[0] ?? null, 'globalAmbient'),
         sluiceBuffer: channel(this.sluiceSource, 'sluiceBuffer'),
         videoAudio: channel(this.videoSource, 'videoAudio'),
       },
@@ -208,28 +213,88 @@ export class AudioEngine {
     this.emit()
   }
 
+  private dropAmbientSource(active: ActiveSource): void {
+    const i = this.ambientSources.indexOf(active)
+    if (i === -1) return
+    this.ambientSources.splice(i, 1)
+    this.emit()
+  }
+
+  // Fade out and stop every ambient source (the sluice/video channels are
+  // untouched).
+  stopAmbient(fadeMs = 30): void {
+    this.ambientSeq++
+    for (const s of this.ambientSources) this.stopActive(s, fadeMs)
+    this.ambientSources = []
+    this.emit()
+  }
+
+  private async loadLayers(
+    layers: AmbientLayer[],
+  ): Promise<{ buffer: AudioBuffer; url: string }[]> {
+    return Promise.all(layers.map((l) => this.load(l.src)))
+  }
+
+  private startAmbientLayer(
+    buffer: AudioBuffer,
+    url: string,
+    layer: AmbientLayer,
+    loop: boolean,
+    fadeInSec = 0,
+  ): void {
+    const ctx = this.ensureContext()
+    const channelGain = this.channelGains!.globalAmbient
+    const active = this.makeSource(buffer, channelGain, loop)
+    const gain = layer.gain ?? 1
+    active.url = url
+    if (fadeInSec > 0) {
+      active.gain.gain.value = 0
+      active.gain.gain.setValueCurveAtTime(
+        fadeInCurve(0, gain),
+        ctx.currentTime,
+        fadeInSec,
+      )
+    } else {
+      active.gain.gain.value = gain
+    }
+    active.source.onended = () => this.dropAmbientSource(active)
+    active.source.start(ctx.currentTime)
+    this.ambientSources.push(active)
+  }
+
+  async playAmbientLayers(
+    layers: AmbientLayer[],
+    options: { loop?: boolean; masterVolume?: number; fadeInMs?: number } = {},
+  ): Promise<void> {
+    const seq = ++this.ambientSeq
+    this.ensureContext()
+    const loaded = await this.loadLayers(layers)
+    if (seq !== this.ambientSeq) return
+    for (const s of this.ambientSources) this.stopActive(s)
+    this.ambientSources = []
+    layers.forEach((layer, i) =>
+      this.startAmbientLayer(
+        loaded[i].buffer,
+        loaded[i].url,
+        layer,
+        options.loop ?? true,
+        (options.fadeInMs ?? 0) / 1000,
+      ),
+    )
+    if (options.masterVolume !== undefined) {
+      this.setVolume('globalAmbient', options.masterVolume)
+    }
+    this.emit()
+  }
+
   async playAmbient(
     url: string | string[],
     options: { loop?: boolean; volume?: number } = {},
   ): Promise<void> {
-    const ctx = this.ensureContext()
-    const { loop = true, volume } = options
-    if (volume !== undefined) this.setVolume('globalAmbient', volume)
-    const { buffer, url: resolvedUrl } = await this.load(url)
-    this.stopActive(this.ambientSource)
-    const channelGain = this.channelGains!.globalAmbient
-    const active = this.makeSource(buffer, channelGain, loop)
-    active.url = resolvedUrl
-    active.gain.gain.value = 1
-    active.source.onended = () => {
-      if (this.ambientSource === active) {
-        this.ambientSource = null
-        this.emit()
-      }
-    }
-    active.source.start(ctx.currentTime)
-    this.ambientSource = active
-    this.emit()
+    return this.playAmbientLayers([{ src: url }], {
+      loop: options.loop,
+      masterVolume: options.volume,
+    })
   }
 
   async playSluice(url: string | string[], durationSec?: number): Promise<void> {
@@ -287,10 +352,11 @@ export class AudioEngine {
   }
 
   stopAll(): void {
-    this.stopActive(this.ambientSource)
+    this.ambientSeq++
+    for (const s of this.ambientSources) this.stopActive(s)
+    this.ambientSources = []
     this.stopActive(this.sluiceSource)
     this.stopActive(this.videoSource)
-    this.ambientSource = null
     this.sluiceSource = null
     this.videoSource = null
     if (this.backgroundFilter && this.ctx) {
@@ -386,19 +452,25 @@ export class AudioEngine {
     this.emit()
   }
 
-  async crossfade(
-    _fromUrl: string,
-    toUrl: string | string[],
+  // Crossfade the whole ambient channel into a new layer set. Outgoing
+  // sources keep playing while the new buffers load, then fade out over
+  // `duration` while every new layer fades in to its own gain. An optional
+  // masterVolume ramps the channel gain over the same window (e.g. back to
+  // the default level after a page left it ducked).
+  async crossfadeToLayers(
+    layers: AmbientLayer[],
     duration = CROSSFADE_DURATION_MS,
+    options: { masterVolume?: number } = {},
   ): Promise<void> {
+    const seq = ++this.ambientSeq
     const ctx = this.ensureContext()
-    const { buffer, url: resolvedUrl } = await this.load(toUrl)
+    const loaded = await this.loadLayers(layers)
+    if (seq !== this.ambientSeq) return
     const channelGain = this.channelGains!.globalAmbient
     const durationSec = duration / 1000
     const now = ctx.currentTime
 
-    const outgoing = this.ambientSource
-    if (outgoing) {
+    for (const outgoing of this.ambientSources) {
       const from = outgoing.gain.gain.value
       outgoing.gain.gain.cancelScheduledValues(now)
       outgoing.gain.gain.setValueAtTime(from, now)
@@ -410,19 +482,32 @@ export class AudioEngine {
       }
       outgoing.source.onended = null
     }
+    this.ambientSources = []
 
-    const incoming = this.makeSource(buffer, channelGain, true)
-    incoming.url = resolvedUrl
-    incoming.gain.gain.value = 0
-    incoming.gain.gain.setValueCurveAtTime(fadeInCurve(0, 1), now, durationSec)
-    incoming.source.onended = () => {
-      if (this.ambientSource === incoming) {
-        this.ambientSource = null
-        this.emit()
-      }
+    layers.forEach((layer, i) =>
+      this.startAmbientLayer(loaded[i].buffer, loaded[i].url, layer, true, durationSec),
+    )
+
+    if (options.masterVolume !== undefined) {
+      const gain = channelGain.gain
+      const from = gain.value
+      gain.cancelScheduledValues(now)
+      gain.setValueAtTime(from, now)
+      gain.setValueCurveAtTime(
+        fadeInCurve(from, options.masterVolume),
+        now,
+        durationSec,
+      )
+      this.volumes.globalAmbient = options.masterVolume
     }
-    incoming.source.start(now)
-    this.ambientSource = incoming
     this.emit()
+  }
+
+  async crossfade(
+    _fromUrl: string,
+    toUrl: string | string[],
+    duration = CROSSFADE_DURATION_MS,
+  ): Promise<void> {
+    return this.crossfadeToLayers([{ src: toUrl }], duration)
   }
 }

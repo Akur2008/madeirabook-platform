@@ -1,11 +1,18 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef } from 'react'
-import { useAudioEngine } from '@/audio/useAudioEngine'
+import { usePathname } from 'next/navigation'
+import React, { useCallback, useSyncExternalStore } from 'react'
 
-const FALLBACK_URL =
-  'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev/sounds/ocean-ambient.m4a'
-const AMBIENT_VOLUME = 0.25
+import { isExternallyManagedAmbient } from '@/audio/ambientPolicy'
+import { DEFAULT_AMBIENT_LAYERS } from '@/audio/defaultAmbient'
+import {
+  readSoundMuted,
+  serverSoundMuted,
+  subscribeSoundMuted,
+  writeSoundMuted,
+} from '@/audio/soundMuted'
+import { DEFAULT_AMBIENT_VOLUME } from '@/audio/types'
+import { useAudioEngine } from '@/audio/useAudioEngine'
 
 const styles = `
 @keyframes soundButtonPulse {
@@ -15,90 +22,73 @@ const styles = `
 }
 `
 
+// Host never changes during a session; the external-store pattern keeps
+// SSR and hydration identical ('') and reveals the real host after mount.
+const subscribeNoop = () => () => {}
+const readHost = () => window.location.hostname
+const serverHost = () => ''
+
 export default function SoundButton() {
   const engine = useAudioEngine()
-  const btnRef = useRef<HTMLButtonElement>(null)
-  const urlRef = useRef(FALLBACK_URL)
-  const userMutedRef = useRef(false)
+  const pathname = usePathname()
+  const muted = useSyncExternalStore(
+    subscribeSoundMuted,
+    readSoundMuted,
+    serverSoundMuted,
+  )
+  const host = useSyncExternalStore(subscribeNoop, readHost, serverHost)
 
-  useEffect(() => {
-    let cancelled = false
-    fetch('/api/sounds/active')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { url?: string } | null) => {
-        if (!cancelled && typeof data?.url === 'string' && data.url) {
-          urlRef.current = data.url
-        }
-      })
-      .catch(() => undefined)
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  // Pages like the Oasis homepage run their own <audio> ambience outside
+  // the engine; there the button toggles the shared muted flag only.
+  const externalAmbient = isExternallyManagedAmbient(pathname, host)
 
-  // `isStarted` is only a persisted "user enabled sound" flag — it survives
-  // reloads while the AudioContext does not. Real playback state lives on the
-  // ambient channel; toggling on it keeps the button honest (one click to
-  // play, one click to pause).
   const ambientPlaying = engine.state?.channels.globalAmbient.playing ?? false
-
-  const playOcean = useCallback(async () => {
-    try {
-      await engine.playAmbient(urlRef.current, {
-        loop: true,
-        volume: AMBIENT_VOLUME,
-      })
-    } catch {
-      // stay silent — the pulsing button invites another tap
-    }
-  }, [engine])
+  const soundOn = externalAmbient ? !muted : ambientPlaying && !muted
 
   const toggle = useCallback(async () => {
-    if (ambientPlaying) {
-      userMutedRef.current = true
+    if (soundOn) {
+      writeSoundMuted(true)
       await engine.stop()
       return
     }
-    userMutedRef.current = false
-    await engine.start()
-    await playOcean()
-  }, [engine, playOcean, ambientPlaying])
-
-  // Browsers only treat click/tap/keypress as a user gesture for autoplay —
-  // scroll does not count. Start ambient on the first tap anywhere on the
-  // page (also covers the "sound left on in a previous session" resume case),
-  // unless the user explicitly muted via this button.
-  useEffect(() => {
-    if (ambientPlaying || userMutedRef.current) return
-    const onFirstGesture = (e: PointerEvent) => {
-      if (btnRef.current?.contains(e.target as Node)) return
-      void engine.start().then(playOcean)
+    writeSoundMuted(false)
+    if (externalAmbient) {
+      // The page's own audio reacts to the muted flag itself.
+      await engine.stop()
+      return
     }
-    window.addEventListener('pointerdown', onFirstGesture, { once: true })
-    return () => window.removeEventListener('pointerdown', onFirstGesture)
-  }, [engine, playOcean, ambientPlaying])
+    try {
+      await engine.start()
+      await engine.playAmbientLayers(DEFAULT_AMBIENT_LAYERS, {
+        masterVolume: DEFAULT_AMBIENT_VOLUME,
+      })
+    } catch {
+      // stay silent — the button invites another tap
+    }
+  }, [engine, soundOn, externalAmbient])
 
   return (
     <>
       <style>{styles}</style>
       <button
-        ref={btnRef}
         type="button"
-        aria-label={ambientPlaying ? 'Mute sound' : 'Enable sound'}
+        data-sound-toggle
+        aria-label={soundOn ? 'Mute sound' : 'Enable sound'}
+        aria-pressed={soundOn}
         onClick={() => void toggle()}
         className="fixed bottom-6 right-6 z-[2000] flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-[22px] backdrop-blur-sm transition-colors hover:bg-black/80"
         style={{
-          animation: ambientPlaying ? 'soundButtonPulse 2s infinite' : 'none',
+          animation: soundOn ? 'soundButtonPulse 2s infinite' : 'none',
         }}
       >
         <span
           className={
-            ambientPlaying
+            soundOn
               ? 'opacity-100 drop-shadow-[0_0_6px_rgba(34,197,94,0.9)]'
               : 'opacity-50 grayscale'
           }
         >
-          {ambientPlaying ? '🔊' : '🔇'}
+          {soundOn ? '🔊' : '🔇'}
         </span>
       </button>
     </>
