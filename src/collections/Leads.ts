@@ -4,7 +4,7 @@ export const Leads: CollectionConfig = {
   slug: 'leads',
   admin: {
     useAsTitle: 'contactIdentifier',
-    defaultColumns: ['source', 'contactIdentifier', 'refCode', 'page', 'status', 'createdAt'],
+    defaultColumns: ['type', 'source', 'contactIdentifier', 'refCode', 'page', 'status', 'createdAt'],
   },
   access: {
     create: () => true,
@@ -13,6 +13,33 @@ export const Leads: CollectionConfig = {
     delete: ({ req }) => Boolean(req.user),
   },
   fields: [
+    {
+      name: 'type',
+      type: 'select',
+      index: true,
+      options: [
+        { label: 'Ambassador', value: 'ambassador' },
+        { label: 'Owner', value: 'owner' },
+      ],
+      admin: {
+        description: 'B2B lead type from the /ambassador and /owners landing pages.',
+      },
+    },
+    {
+      name: 'whatsapp',
+      type: 'text',
+      admin: {
+        description: 'WhatsApp number (B2B lead forms).',
+      },
+    },
+    {
+      name: 'instagramOrProperty',
+      type: 'text',
+      label: 'Instagram URL / Property link',
+      admin: {
+        description: 'Instagram URL (ambassador) or property name/link (owner).',
+      },
+    },
     {
       name: 'source',
       type: 'select',

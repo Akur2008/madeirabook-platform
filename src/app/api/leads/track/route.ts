@@ -16,6 +16,9 @@ const leadSchema = z.object({
     .optional(),
   email: z.email().max(320).optional(),
   contactIdentifier: z.string().max(200).optional(),
+  type: z.enum(['ambassador', 'owner']).optional(),
+  whatsapp: z.string().max(50).optional(),
+  instagramOrProperty: z.string().max(500).optional(),
 })
 
 // Basic in-memory rate limit: max 10 requests per IP per minute. Per-instance
@@ -79,6 +82,11 @@ export async function POST(req: Request) {
       ...(parsed.data.email ? { email: parsed.data.email } : {}),
       ...(parsed.data.contactIdentifier
         ? { contactIdentifier: parsed.data.contactIdentifier }
+        : {}),
+      ...(parsed.data.type ? { type: parsed.data.type } : {}),
+      ...(parsed.data.whatsapp ? { whatsapp: parsed.data.whatsapp } : {}),
+      ...(parsed.data.instagramOrProperty
+        ? { instagramOrProperty: parsed.data.instagramOrProperty }
         : {}),
       ...(userAgent ? { userAgent } : {}),
     },
