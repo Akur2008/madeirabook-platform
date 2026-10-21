@@ -3,7 +3,6 @@ import Link from 'next/link'
 import React from 'react'
 
 import Header from '../components/Header'
-import AviasalesWidget from './AviasalesWidget'
 import FlightCalendarSearch from './FlightCalendarSearch'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'Flights to Madeira — find the cheapest dates — Madeirabook',
   description:
-    'Live flight prices to Funchal (FNC) from cities across Europe. Search on Aviasales or pick the cheapest day on the 14-day calendar.',
+    'Live flight prices to Funchal (FNC) from cities across Europe. Pick the cheapest day on the 14-day calendar.',
   openGraph: {
     title: 'Flights to Madeira — find the cheapest dates',
     description:
@@ -53,19 +52,8 @@ export default function FlightsPage() {
           Flights to Madeira — find the cheapest dates
         </h1>
         <p className="mt-3 text-center text-sm text-white/60">
-          Live fares to Funchal (FNC). Search directly or pick the cheapest day
-          on the calendar.
+          Live fares to Funchal (FNC). Pick the cheapest day on the calendar.
         </p>
-
-        <div className="mt-8">
-          <AviasalesWidget />
-        </div>
-
-        <div className="mt-10 flex items-center gap-4 text-xs uppercase tracking-widest text-white/40">
-          <span className="h-px flex-1 bg-white/15" />
-          or search by calendar
-          <span className="h-px flex-1 bg-white/15" />
-        </div>
 
         <FlightCalendarSearch />
       </div>

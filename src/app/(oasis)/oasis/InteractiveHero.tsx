@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -174,6 +175,9 @@ export default function InteractiveHero({
 }: InteractiveHeroProps) {
   const [mapOpen, setMapOpen] = useState(false)
   const [activeVideo, setActiveVideo] = useState<HeroVideoSpot | null>(null)
+  // Published hotels that resolve to a real /hotels/<slug> page — video
+  // spots outside this set fall back to the concierge CTA.
+  const liveSlugs = useMemo(() => new Set(hotels.map((h) => h.slug)), [hotels])
   // The artwork is dropped in by the owner; hide the <img> if it 404s so the
   // dark gradient scene underneath still reads as a finished hero.
   const [bgMissing, setBgMissing] = useState(false)
@@ -363,7 +367,11 @@ export default function InteractiveHero({
         </span>
       </button>
 
-      <VideoBottomSheet spot={activeVideo} onClose={() => setActiveVideo(null)} />
+      <VideoBottomSheet
+        spot={activeVideo}
+        onClose={() => setActiveVideo(null)}
+        liveSlugs={liveSlugs}
+      />
       <MapModal
         open={mapOpen}
         onOpenChange={setMapOpen}

@@ -9,15 +9,20 @@ import type { HeroVideoSpot } from './InteractiveHero'
 interface VideoBottomSheetProps {
   spot: HeroVideoSpot | null
   onClose: () => void
+  // Slugs that currently have a live hotel page (published madeiraoasis
+  // inventory). Spots outside the set get a concierge CTA instead of a
+  // link that would 404.
+  liveSlugs: ReadonlySet<string>
 }
 
-export default function VideoBottomSheet({ spot, onClose }: VideoBottomSheetProps) {
+export default function VideoBottomSheet({ spot, onClose, liveSlugs }: VideoBottomSheetProps) {
   // On madeiraoasis.com hotel links live at /hotels/*; on other hosts
   // (localhost, madeirabook.com preview) they sit under /oasis/hotels/*.
   const base = useMemo(
     () => (typeof window === 'undefined' ? '/oasis' : oasisBase(window.location.hostname)),
     [],
   )
+  const live = spot != null && liveSlugs.has(spot.hotelSlug)
 
   return (
     <Drawer.Root
@@ -70,10 +75,16 @@ export default function VideoBottomSheet({ spot, onClose }: VideoBottomSheetProp
                 {/* href differs between SSR (/oasis) and the oasis host (/) */}
                 <a
                   suppressHydrationWarning
-                  href={`${base}/hotels/${spot.hotelSlug}`}
+                  href={
+                    live
+                      ? `${base}/hotels/${spot.hotelSlug}`
+                      : `mailto:concierge@madeirabook.com?subject=${encodeURIComponent(
+                          `Stay request — ${spot.title}`,
+                        )}`
+                  }
                   className="mt-6 block w-full rounded-full border border-[#d4af37] bg-[#d4af37] py-3.5 text-center text-sm font-semibold uppercase tracking-[0.15em] text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#d4af37]"
                 >
-                  Discover {spot.title}
+                  {live ? `Discover ${spot.title}` : 'Request a stay'}
                 </a>
               </div>
             </div>

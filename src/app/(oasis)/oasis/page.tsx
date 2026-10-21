@@ -30,15 +30,14 @@ export default async function OasisPage({
   const payload = await getPayload({ config: await config })
 
   // "tenant: oasis" maps to brand = madeiraoasis on the shared Properties
-  // collection. Public launch is Orquídea-only (slug 'hotel-orquidea',
-  // brand madeirabook) — the rest of the collection stays hidden from the
-  // map until each address is ready.
+  // collection. Only published madeiraoasis inventory reaches the map —
+  // Orquídea and the rest of the madeirabook catalogue stay off it.
   const { docs: properties } = await payload.find({
     collection: 'properties',
     where: {
       and: [
+        { brand: { equals: 'madeiraoasis' } },
         { status: { equals: 'published' } },
-        { slug: { contains: 'orquidea' } },
       ],
     },
     limit: 200,

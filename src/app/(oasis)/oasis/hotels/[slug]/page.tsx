@@ -95,14 +95,7 @@ export async function generateMetadata({
       and: [
         { slug: { equals: slug } },
         { status: { equals: 'published' } },
-        // Orquídea (slug 'hotel-orquidea') lives under brand madeirabook but
-        // is the public face of the Oasis collection.
-        {
-          or: [
-            { brand: { equals: 'madeiraoasis' } },
-            { slug: { contains: 'orquidea' } },
-          ],
-        },
+        { brand: { equals: 'madeiraoasis' } },
       ],
     },
     limit: 1,
@@ -141,12 +134,7 @@ export default async function OasisHotelPage({
       and: [
         { slug: { equals: slug } },
         { status: { equals: 'published' } },
-        {
-          or: [
-            { brand: { equals: 'madeiraoasis' } },
-            { slug: { contains: 'orquidea' } },
-          ],
-        },
+        { brand: { equals: 'madeiraoasis' } },
       ],
     },
     limit: 1,
