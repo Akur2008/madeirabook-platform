@@ -6,7 +6,6 @@ import type * as Leaflet from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
-import { oasisBase } from '@/lib/oasis-domain'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
@@ -248,10 +247,10 @@ export default function ExploreMap({
       const icon = pin('#10b981', '🏠')
       properties.forEach((p) => addPin(p.lat, p.lng, icon, p.title, `/p/${p.slug}`))
 
-      // Oasis stays — gold star pins, popup with a tracked "View hotel →" link
-      // instead of the instant navigation used by regular pins.
+      // Oasis stays — gold star pins, read-only preview: photo + name +
+      // "Coming Soon" label. No booking, no hotel link — concierge contact
+      // instead (booking flow is not live yet).
       if (oasisStays.length) {
-        const base = oasisBase(window.location.hostname)
         const oasisIcon = L.divIcon({
           className: 'explore-pin',
           html: `<div style="width:34px;height:34px;border-radius:9999px;background:linear-gradient(135deg,#f5d76e,#b8952e);border:2px solid #1c1a16;box-shadow:0 2px 10px rgba(184,149,46,0.65);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;cursor:pointer;color:#1c1a16;">★</div>`,
@@ -272,8 +271,9 @@ export default function ExploreMap({
               (h.shortDescription
                 ? `<p style="margin:4px 0 0;font-size:12px;">${escHtml(h.shortDescription)}</p>`
                 : '') +
-              `<a href="${escHtml(withRef(`${base}/hotels/${h.slug}`))}" style="display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View hotel →</a>` +
-              `<button type="button" class="js-get-directions" data-lat="${h.lat}" data-lng="${h.lng}" data-name="${escHtml(h.title)}" style="display:inline-block;margin-top:8px;margin-left:10px;font-size:12px;font-weight:600;color:#1c1a16;background:none;border:none;border-bottom:1px solid #10b981;padding:0 0 1px;cursor:pointer;">Get Directions →</button>` +
+              `<span style="display:inline-block;margin-top:8px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#b8952e;border:1px solid #d4af37;border-radius:9999px;padding:2px 8px;">Coming Soon</span>` +
+              `<p style="margin:8px 0 0;font-size:11px;line-height:1.4;color:#555;">Booking coming soon. Contact us: <a href="mailto:hello@madeiraoasis.com" style="color:#b8952e;text-decoration:none;border-bottom:1px solid #d4af37;">hello@madeiraoasis.com</a></p>` +
+              `<button type="button" class="js-get-directions" data-lat="${h.lat}" data-lng="${h.lng}" data-name="${escHtml(h.title)}" style="display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#1c1a16;background:none;border:none;border-bottom:1px solid #10b981;padding:0 0 1px;cursor:pointer;">Get Directions →</button>` +
               `</div>`,
           )
           marker.addTo(layer)

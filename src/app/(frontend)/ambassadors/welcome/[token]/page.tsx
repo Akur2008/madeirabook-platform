@@ -7,6 +7,12 @@ import Stripe from 'stripe'
 import config from '@payload-config'
 import DigitalSignature from '@/components/DigitalSignature'
 import { hasSignedAmbassadorTerms } from '@/lib/agreements'
+import {
+  fetchAmbassadorMapData,
+  type AmbassadorMapData,
+} from '@/lib/ambassador-map'
+import { FEATURES } from '@/lib/features'
+import ExploreMap from '../../../components/ExploreMap'
 import AcceptInvite from './AcceptInvite'
 import CopyLinkButton from './CopyLinkButton'
 import EditPicks from './EditPicks'
@@ -103,6 +109,45 @@ function isExpired(iso: string | null | undefined): boolean {
   return iso ? Date.parse(iso) < Date.now() : false
 }
 
+// Read-only preview of the ambassador's own map — same ExploreMap the public
+// /m/[code] page renders, incl. the gold Oasis pins (Coming Soon popups).
+function MapPreview({
+  mapData,
+  displayName,
+  avatarUrl,
+  accentColor,
+  refCode,
+}: {
+  mapData: AmbassadorMapData
+  displayName: string
+  avatarUrl?: string | null
+  accentColor?: string | null
+  refCode: string
+}) {
+  return (
+    <div className="mt-8">
+      <p className="text-xs font-semibold uppercase tracking-widest text-white/50">
+        Your map — live preview
+      </p>
+      <div className="mt-3 h-[420px] overflow-hidden rounded-xl border border-white/10">
+        <ExploreMap
+          properties={[]}
+          beaches={mapData.beaches}
+          restaurants={mapData.restaurants}
+          ambassadorPins={mapData.pins}
+          oasisStays={mapData.oasisStays}
+          refCode={refCode}
+          ambassador={{ displayName, avatarUrl, accentColor }}
+        />
+      </div>
+      <p className="mt-2 text-center text-xs text-white/40">
+        Gold ★ pins are Madeira Oasis hotels — read-only preview, booking opens
+        soon.
+      </p>
+    </div>
+  )
+}
+
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-[#0a1420] text-white">
@@ -182,6 +227,7 @@ export default async function WelcomePage(props: {
   )
 
   if (referral.invitationUsedAt) {
+    const mapData = await fetchAmbassadorMapData(payload, referral)
     return (
       <Shell>
         <h1 className="text-center text-3xl font-medium" style={SERIF}>
@@ -193,6 +239,13 @@ export default async function WelcomePage(props: {
             hello@madeirabook.com
           </a>
         </p>
+        <MapPreview
+          mapData={mapData}
+          displayName={displayName}
+          avatarUrl={referral.avatarUrl}
+          accentColor={referral.accentColor}
+          refCode={code}
+        />
         {payoutBlock}
       </Shell>
     )
@@ -260,9 +313,13 @@ export default async function WelcomePage(props: {
     name: d.name,
   }))
 
+  const mapData = await fetchAmbassadorMapData(payload, referral)
+  const oasisPreview =
+    FEATURES.ambassadorOasisAccess || referral.oasisAccess === true
+
   return (
     <Shell>
-      {referral.oasisAccess && (
+      {oasisPreview && (
         <p className="mb-6 rounded-full border border-[#d4af37]/50 bg-[#d4af37]/10 px-4 py-2 text-center text-xs font-semibold uppercase tracking-widest text-[#d4af37]">
           🌟 Oasis Access — Premium Collection
         </p>
@@ -307,6 +364,14 @@ export default async function WelcomePage(props: {
           </span>
         </p>
       </div>
+
+      <MapPreview
+        mapData={mapData}
+        displayName={displayName}
+        avatarUrl={referral.avatarUrl}
+        accentColor={referral.accentColor}
+        refCode={code}
+      />
 
       {payoutBlock}
 
