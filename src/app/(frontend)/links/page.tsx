@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 
+import Header from '../components/Header'
 import WhatsAppButton from './WhatsAppButton'
 
 export const metadata: Metadata = {
@@ -27,6 +28,8 @@ export default function LinksPage() {
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
       />
+
+      <Header />
 
       <div className="mx-auto max-w-md px-6 py-12">
         <div className="text-center text-4xl font-medium tracking-tight" style={SERIF}>

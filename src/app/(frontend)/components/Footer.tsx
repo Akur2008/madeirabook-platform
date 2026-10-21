@@ -46,10 +46,21 @@ export default function Footer() {
 
           {/* Company Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Madeirabook</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              <Link href="/" className="hover:text-white transition-colors">
+                Madeirabook
+              </Link>
+            </h3>
             <p className="text-gray-300 text-sm">
               Curated accommodations in Madeira. Rare places for honest luxury and authentic experiences.
             </p>
+            <ul className="mt-4 space-y-2 text-gray-300 text-sm">
+              <li>
+                <Link href="/guides" className="hover:text-white transition-colors">
+                  Guides
+                </Link>
+              </li>
+            </ul>
           </div>
 
           {/* Contact */}

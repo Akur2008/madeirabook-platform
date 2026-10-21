@@ -9,6 +9,7 @@ import config from '@/payload.config'
 import type { Upload } from '@/payload-types'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 
+import Header from '../../components/Header'
 import PropertyMap from '../../components/PropertyMapLoader'
 import VideoOnDemand from '../../components/VideoOnDemand'
 
@@ -146,6 +147,8 @@ export default async function RestaurantPage({
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
       />
+
+      <Header />
 
       <div className="mx-auto max-w-6xl px-6 py-10 md:py-16">
         <nav className="text-sm text-white/50">

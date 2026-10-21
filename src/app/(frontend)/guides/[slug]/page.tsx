@@ -9,6 +9,7 @@ import React from 'react'
 
 import config from '@/payload.config'
 import type { Beach, Property, Restaurant, Upload } from '@/payload-types'
+import Header from '../../components/Header'
 
 export const revalidate = 60
 
@@ -133,6 +134,8 @@ export default async function GuidePage({
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
       />
+
+      <Header />
 
       <div className="mx-auto max-w-6xl px-6 py-10 md:py-16">
         <nav className="text-sm text-white/50">

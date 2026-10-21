@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
 import ExploreMapInteractive from '../components/ExploreMapInteractive'
+import Header from '../components/Header'
 
 export const revalidate = 60
 
@@ -239,7 +239,7 @@ export default async function ExplorePage({
   })
 
   return (
-    <div className="h-dvh overflow-hidden bg-[#0a1420] text-white">
+    <div className="flex h-dvh flex-col overflow-hidden bg-[#0a1420] text-white">
       {/* Cormorant Garamond for headings; falls back to serif if the CDN is unreachable */}
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link
@@ -247,21 +247,10 @@ export default async function ExplorePage({
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
       />
 
-      <Link
-        href="/"
-        className="fixed left-4 top-4 z-20 text-lg font-black tracking-tight text-white"
-      >
-        Madeirabook
-      </Link>
-      <Link
-        href={ref ? `/book?ref=${encodeURIComponent(ref)}` : '/book'}
-        className="fixed right-4 top-4 z-20 inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-emerald-600 bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 sm:px-5 sm:py-2.5 sm:text-sm"
-      >
-        Book your stay →
-      </Link>
+      <Header refCode={ref} />
 
-      {/* 64px top offset keeps the floating logo/CTA clear of the in-map filter bar */}
-      <div className="explore-fullmap mt-16 h-[calc(100dvh-64px)]">
+      {/* The map fills whatever space the header leaves */}
+      <div className="explore-fullmap min-h-0 flex-1">
         <ExploreMapInteractive
           properties={mapStays}
           beaches={mapBeaches}

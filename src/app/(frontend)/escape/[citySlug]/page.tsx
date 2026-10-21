@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
+import Header from '../../components/Header'
 
 export const revalidate = 60
 
@@ -185,6 +186,8 @@ export default async function EscapePage({
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
       />
+
+      <Header />
 
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
         <h1 className="text-4xl font-light text-white/95 md:text-5xl" style={SERIF}>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 
+import Header from '../components/Header'
 import AviasalesWidget from './AviasalesWidget'
 import FlightCalendarSearch from './FlightCalendarSearch'
 
@@ -25,19 +26,6 @@ export const metadata: Metadata = {
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
-const NAV_LINKS = [
-  { label: 'Explore', href: '/explore' },
-  { label: 'Stays', href: 'https://www.madeirabook.com/madeira-apartment-rentals.html' },
-  { label: 'Flights', href: '/flights' },
-  { label: 'Guides', href: 'https://www.madeirabook.com/madeira-guide.html' },
-  { label: 'Collections', href: '/collections' },
-  { label: 'Weather', href: '/#weather' },
-]
-
-// Shared sizing so header buttons are identical in height and padding.
-const HEADER_BTN =
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg border px-3 py-2 text-xs font-semibold transition-colors sm:px-5 sm:py-2.5 sm:text-sm'
-
 export default function FlightsPage() {
   return (
     <div className="min-h-dvh bg-[#0a1420] text-white">
@@ -48,48 +36,7 @@ export default function FlightsPage() {
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
       />
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0a1420]/90 backdrop-blur">
-        <div className="mx-auto grid max-w-6xl grid-cols-[auto_auto_1fr] items-center gap-x-3 px-4 py-3 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
-          <Link
-            href="/"
-            className="justify-self-start text-lg font-black tracking-tight text-white"
-          >
-            Madeirabook
-          </Link>
-          <nav className="hidden items-center justify-center gap-6 text-sm font-medium text-white/70 md:flex">
-            {NAV_LINKS.map((l) => (
-              <a key={l.label} href={l.href} className="transition-colors hover:text-white">
-                {l.label}
-              </a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-2 justify-self-end sm:gap-3">
-            <Link
-              href="/sluice-test"
-              className={`${HEADER_BTN} border-white/25 bg-[#0a1420] text-white hover:bg-white/10`}
-            >
-              Try the escape →
-            </Link>
-            <Link
-              href="/book"
-              className={`${HEADER_BTN} border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-500`}
-            >
-              Book →
-            </Link>
-          </div>
-        </div>
-        <nav className="flex gap-5 overflow-x-auto px-4 pb-3 text-sm font-medium text-white/70 md:hidden">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="whitespace-nowrap transition-colors hover:text-white"
-            >
-              {l.label}
-            </a>
-          ))}
-        </nav>
-      </header>
+      <Header />
 
       <div className="mx-auto w-full max-w-xl px-6 pb-20">
         <Link

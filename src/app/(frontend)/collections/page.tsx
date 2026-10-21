@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 
+import Header from '../components/Header'
+
 export const metadata: Metadata = {
   title: 'Video collections — Madeirabook',
   description: 'Madeira in motion — mountains, forest levadas and ocean sunsets.',
@@ -40,25 +42,15 @@ export default function CollectionsIndexPage() {
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
       />
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0a1420]/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
-          <Link
-            href="/"
-            className="whitespace-nowrap text-sm text-white/60 transition-colors hover:text-white"
-          >
-            ← Back to home
-          </Link>
-          <h1
-            className="flex-1 text-center text-xl font-light text-white/95 sm:text-2xl"
-            style={SERIF}
-          >
-            Collections
-          </h1>
-          <span className="w-[110px] shrink-0 max-sm:hidden" aria-hidden />
-        </div>
-      </header>
+      <Header />
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 md:py-14">
+        <h1
+          className="mb-10 text-center text-3xl font-light text-white/95 md:text-4xl"
+          style={SERIF}
+        >
+          Collections
+        </h1>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {CATEGORIES.map((c) => (
             <Link

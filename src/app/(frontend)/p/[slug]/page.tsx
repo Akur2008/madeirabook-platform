@@ -10,6 +10,7 @@ import type { Amenity, HouseRule, Media } from '@/payload-types'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 
 import BookingDrawer from '../../components/BookingDrawer'
+import Header from '../../components/Header'
 import PropertyMap from '../../components/PropertyMapLoader'
 
 export const revalidate = 60
@@ -171,6 +172,8 @@ export default async function PropertyPage({
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap"
       />
+
+      <Header />
 
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
         <h1 className="text-4xl font-light text-white/95 md:text-5xl" style={SERIF}>
