@@ -1,5 +1,12 @@
 export type ChannelName = 'globalAmbient' | 'sluiceBuffer' | 'videoAudio'
 
+// One layer of a multi-source ambient scene. `gain` is the layer's weight
+// inside the channel — effective loudness is gain × channel volume.
+export interface AmbientLayer {
+  src: string | string[]
+  gain?: number
+}
+
 export interface ChannelState {
   volume: number
   playing: boolean

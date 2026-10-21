@@ -9,9 +9,11 @@ import {
 } from 'react'
 import type { CSSProperties } from 'react'
 
-import AiConciergeWidget, {
-  ASK_CONCIERGE_EVENT,
-} from '@/components/AiConciergeWidget'
+import {
+  readSoundMuted,
+  serverSoundMuted,
+  subscribeSoundMuted,
+} from '@/audio/soundMuted'
 import type { OasisHotelPin } from '../../(frontend)/components/OasisMap'
 import MapModal from './MapModal'
 import VideoBottomSheet from './VideoBottomSheet'
@@ -19,44 +21,15 @@ import VideoBottomSheet from './VideoBottomSheet'
 const R2 = 'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev'
 
 // Two-layer ambience: cicadas/ocean bed + birds on top. Plain <audio>
-// elements (not the shared AudioEngine — the oasis group has no provider).
+// elements — the hero owns the soundtrack on this page; the global
+// AudioEngine stays silent here (see ambientPolicy) and the shared
+// muted flag keeps the layout's sound button in control.
 const CICADAS_URL = `${R2}/sounds/oasis-cicadas-ocean.m4a`
 const BIRDS_URL = `${R2}/sounds/oasis-birds.wav`
 const CICADAS_VOLUME = 0.2
 const BIRDS_VOLUME = 0.1
 const DUCKED_VOLUME = 0.05
 const FADE_MS = 600
-const OASIS_MUTED_KEY = 'oasis_sound_muted'
-const WHATSAPP_URL = 'https://wa.me/351919304028'
-
-function readOasisMuted(): boolean {
-  try {
-    return localStorage.getItem(OASIS_MUTED_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-const mutedListeners = new Set<() => void>()
-
-function subscribeMuted(listener: () => void): () => void {
-  mutedListeners.add(listener)
-  return () => mutedListeners.delete(listener)
-}
-
-function serverMuted(): boolean {
-  return false
-}
-
-function writeOasisMuted(value: boolean): void {
-  try {
-    if (value) localStorage.setItem(OASIS_MUTED_KEY, '1')
-    else localStorage.removeItem(OASIS_MUTED_KEY)
-  } catch {
-    // private mode
-  }
-  for (const listener of mutedListeners) listener()
-}
 
 export interface HeroVideoSpot {
   id: string
@@ -205,11 +178,12 @@ export default function InteractiveHero({
   // dark gradient scene underneath still reads as a finished hero.
   const [bgMissing, setBgMissing] = useState(false)
   // Persisted mute flag — external store so SSR always renders "unmuted"
-  // and the client snapshot hydrates without a mismatch.
+  // and the client snapshot hydrates without a mismatch. Shared with the
+  // layout's SoundButton.
   const soundMuted = useSyncExternalStore(
-    subscribeMuted,
-    readOasisMuted,
-    serverMuted,
+    subscribeSoundMuted,
+    readSoundMuted,
+    serverSoundMuted,
   )
 
   const cicadasRef = useRef<HTMLAudioElement>(null)
@@ -234,9 +208,17 @@ export default function InteractiveHero({
   }, [])
 
   const startTracks = useCallback(() => {
-    startedRef.current = true
-    void cicadasRef.current?.play().catch(() => undefined)
-    void birdsRef.current?.play().catch(() => undefined)
+    const cicadas = cicadasRef.current
+    const birds = birdsRef.current
+    if (!cicadas || !birds) return
+    // Only mark as started once playback actually begins — a play() call
+    // without a prior user gesture rejects, and the listeners below must
+    // stay armed.
+    Promise.all([cicadas.play(), birds.play()])
+      .then(() => {
+        startedRef.current = true
+      })
+      .catch(() => undefined)
   }, [])
 
   // Base volumes — JSX `volume` is not a mapped prop, so set it directly.
@@ -249,6 +231,14 @@ export default function InteractiveHero({
       rafs.clear()
     }
   }, [])
+
+  // Try to (re)start on mount and whenever the flag flips to unmuted —
+  // succeeds when a gesture already happened (e.g. navigating back from
+  // another page, or tapping the layout's sound button); otherwise the
+  // gesture listeners below do the job.
+  useEffect(() => {
+    if (!soundMuted && !startedRef.current) startTracks()
+  }, [soundMuted, startTracks])
 
   // Autostart on the first gesture. A stored mute disarms autostart —
   // the visitor's silence survives reloads.
@@ -271,17 +261,6 @@ export default function InteractiveHero({
     fadeTo(cicadas, ducked ? DUCKED_VOLUME : CICADAS_VOLUME)
     fadeTo(birds, ducked ? DUCKED_VOLUME : BIRDS_VOLUME)
   }, [activeVideo, fadeTo])
-
-  const toggleSound = useCallback(() => {
-    const next = !soundMuted
-    writeOasisMuted(next)
-    // Unmuting counts as a user gesture — start (or resume) playback now.
-    if (!next) startTracks()
-  }, [soundMuted, startTracks])
-
-  const openConcierge = useCallback(() => {
-    window.dispatchEvent(new CustomEvent(ASK_CONCIERGE_EVENT))
-  }, [])
 
   return (
     <section className="relative h-full w-full overflow-hidden bg-[#171310]">
@@ -394,66 +373,12 @@ export default function InteractiveHero({
         initialZoom={initialZoom}
       />
 
-      {/* Ambient layers — looped; started on the first pointer/scroll gesture */}
+      {/* Ambient layers — looped; started on the first pointer/scroll
+          gesture. The global floating buttons (WhatsApp / AI / sound) live
+          in the (oasis) layout and drive these tracks via the shared
+          muted flag. */}
       <audio ref={cicadasRef} src={CICADAS_URL} loop muted={soundMuted} preload="auto" />
       <audio ref={birdsRef} src={BIRDS_URL} loop muted={soundMuted} preload="auto" />
-
-      {/* Floating actions — stacked above the artwork's map bubble so both
-          stay reachable (map bubble center ~85–88% down the right edge) */}
-      <div className="fixed bottom-[24%] right-4 z-[1200] flex flex-col items-center gap-3 md:right-6">
-        <a
-          href={WHATSAPP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Chat on WhatsApp"
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#14100c]/75 text-[#25d366] shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-transform hover:scale-105"
-        >
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden>
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
-          </svg>
-        </a>
-        <button
-          type="button"
-          onClick={openConcierge}
-          aria-label="Ask the AI concierge"
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#14100c]/75 text-[#d4af37] shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-transform hover:scale-105"
-        >
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          onClick={toggleSound}
-          aria-label={soundMuted ? 'Unmute ambience' : 'Mute ambience'}
-          aria-pressed={soundMuted}
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#14100c]/75 shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-transform hover:scale-105"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width="22"
-            height="22"
-            fill="none"
-            stroke="#d4af37"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-            className={soundMuted ? 'opacity-40' : 'opacity-100'}
-          >
-            <path d="M11 5 6.5 9H3v6h3.5L11 19V5z" fill="#d4af37" stroke="none" />
-            {soundMuted ? (
-              <path d="m16 9 5 6m0-6-5 6" />
-            ) : (
-              <path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" />
-            )}
-          </svg>
-        </button>
-      </div>
-
-      {/* The concierge panel mounts here without its own launcher — the gold
-          button above opens it via ASK_CONCIERGE_EVENT. */}
-      <AiConciergeWidget hideLauncherButton />
     </section>
   )
 }

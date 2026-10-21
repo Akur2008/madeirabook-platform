@@ -4,6 +4,8 @@ import React, { useCallback, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 
 const WA_BASE = 'https://wa.me/79626854685'
+// Madeira Oasis concierge line.
+export const OASIS_WA_BASE = 'https://wa.me/351919304028'
 const REF_COOKIE = 'madeirabook_ref'
 const MAP_TEXT = 'Hi! I want to download the Madeira map 🗺️'
 const ESCAPE_TEXT = 'Hi! I want to make an escape to Madeira ✈️'
@@ -56,7 +58,11 @@ function messageForPath(pathname: string): string {
   return DEFAULT_TEXT
 }
 
-export default function WhatsAppConciergeButton() {
+export default function WhatsAppConciergeButton({
+  waBase = WA_BASE,
+}: {
+  waBase?: string
+}) {
   const pathname = usePathname()
 
   const message = useMemo(() => messageForPath(pathname), [pathname])
@@ -64,7 +70,7 @@ export default function WhatsAppConciergeButton() {
   const handleClick = useCallback(() => {
     const refCode = readRefCookie()
     const text = refCode ? `${message} (ref: ${refCode})` : message
-    const waUrl = `${WA_BASE}?text=${encodeURIComponent(text)}`
+    const waUrl = `${waBase}?text=${encodeURIComponent(text)}`
 
     fetch('/api/leads/track', {
       method: 'POST',
@@ -77,7 +83,7 @@ export default function WhatsAppConciergeButton() {
     }).catch(() => undefined)
 
     window.open(waUrl, '_blank', 'noopener')
-  }, [message, pathname])
+  }, [message, pathname, waBase])
 
   // The owner cabinet is a back-office tool — no concierge there.
   if (pathname.startsWith('/owner')) return null

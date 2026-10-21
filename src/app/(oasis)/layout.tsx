@@ -1,5 +1,12 @@
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
+import { AudioEngineProvider } from '@/audio/AudioEngineProvider'
+import AiConciergeWidget from '@/components/AiConciergeWidget'
+import GlobalAmbient from '@/components/GlobalAmbient'
+import SoundButton from '@/components/SoundButton'
+import WhatsAppConciergeButton, {
+  OASIS_WA_BASE,
+} from '@/components/WhatsAppConciergeButton'
 import OasisLink from '../(frontend)/components/OasisLink'
 import './oasis.css'
 
@@ -75,7 +82,13 @@ export default function OasisLayout(props: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main>{children}</main>
+        <AudioEngineProvider>
+          <GlobalAmbient />
+          <main>{children}</main>
+          <WhatsAppConciergeButton waBase={OASIS_WA_BASE} />
+          <AiConciergeWidget />
+          <SoundButton />
+        </AudioEngineProvider>
       </body>
     </html>
   )
