@@ -21,12 +21,14 @@ import VideoBottomSheet from './VideoBottomSheet'
 
 const R2 = 'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev'
 
-// Two-layer ambience: cicadas/ocean bed + birds on top. Plain <audio>
+// Three-layer ambience: ocean bed + cicadas + birds. Plain <audio>
 // elements — the hero owns the soundtrack on this page; the global
 // AudioEngine stays silent here (see ambientPolicy) and the shared
 // muted flag keeps the layout's sound button in control.
+const OCEAN_URL = `${R2}/sounds/ocean-ambient.m4a`
 const CICADAS_URL = `${R2}/sounds/oasis-cicadas-ocean.m4a`
 const BIRDS_URL = `${R2}/sounds/oasis-birds.wav`
+const OCEAN_VOLUME = 0.25
 const CICADAS_VOLUME = 0.2
 const BIRDS_VOLUME = 0.1
 const DUCKED_VOLUME = 0.05
@@ -190,6 +192,7 @@ export default function InteractiveHero({
     serverSoundMuted,
   )
 
+  const oceanRef = useRef<HTMLAudioElement>(null)
   const cicadasRef = useRef<HTMLAudioElement>(null)
   const birdsRef = useRef<HTMLAudioElement>(null)
   const startedRef = useRef(false)
@@ -212,13 +215,14 @@ export default function InteractiveHero({
   }, [])
 
   const startTracks = useCallback(() => {
+    const ocean = oceanRef.current
     const cicadas = cicadasRef.current
     const birds = birdsRef.current
-    if (!cicadas || !birds) return
+    if (!ocean || !cicadas || !birds) return
     // Only mark as started once playback actually begins — a play() call
     // without a prior user gesture rejects, and the listeners below must
     // stay armed.
-    Promise.all([cicadas.play(), birds.play()])
+    Promise.all([ocean.play(), cicadas.play(), birds.play()])
       .then(() => {
         startedRef.current = true
       })
@@ -227,6 +231,7 @@ export default function InteractiveHero({
 
   // Base volumes — JSX `volume` is not a mapped prop, so set it directly.
   useEffect(() => {
+    if (oceanRef.current) oceanRef.current.volume = OCEAN_VOLUME
     if (cicadasRef.current) cicadasRef.current.volume = CICADAS_VOLUME
     if (birdsRef.current) birdsRef.current.volume = BIRDS_VOLUME
     const rafs = fadeRafsRef.current
@@ -256,12 +261,14 @@ export default function InteractiveHero({
     }
   }, [soundMuted, startTracks])
 
-  // Duck both layers while a video sheet is open; restore on close.
+  // Duck all layers while a video sheet is open; restore on close.
   useEffect(() => {
     const ducked = activeVideo != null
+    const ocean = oceanRef.current
     const cicadas = cicadasRef.current
     const birds = birdsRef.current
-    if (!cicadas || !birds) return
+    if (!ocean || !cicadas || !birds) return
+    fadeTo(ocean, ducked ? DUCKED_VOLUME : OCEAN_VOLUME)
     fadeTo(cicadas, ducked ? DUCKED_VOLUME : CICADAS_VOLUME)
     fadeTo(birds, ducked ? DUCKED_VOLUME : BIRDS_VOLUME)
   }, [activeVideo, fadeTo])
@@ -300,6 +307,9 @@ export default function InteractiveHero({
         </p>
       </div>
 
+      {/* Video circles hidden until the real 9:16 reels are ready — the
+          spots in HERO_VIDEOS point at drafted hotels and placeholder clips.
+          Restore the map block below (and the matching reels) to re-enable.
       {HERO_VIDEOS.map((v) => (
         <button
           key={v.id}
@@ -314,8 +324,6 @@ export default function InteractiveHero({
             className="oasis-pulse absolute inset-0 rounded-full border border-[#d4af37]/70"
           />
           <span className="absolute inset-0 overflow-hidden rounded-full border-2 border-[#d4af37]/80 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105">
-            {/* Hotel thumbnails come from R2 — arbitrary host, plain <img> */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={v.thumbnailUrl} alt="" className="h-full w-full object-cover" />
           </span>
           <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/25 transition-colors duration-300 group-hover:bg-black/10">
@@ -326,6 +334,7 @@ export default function InteractiveHero({
           </span>
         </button>
       ))}
+      */}
 
       {/* 3D tray — the centrepiece of the artwork, acts as the map button */}
       <div className="oasis-anchored oasis-tray-stage" style={anchorVars(TRAY_POS)}>
@@ -385,6 +394,7 @@ export default function InteractiveHero({
           gesture. The global floating buttons (WhatsApp / AI / sound) live
           in the (oasis) layout and drive these tracks via the shared
           muted flag. */}
+      <audio ref={oceanRef} src={OCEAN_URL} loop muted={soundMuted} preload="auto" />
       <audio ref={cicadasRef} src={CICADAS_URL} loop muted={soundMuted} preload="auto" />
       <audio ref={birdsRef} src={BIRDS_URL} loop muted={soundMuted} preload="auto" />
     </section>
