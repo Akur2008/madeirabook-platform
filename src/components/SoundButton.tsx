@@ -6,6 +6,24 @@ import { useAudioEngine } from '@/audio/useAudioEngine'
 const FALLBACK_URL =
   'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev/sounds/ocean-ambient.m4a'
 const AMBIENT_VOLUME = 0.25
+const AUDIO_MUTED_KEY = 'madeirabook_audio_muted'
+
+function readMuted(): boolean {
+  try {
+    return localStorage.getItem(AUDIO_MUTED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function setMuted(value: boolean): void {
+  try {
+    if (value) localStorage.setItem(AUDIO_MUTED_KEY, '1')
+    else localStorage.removeItem(AUDIO_MUTED_KEY)
+  } catch {
+    // private mode
+  }
+}
 
 const styles = `
 @keyframes soundButtonPulse {
@@ -19,7 +37,6 @@ export default function SoundButton() {
   const engine = useAudioEngine()
   const btnRef = useRef<HTMLButtonElement>(null)
   const urlRef = useRef(FALLBACK_URL)
-  const userMutedRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -55,27 +72,34 @@ export default function SoundButton() {
 
   const toggle = useCallback(async () => {
     if (ambientPlaying) {
-      userMutedRef.current = true
+      setMuted(true)
       await engine.stop()
       return
     }
-    userMutedRef.current = false
+    setMuted(false)
     await engine.start()
     await playOcean()
   }, [engine, playOcean, ambientPlaying])
 
-  // Browsers only treat click/tap/keypress as a user gesture for autoplay —
-  // scroll does not count. Start ambient on the first tap anywhere on the
-  // page (also covers the "sound left on in a previous session" resume case),
-  // unless the user explicitly muted via this button.
+  // First-interaction autostart: tap, keypress and wheel all count as "the
+  // visitor is here". Browsers only treat click/tap/keypress as a gesture
+  // that can resume an AudioContext — wheel cannot — so listeners stay armed
+  // until playback is actually running and each gesture retries the pending
+  // resume. A user who muted sound via this button stays muted across visits.
   useEffect(() => {
-    if (ambientPlaying || userMutedRef.current) return
-    const onFirstGesture = (e: PointerEvent) => {
-      if (btnRef.current?.contains(e.target as Node)) return
+    if (ambientPlaying || readMuted()) return
+    const onFirstGesture = (e: Event) => {
+      if (e.target instanceof Node && btnRef.current?.contains(e.target)) return
       void engine.start().then(playOcean)
     }
-    window.addEventListener('pointerdown', onFirstGesture, { once: true })
-    return () => window.removeEventListener('pointerdown', onFirstGesture)
+    window.addEventListener('pointerdown', onFirstGesture)
+    window.addEventListener('keydown', onFirstGesture)
+    window.addEventListener('wheel', onFirstGesture)
+    return () => {
+      window.removeEventListener('pointerdown', onFirstGesture)
+      window.removeEventListener('keydown', onFirstGesture)
+      window.removeEventListener('wheel', onFirstGesture)
+    }
   }, [engine, playOcean, ambientPlaying])
 
   return (

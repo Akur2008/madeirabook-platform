@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
+import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import SubscribeForm from '@/components/SubscribeForm'
 import AcquisitionSection from './components/AcquisitionSection'
 import EscapeCard from './components/EscapeCard'
@@ -295,6 +296,12 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* 2.1. Save as App — inline CTA, clear of the fixed WhatsApp/Sound
+          buttons in the bottom-right corner */}
+      <div className="mt-10 flex justify-center px-6">
+        <SaveAsAppSheet variant="dark" />
+      </div>
 
       {/* 2.25. Explore map — stays, beaches, restaurants */}
       <section id="map" className="mx-auto mt-16 max-w-6xl scroll-mt-24 px-6">

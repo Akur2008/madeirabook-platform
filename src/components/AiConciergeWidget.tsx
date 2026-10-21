@@ -69,7 +69,15 @@ function MessageBody({ content, refCode }: { content: string; refCode: string | 
   return <span className="whitespace-pre-wrap">{parts}</span>
 }
 
-export default function AiConciergeWidget() {
+interface AiConciergeWidgetProps {
+  /** Hide the built-in floating launcher — the host page provides its own
+      open button that dispatches ASK_CONCIERGE_EVENT. */
+  hideLauncherButton?: boolean
+}
+
+export default function AiConciergeWidget({
+  hideLauncherButton = false,
+}: AiConciergeWidgetProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([GREETING])
@@ -154,6 +162,7 @@ export default function AiConciergeWidget() {
 
   return (
     <>
+      {!hideLauncherButton && (
       <button
         type="button"
         aria-label={open ? 'Close concierge chat' : 'Open concierge chat'}
@@ -174,6 +183,7 @@ export default function AiConciergeWidget() {
           </svg>
         )}
       </button>
+      )}
 
       {open && (
         <div

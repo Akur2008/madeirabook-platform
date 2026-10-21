@@ -220,9 +220,9 @@ export default function FlightCalendarSearch() {
                       <button
                         type="button"
                         onClick={() => handleBook(row.date)}
-                        className="shrink-0 rounded-full border border-emerald-600 bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-500"
+                        className="shrink-0 whitespace-nowrap rounded-full border border-emerald-600 bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-500"
                       >
-                        Book →
+                        Book on Aviasales →
                       </button>
                     </div>
                   ))}
