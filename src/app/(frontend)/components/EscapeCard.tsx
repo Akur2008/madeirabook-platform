@@ -1,8 +1,8 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-import BookingDrawer from './BookingDrawer'
 import { nextWeekend } from './BookingSearchSheet'
 
 const ESCAPE_CARD_URL = '/api/escape-card'
@@ -43,8 +43,8 @@ function weatherIcon(code: number | null | undefined): string {
 }
 
 export default function EscapeCard() {
+  const router = useRouter()
   const [escapeCard, setEscapeCard] = useState<EscapeCardData | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
   // Dates come from the client clock — compute after mount to avoid
   // server/client timezone mismatches during hydration.
   const [weekend, setWeekend] = useState<{ arrival: Date; departure: Date } | null>(null)
@@ -71,16 +71,21 @@ export default function EscapeCard() {
     ? `${weekend.arrival.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${weekend.departure.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
     : null
 
+  const goToBook = () => {
+    const ref = new URLSearchParams(window.location.search).get('ref')
+    router.push(ref ? `/book?ref=${encodeURIComponent(ref)}` : '/book')
+  }
+
   return (
     <>
       <div
         role="button"
         tabIndex={0}
-        onClick={() => setSheetOpen(true)}
+        onClick={goToBook}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
-            setSheetOpen(true)
+            goToBook()
           }
         }}
         className="w-full max-w-md cursor-pointer rounded-2xl border border-white/15 p-6 text-left backdrop-blur-xl transition-colors hover:bg-white/5 md:p-8"
@@ -130,8 +135,6 @@ export default function EscapeCard() {
           Find your dates →
         </span>
       </div>
-
-      <BookingDrawer open={sheetOpen} onOpenChange={setSheetOpen} />
     </>
   )
 }

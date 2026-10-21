@@ -311,7 +311,7 @@ export default async function EscapePage({
             ← Back to home
           </Link>
           <Link
-            href="#"
+            href="/book"
             className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
           >
             Book now →

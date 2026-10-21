@@ -50,7 +50,7 @@ export default function LinksPage() {
             message="Hi! I want to make an escape to Madeira ✈️"
             label="✈️ Plan my escape on WhatsApp"
           />
-          <Link href="/" className={SECONDARY_BTN}>
+          <Link href="/book" className={SECONDARY_BTN}>
             Book Your Stay
           </Link>
           <Link href="/" className={SECONDARY_BTN}>

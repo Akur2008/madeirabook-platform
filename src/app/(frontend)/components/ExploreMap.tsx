@@ -9,8 +9,6 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { oasisBase } from '@/lib/oasis-domain'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 
-import BookingDrawer from './BookingDrawer'
-
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 const MADEIRA_CENTER: [number, number] = [32.75, -16.95]
 const MADEIRA_ZOOM = 10
@@ -142,7 +140,6 @@ export default function ExploreMap({
   const [filter, setFilter] = useState<MapFilter>(activeFilter)
   const [ready, setReady] = useState(false)
   const [escapeCity, setEscapeCity] = useState(FALLBACK_CITY)
-  const [escapeOpen, setEscapeOpen] = useState(false)
   const [dirTarget, setDirTarget] = useState<{
     lat: number
     lng: number
@@ -412,12 +409,15 @@ export default function ExploreMap({
           right edge and Leaflet's attribution corner */}
       <button
         type="button"
-        onClick={() => setEscapeOpen(true)}
+        onClick={() =>
+          router.push(
+            refCode ? `/book?ref=${encodeURIComponent(refCode)}` : '/book',
+          )
+        }
         className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 whitespace-nowrap rounded-full border border-emerald-500/60 bg-[#0a1420]/90 px-5 py-2.5 text-sm font-semibold text-white shadow-lg backdrop-blur transition-colors hover:border-emerald-400 hover:bg-emerald-600"
       >
         Escape from {escapeCity} →
       </button>
-      <BookingDrawer open={escapeOpen} onOpenChange={setEscapeOpen} />
       {dirTarget && (
         <GetDirectionsSheet
           hideTrigger

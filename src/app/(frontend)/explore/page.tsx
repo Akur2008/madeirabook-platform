@@ -37,9 +37,14 @@ export const metadata: Metadata = {
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: Promise<{ lat?: string; lng?: string; zoom?: string }>
+  searchParams: Promise<{
+    lat?: string
+    lng?: string
+    zoom?: string
+    ref?: string
+  }>
 }) {
-  const { lat, lng, zoom } = await searchParams
+  const { lat, lng, zoom, ref } = await searchParams
   const parsedLat = Number(lat)
   const parsedLng = Number(lng)
   const parsedZoom = Number(zoom)
@@ -249,7 +254,7 @@ export default async function ExplorePage({
         Madeirabook
       </Link>
       <Link
-        href="/"
+        href={ref ? `/book?ref=${encodeURIComponent(ref)}` : '/book'}
         className="fixed right-4 top-4 z-20 inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-emerald-600 bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 sm:px-5 sm:py-2.5 sm:text-sm"
       >
         Book your stay →

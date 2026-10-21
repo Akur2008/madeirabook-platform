@@ -307,12 +307,12 @@ export default async function HomePage({
             >
               Try the escape →
             </Link>
-            <a
-              href="/explore"
+            <Link
+              href={refCode ? `/book?ref=${encodeURIComponent(refCode)}` : '/book'}
               className={`${HEADER_BTN} border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-500`}
             >
-              Map →
-            </a>
+              Book →
+            </Link>
           </div>
         </div>
         <nav className="flex gap-5 overflow-x-auto px-4 pb-3 text-sm font-medium text-white/70 md:hidden">
