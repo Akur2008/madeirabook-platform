@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 
+import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import B2BContactButtons from '../components/B2BContactButtons'
 import B2BLeadForm from '../components/B2BLeadForm'
 import CalendarMockup from './CalendarMockup'
@@ -132,6 +133,11 @@ export default function OwnersPage() {
           />
         </div>
         <B2BContactButtons whatsappMessage="Hi! I want a demo of the Madeirabook owner cabinet." />
+      </section>
+
+      {/* Save as App */}
+      <section className="border-t border-white/10 px-6 py-10 text-center">
+        <SaveAsAppSheet variant="dark" />
       </section>
     </div>
   )

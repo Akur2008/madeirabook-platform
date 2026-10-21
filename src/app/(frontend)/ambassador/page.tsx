@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@payload-config'
+import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import B2BContactButtons from '../components/B2BContactButtons'
 import B2BLeadForm from '../components/B2BLeadForm'
 import ExploreMap from '../components/ExploreMap'
@@ -215,6 +216,11 @@ export default async function AmbassadorPage() {
           />
         </div>
         <B2BContactButtons whatsappMessage="Hi! I want to become a Madeirabook ambassador." />
+      </section>
+
+      {/* Save as App */}
+      <section className="border-t border-white/10 px-6 py-10 text-center">
+        <SaveAsAppSheet variant="dark" />
       </section>
     </div>
   )
