@@ -14,8 +14,9 @@ function plusDays(n: number): string {
   return new Date(Date.now() + n * 86400000).toISOString().slice(0, 10)
 }
 
-const CHECKIN = arg('checkin') || plusDays(30)
-const CHECKOUT = arg('checkout') || plusDays(35)
+const CHECKIN = arg('checkin') || plusDays(0)
+const CHECKOUT = arg('checkout') || plusDays(30)
+const EXPECTED_SLUGS = ['hotel-orquidea', 'barcelo-funchal-oldtown']
 
 let passed = 0
 let failed = 0
@@ -56,23 +57,32 @@ async function main() {
   const rooms = count(xml.body, /<Room>/g)
   const prices = count(xml.body, /<Price[\s>]/g)
   console.log(`  counts: hotels=${hotels} properties=${properties} rooms=${rooms} prices=${prices}`)
-  check('1 hotel / 1 property', hotels === 1 && properties === 1)
-  check('>=1 room / matching prices', rooms >= 1 && prices === rooms)
+  check('2 hotels / 2 properties', hotels === 2 && properties === 2)
+  check('>=2 rooms / matching prices', rooms >= 2 && prices === rooms)
 
-  check('property id', xml.body.includes('<PropertyID>hotel-orquidea</PropertyID>'))
-  check('name', xml.body.includes('<Name>Hotel Orqu'))
-  check('address block', /<Address>[\s\S]*<Postal>[\s\S]*<\/Address>/.test(xml.body))
-  check('geo coords', /<Latitude>\d/.test(xml.body) && /<Longitude>-\d/.test(xml.body))
-  check('landing page', xml.body.includes('<LandingPageURL>') && xml.body.includes('/p/hotel-orquidea'))
-  check('image url', /<ImageURL>https:\/\//.test(xml.body))
+  for (const slug of EXPECTED_SLUGS) {
+    check(`property id ${slug}`, xml.body.includes(`<PropertyID>${slug}</PropertyID>`))
+  }
+  check('name Orquidea', xml.body.includes('<Name>Hotel Orqu'))
+  check('name Barcelo', xml.body.includes('<Name>Barcel'))
+  check('address block', count(xml.body, /<Address>[\s\S]*?<\/Address>/g) === 2)
+  check('geo coords', count(xml.body, /<Latitude>\d/g) === 2)
+  check('landing pages', count(xml.body, /<LandingPageURL>/g) === 2)
   check('room id', /<RoomID>(unit-type-\d+|standard-room)<\/RoomID>/.test(xml.body))
-  check('occupancy 2', xml.body.includes('<Occupancy>2</Occupancy>'))
   check(
     'stay dates',
     xml.body.includes(`<CheckinDate>${CHECKIN}</CheckinDate>`) &&
       xml.body.includes(`<CheckoutDate>${CHECKOUT}</CheckoutDate>`),
   )
   check('baserate > 0', /<Baserate>[1-9]\d*\.?\d*<\/Baserate>/.test(xml.body))
+  check(
+    'availability element',
+    /<Availability status="(available|blocked)"/.test(xml.body),
+  )
+  check('nightly rates', /<NightlyRates>[\s\S]*?<Night date=/.test(xml.body))
+  const nightCount = count(xml.body, /<Night date="/g)
+  console.log(`  nightly entries: ${nightCount}`)
+  check('nightly covers window', nightCount >= rooms)
 
   console.log('\n=== 2. JSON feed ===')
   const js = await get(
@@ -81,10 +91,10 @@ async function main() {
   check('status 200', js.res.status === 200, `got ${js.res.status}`)
   let parsed: {
     hotelCenterFeed?: {
-      hotel?: {
+      hotels?: {
         property?: Record<string, unknown>
         rooms?: Record<string, unknown>[]
-      }
+      }[]
     }
   } = {}
   try {
@@ -92,13 +102,38 @@ async function main() {
   } catch {
     /* handled below */
   }
-  const property = parsed.hotelCenterFeed?.hotel?.property
-  const room = parsed.hotelCenterFeed?.hotel?.rooms?.[0]
-  check('json property', property?.propertyId === 'hotel-orquidea')
-  check('json room', typeof room?.roomId === 'string' && room?.nights === 5)
-  check('json price', typeof room?.total === 'number' && (room.total as number) > 0, `total=${room?.total}`)
+  const feedHotels = parsed.hotelCenterFeed?.hotels ?? []
+  check('json 2 hotels', feedHotels.length === 2, `got ${feedHotels.length}`)
+  check(
+    'json property ids',
+    feedHotels.every((h) => EXPECTED_SLUGS.includes(h.property?.propertyId as string)),
+  )
+  const firstRoom = feedHotels[0]?.rooms?.[0]
+  check('json room', typeof firstRoom?.roomId === 'string')
+  check(
+    'json price',
+    typeof firstRoom?.total === 'number' && (firstRoom.total as number) > 0,
+    `total=${firstRoom?.total}`,
+  )
+  check('json availability', typeof firstRoom?.available === 'boolean')
+  check('json nightly', Array.isArray(firstRoom?.nightly))
 
-  console.log('\n=== 3. Defaults + error handling ===')
+  console.log('\n=== 3. hotels= override ===')
+  const single = await get(`/api/google/hotel-center/feed?hotels=hotel-orquidea&format=json`)
+  let singleParsed: { hotelCenterFeed?: { hotels?: { property?: { propertyId?: string } }[] } } = {}
+  try {
+    singleParsed = JSON.parse(single.body)
+  } catch {
+    /* handled below */
+  }
+  check(
+    'single hotel override',
+    single.res.status === 200 &&
+      singleParsed.hotelCenterFeed?.hotels?.length === 1 &&
+      singleParsed.hotelCenterFeed?.hotels?.[0]?.property?.propertyId === 'hotel-orquidea',
+  )
+
+  console.log('\n=== 4. Defaults + error handling ===')
   const bare = await get('/api/google/hotel-center/feed')
   check('bare url -> 200 xml', bare.res.status === 200 && /<HotelCenterFeed[\s>]/.test(bare.body))
   const badDates = await get(
@@ -107,6 +142,8 @@ async function main() {
   check('inverted dates -> 400', badDates.res.status === 400)
   const badFormat = await get('/api/google/hotel-center/feed?format=yaml')
   check('bad format -> 400', badFormat.res.status === 400)
+  const missing = await get('/api/google/hotel-center/feed?hotels=no-such-hotel')
+  check('unknown hotel -> 404', missing.res.status === 404)
 
   console.log(`\n${passed} passed, ${failed} failed`)
   process.exit(failed ? 1 : 0)

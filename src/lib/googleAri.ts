@@ -205,7 +205,8 @@ export async function computeAri(
 ): Promise<AriResult> {
   const dates = nightsBetween(q.checkin, q.checkout)
 
-  const hasPms = Number.isFinite(Number(property.pmsPropertyId))
+  const pmsIdNum = Number(property.pmsPropertyId)
+  const hasPms = Number.isFinite(pmsIdNum) && pmsIdNum > 0
   let pmsError = false
   let rates: Awaited<ReturnType<typeof getRates>> = {}
   if (hasPms) {

@@ -1,4 +1,26 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
+
+import { propertyLandingUrl, submitToGoogleIndexing } from '@/lib/googleIndexing'
+
+// When a property becomes published, notify the Google Indexing API so the
+// landing page is recrawled quickly. Never throws — a missing/invalid
+// GOOGLE_INDEXING_KEY degrades to a warning inside submitToGoogleIndexing.
+const submitPublishedToGoogleIndexing: CollectionAfterChangeHook = async ({
+  doc,
+  previousDoc,
+  operation,
+}) => {
+  const becamePublished =
+    doc.status === 'published' &&
+    (operation === 'create' || previousDoc?.status !== 'published')
+  if (!becamePublished || !doc.slug) return doc
+
+  const outcome = await submitToGoogleIndexing(propertyLandingUrl(doc.slug))
+  if (outcome.ok) {
+    console.log(`googleIndexing: submitted /p/${doc.slug} (status ${outcome.status})`)
+  }
+  return doc
+}
 
 export const Properties: CollectionConfig = {
   slug: 'properties',
@@ -10,6 +32,9 @@ export const Properties: CollectionConfig = {
   },
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [submitPublishedToGoogleIndexing],
   },
   fields: [
     {

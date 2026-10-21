@@ -10,7 +10,12 @@ Links with direct-booking prices.
   `src/lib/pms` (Smoobu/Zeevou router), in-memory cache, Google Transaction
   XML/JSON builders, OTA push messages, OAuth 2.0 service-account flow.
 - `src/app/api/google/rates/route.ts` — live-query endpoint.
-- `scripts/test-google-rates.ts` — validation runner.
+- `src/lib/googleHotelCenter.ts` + `src/app/api/google/hotel-center/feed/route.ts`
+  — multi-hotel price/availability feed for Hotel Center.
+- `src/lib/googleIndexing.ts` — Google Indexing API submit, wired into the
+  `Properties` `afterChange` hook.
+- `scripts/test-google-rates.ts`, `scripts/test-google-hotel-center.ts` —
+  validation runners.
 
 ## Live query endpoint
 
@@ -74,6 +79,8 @@ GOOGLE_HOTEL_LANDING_PAGE_ID=direct   # PointOfSale id (Landing Pages feed)
 GOOGLE_SERVICE_ACCOUNT_JSON=     # service account JSON (client_email+private_key)
 GOOGLE_HOTEL_PUSH_ENDPOINT=      # override uploads endpoint if needed
 GOOGLE_RATES_CACHE_TTL_MS=60000
+GOOGLE_HOTEL_FEED_SLUGS=         # comma-separated feed override (default: orquidea+barcelo)
+GOOGLE_INDEXING_KEY=             # service account JSON for the Indexing API
 ```
 
 Without `GOOGLE_HOTEL_PARTNER_KEY` + `GOOGLE_SERVICE_ACCOUNT_JSON` the push
@@ -86,44 +93,54 @@ npm run dev
 npx tsx scripts/test-google-rates.ts [--hotel=slug] [--base=URL]
 ```
 
-## Hotel Center Feed — Orquídea pilot
+## Hotel Center Feed — multi-hotel pilot (Orquídea + Barceló)
 
-While the Connectivity Partner application is pending, a static test feed
-for a single pilot hotel is served at:
+Production candidate feed for the Connectivity Partner application:
 
 ```
 GET /api/google/hotel-center/feed
     ?checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&guests=2&format=xml|json
+    &hotels=slug1,slug2
 ```
 
-- Pilot hotel: `hotel-orquidea` (Hotel Orquídea — Funchal Center), one room
-  type (`standard-room`, occupancy 2), base rate from `pricePerNight`
-  (EUR 110/night, tax-inclusive), 6 photos on R2, geo coordinates.
-- Default response is XML: `<HotelCenterFeed>` → `<Hotel>` → `<Property>`
-  (id, name, address, lat/lng, landing page, image) + `<Room>` (occupancy,
-  check-in/out dates, nightly base rate, taxes, total). `format=json`
-  returns the same structure for debugging.
-- `checkin`/`checkout` are optional; the feed defaults to a 5-night window
-  30 days out so the bare URL always renders.
+- Feed hotels: `hotel-orquidea` (Hotel Orquídea — Funchal Center) and
+  `barcelo-funchal-oldtown` (Barceló Funchal Oldtown). The list lives in
+  `FEED_HOTEL_SLUGS` (`src/lib/googleHotelCenter.ts`), can be overridden
+  globally via `GOOGLE_HOTEL_FEED_SLUGS` (comma-separated) or per request
+  via the `hotels` param.
+- Default response is XML: `<HotelCenterFeed>` → one `<Hotel>` per
+  property → `<Property>` (id, name, address, lat/lng, landing page,
+  image) + one `<Room>` per active UnitType.
+- Each `<Room>` carries `<Availability status="available|blocked">` and a
+  `<NightlyRates>` block with one `<Night date price available>` per day
+  of the window — the default window is the next 30 days
+  (`checkin=today`, `checkout=today+30`), capped at 62 nights.
+- Prices are live: properties with a `pmsPropertyId` pull per-night rates
+  from the PMS router (Smoobu `/api/rates` via `src/lib/pms`), so a price
+  change in Smoobu shows up on the next request (the route is
+  `Cache-Control: no-store`). Unlinked properties use the DB rate —
+  rate plan `basePrice`, falling back to `property.pricePerNight`.
+- A failed PMS call marks the room `blocked` (`reason="pms_unavailable"`)
+  rather than serving guessed prices; nights missing from the PMS
+  response fall back to the DB rate and stay sellable — checkout
+  re-validates before payment.
+- `format=json` returns the same structure for debugging.
 - Implementation: `src/lib/googleHotelCenter.ts`
   (`generateHotelCenterFeed`, `toHotelCenterXml`, `toHotelCenterJson`) +
   `src/app/api/google/hotel-center/feed/route.ts`.
-- Note: `properties` has no address field yet, so the pilot address
-  (Rua dos Netos 69-71, 9000-084 Funchal, PT) is a constant in
-  `PILOT_HOTEL` — move it into the collection when the schema is
-  extended.
 
-### Submitting to Google Hotel Center (once approved)
+curl examples:
 
-1. In Hotel Center, register a Hotel List / price feed pointing at
-   `https://www.madeirabook.com/api/google/hotel-center/feed`
-   (XML, default format).
-2. Map `<PropertyID>` (`hotel-orquidea`) to the Google hotel listing for
-   Hotel Orquídea, Funchal.
-3. Validate the feed in Hotel Center's feed tool, then enable Free
-   Booking Links with the `direct` PointOfSale.
-4. For pull delivery keep the endpoint public; for push delivery reuse
-   the OAuth flow in `src/lib/googleAri.ts`.
+```
+# XML feed, next 30 days, both pilot hotels
+curl 'http://localhost:3000/api/google/hotel-center/feed'
+
+# JSON debug view
+curl 'http://localhost:3000/api/google/hotel-center/feed?format=json'
+
+# Single hotel / custom window
+curl 'http://localhost:3000/api/google/hotel-center/feed?hotels=hotel-orquidea&checkin=2026-11-01&checkout=2026-11-15'
+```
 
 Validate locally:
 
@@ -132,6 +149,38 @@ npm run dev
 npx tsx scripts/test-google-hotel-center.ts [--base=URL]
 ```
 
+## Google Indexing API
+
+`src/lib/googleIndexing.ts` exports `submitToGoogleIndexing(url)` — it
+publishes a `URL_UPDATED` notification via the `googleapis` package
+(`indexing.urlNotifications.publish`, scope
+`https://www.googleapis.com/auth/indexing`). The `Properties` collection
+`afterChange` hook calls it with the property landing page
+(`${APP_URL}/p/{slug}`) every time `status` becomes `published`.
+
+```
+GOOGLE_INDEXING_KEY=   # service account JSON (client_email + private_key)
+```
+
+Without the key the function logs a warning and skips — publishing a
+property never fails because of indexing. The service account must be
+added as a site owner in Search Console for notifications to be accepted.
+
+### Submitting to Google Hotel Center (once approved)
+
+1. In Hotel Center, register a Hotel List / price feed pointing at
+   `https://www.madeirabook.com/api/google/hotel-center/feed`
+   (XML, default format).
+2. Map each `<PropertyID>` to the matching Google hotel listing
+   (`hotel-orquidea` → Hotel Orquídea Funchal, `barcelo-funchal-oldtown`
+   → Barceló Funchal Oldtown).
+3. Validate the feed in Hotel Center's feed tool, then enable Free
+   Booking Links with the `direct` PointOfSale.
+4. For pull delivery keep the endpoint public; for push delivery reuse
+   the OAuth flow in `src/lib/googleAri.ts`.
+5. Add the Indexing API service account as a Search Console owner so
+   `afterChange` notifications are accepted.
+
 ## Next steps
 
 - Hotel List feed (`/api/google/hotels` or static) with `geoCoordinates`.
@@ -139,5 +188,3 @@ npx tsx scripts/test-google-hotel-center.ts [--base=URL]
 - Consume `checkin/checkout/guests` params on `/p/[slug]` to prefill the
   BookingDrawer.
 - Optional TaxFeeInfo message for Madeira tourist tax.
-- Extend `properties` schema with `address` + per-room inventory to move
-  the pilot beyond a single hotel/room.
