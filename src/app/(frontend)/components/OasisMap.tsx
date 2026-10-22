@@ -197,7 +197,7 @@ export default function OasisMap({
         <div style="font-family:'Inter',system-ui,sans-serif;min-width:200px;max-width:240px;">
           ${
             h.coverImage
-              ? `<img src="${escapeHtml(h.coverImage)}" alt="" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;" />`
+              ? `<img src="${escapeHtml(h.coverImage)}" alt="" loading="lazy" decoding="async" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;" />`
               : ''
           }
           <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:#1c1a16;line-height:1.3;">${escapeHtml(h.title)}</div>

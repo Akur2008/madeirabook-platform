@@ -1,10 +1,31 @@
 'use client'
 
+import Image from 'next/image'
+import { useEffect, useRef, useState } from 'react'
 import { Drawer } from 'vaul'
 
+import OfflineNavButton from '@/components/OfflineNavButton'
 import MutedAutoplayVideo from './MutedAutoplayVideo'
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
+
+// Hosts whitelisted in next.config remotePatterns/localPatterns — anything
+// else (Wikimedia, one-off CMS links) falls back to a plain lazy <img>.
+const OPTIMIZABLE_HOSTS = new Set([
+  'gzu76sbajt7s2dfg.public.blob.vercel-storage.com',
+  'pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev',
+  'www.madeirabook.com',
+  'images.unsplash.com',
+])
+
+const canOptimize = (src: string) => {
+  if (src.startsWith('/')) return true
+  try {
+    return OPTIMIZABLE_HOSTS.has(new URL(src).hostname)
+  } catch {
+    return false
+  }
+}
 
 export type PointType =
   | 'property'
@@ -18,6 +39,8 @@ export interface PointPreview {
   type: PointType
   slug: string
   name: string
+  lat: number
+  lng: number
   photoUrl?: string | null
   videoUrl?: string | null
   shortDescription?: string | null
@@ -59,6 +82,40 @@ export default function PointPreviewSheet({
   onOpenChange,
   point,
 }: PointPreviewSheetProps) {
+  // Which value was last copied — a new pin renders "Copy Address" again
+  // without a reset effect.
+  const [copiedTarget, setCopiedTarget] = useState<string | null>(null)
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(
+    () => () => {
+      if (copyTimer.current) clearTimeout(copyTimer.current)
+    },
+    [],
+  )
+
+  const copyTarget = point ? `${point.lat}, ${point.lng}` : ''
+  const copied = copiedTarget === copyTarget
+
+  const handleCopy = async () => {
+    if (!point) return
+    try {
+      await navigator.clipboard.writeText(copyTarget)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = copyTarget
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      ta.remove()
+    }
+    setCopiedTarget(copyTarget)
+    if (copyTimer.current) clearTimeout(copyTimer.current)
+    copyTimer.current = setTimeout(() => setCopiedTarget(null), 2000)
+  }
+
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
@@ -93,13 +150,28 @@ export default function PointPreviewSheet({
                     className="aspect-video w-full"
                   />
                 ) : point.photoUrl ? (
-                  // photoUrl comes from CMS/Wikimedia — arbitrary host, plain <img>
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={point.photoUrl}
-                    alt={point.name}
-                    className="aspect-video w-full object-cover"
-                  />
+                  <div className="relative aspect-video w-full">
+                    {canOptimize(point.photoUrl) ? (
+                      <Image
+                        src={point.photoUrl}
+                        alt={point.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        loading="lazy"
+                        className="object-cover"
+                      />
+                    ) : (
+                      // photoUrl comes from CMS/Wikimedia — arbitrary host, plain <img>
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={point.photoUrl}
+                        alt={point.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
                 ) : (
                   <div className="flex aspect-video w-full items-center justify-center bg-[#0f1d2e] text-6xl">
                     {TYPE_EMOJI[point.type]}
@@ -139,6 +211,21 @@ export default function PointPreviewSheet({
               )}
 
               <div className="mt-6 flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <OfflineNavButton
+                    lat={point.lat}
+                    lng={point.lng}
+                    name={point.name}
+                    className="w-full whitespace-nowrap rounded-full border border-[#d4af37] bg-[#d4af37] py-3 text-xs font-semibold uppercase tracking-widest text-[#0a1420] transition-colors hover:bg-[#c9a227]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="w-full whitespace-nowrap rounded-full border border-white/30 bg-white/10 py-3 text-xs font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white/20"
+                  >
+                    {copied ? '✓ Copied!' : '📋 Copy Address'}
+                  </button>
+                </div>
                 {point.href !== null && (
                   <a
                     href={pointHref(point)}

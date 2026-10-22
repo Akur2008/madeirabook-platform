@@ -147,6 +147,7 @@ export default async function ExplorePage({
           null,
         shortDescription: p.shortDescription,
         meta: p.pricePerNight ? `€${p.pricePerNight} / night` : null,
+        featured: p.featured,
       },
     ]
   })
@@ -166,6 +167,7 @@ export default async function ExplorePage({
         shortDescription: b.shortDescription,
         meta:
           [b.highlights?.[0], b.bestTimeToVisit].filter(Boolean).join(' · ') || null,
+        featured: b.featured,
       },
     ]
   })
@@ -193,6 +195,7 @@ export default async function ExplorePage({
           ]
             .filter(Boolean)
             .join(' · ') || null,
+        featured: r.featured,
       },
     ]
   })
@@ -215,6 +218,7 @@ export default async function ExplorePage({
           [t.prCode, t.distanceKm ? `${t.distanceKm} km` : null, t.difficulty]
             .filter(Boolean)
             .join(' · ') || null,
+        featured: t.featured,
       },
     ]
   })
@@ -237,6 +241,7 @@ export default async function ExplorePage({
           [v.type, v.elevationM ? `${v.elevationM} m` : null, v.bestTime]
             .filter(Boolean)
             .join(' · ') || null,
+        featured: v.featured,
       },
     ]
   })

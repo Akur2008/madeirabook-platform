@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Drawer } from 'vaul'
 
+import OfflineNavButton from './OfflineNavButton'
+
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
 export interface GetDirectionsSheetProps {
@@ -145,18 +147,26 @@ export default function GetDirectionsSheet({
               </p>
 
               <div className="mt-6 flex flex-col gap-3">
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="w-full rounded-full py-3.5 text-sm font-semibold uppercase tracking-widest transition-colors"
-                  style={{
-                    backgroundColor: copied ? '#ffffff' : accent,
-                    border: `1px solid ${accent}`,
-                    color: copied ? accent : theme === 'gold' ? '#1c1a16' : '#ffffff',
-                  }}
-                >
-                  {copied ? '✓ Copied!' : '📋 Copy address'}
-                </button>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="w-full whitespace-nowrap rounded-full py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors sm:text-sm"
+                    style={{
+                      backgroundColor: copied ? '#ffffff' : accent,
+                      border: `1px solid ${accent}`,
+                      color: copied ? accent : theme === 'gold' ? '#1c1a16' : '#ffffff',
+                    }}
+                  >
+                    {copied ? '✓ Copied!' : '📋 Copy address'}
+                  </button>
+                  <OfflineNavButton
+                    lat={lat}
+                    lng={lng}
+                    name={name}
+                    className="w-full whitespace-nowrap rounded-full border border-[#d4af37] bg-[#d4af37] py-3.5 text-xs font-semibold uppercase tracking-widest text-[#1c1a16] transition-colors hover:bg-[#c9a227] sm:text-sm"
+                  />
+                </div>
 
                 <a
                   href={appleMapsUrl}

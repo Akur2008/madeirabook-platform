@@ -49,6 +49,8 @@ export default function MutedAutoplayVideo({
               src={poster}
               alt=""
               aria-hidden="true"
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 h-full w-full object-cover"
             />
           )}

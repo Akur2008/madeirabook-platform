@@ -45,7 +45,7 @@ export interface HeroVideoSpot {
   thumbnailUrl: string
   description: string
   // Position on the hero stage in % — m: mobile, d: desktop.
-  // Tuned to the artwork in /images/oasis-bg.jpg; adjust with the final image.
+  // Tuned to the artwork in /images/oasis-bg.webp; adjust with the final image.
   x: { m: string; d: string }
   y: { m: string; d: string }
   size?: { m: string; d: string }
@@ -59,7 +59,7 @@ const HERO_VIDEOS: HeroVideoSpot[] = [
     title: 'Savoy Palace',
     videoUrl: '/images/savoy-palace/video-unconditional-world.mp4',
     hotelSlug: 'savoy-palace',
-    thumbnailUrl: '/images/savoy-palace/video-unconditional-world-poster.jpg',
+    thumbnailUrl: '/images/savoy-palace/video-unconditional-world-poster.webp',
     description: 'Funchal’s grand dame — rooftop pool over the harbour.',
     x: { m: '17%', d: '16%' },
     y: { m: '37%', d: '40%' },
@@ -69,7 +69,7 @@ const HERO_VIDEOS: HeroVideoSpot[] = [
     title: 'Pestana Casino Park',
     videoUrl: '/images/pestana-casino/video-elenabeatriz61.mp4',
     hotelSlug: 'pestana-casino-park',
-    thumbnailUrl: '/images/pestana-casino/IMG_0128.jpg',
+    thumbnailUrl: '/images/pestana-casino/IMG_0128.webp',
     description: 'Niemeyer lines and palm gardens above the marina.',
     x: { m: '80%', d: '83%' },
     y: { m: '27%', d: '30%' },
@@ -79,7 +79,7 @@ const HERO_VIDEOS: HeroVideoSpot[] = [
     title: 'Barceló Funchal Oldtown',
     videoUrl: '/images/barcelo/video-worldwithasuitcase.mp4',
     hotelSlug: 'barcelo-funchal-oldtown',
-    thumbnailUrl: '/images/barcelo/IMG_0165.PNG',
+    thumbnailUrl: '/images/barcelo/IMG_0165.webp',
     description: 'A design-led hideaway tucked into the old town.',
     x: { m: '24%', d: '26%' },
     y: { m: '62%', d: '60%' },
@@ -256,7 +256,7 @@ export default function InteractiveHero({
         // Local file supplied by the owner — plain <img> on purpose.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src="/images/oasis-bg.jpg"
+          src="/images/oasis-bg.webp"
           alt=""
           aria-hidden
           onError={() => setBgMissing(true)}
@@ -322,7 +322,7 @@ export default function InteractiveHero({
           className="oasis-tray block w-[min(72vw,400px)]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/oasis-tray.png" alt="" className="w-full" />
+          <img src="/images/oasis-tray.webp" alt="" className="w-full" />
         </button>
       </div>
 

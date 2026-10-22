@@ -67,7 +67,7 @@ export default function PropertyMap({
     const directionsBtn = `<button type="button" class="js-get-directions" style="margin-top:8px;font-size:12px;font-weight:600;color:#10b981;background:none;border:none;border-bottom:1px solid #10b981;padding:0 0 1px;cursor:pointer;">Get Directions →</button>`
     const popupHtml = imageUrl
       ? `<div style="font-family: 'Cormorant Garamond', serif; font-size: 15px; text-align: center;">
-           <img src="${imageUrl}" alt="${title}" style="width: 180px; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; display: block;" />
+           <img src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" style="width: 180px; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; display: block;" />
            <div style="color: #111827; font-weight: 500;">${title}</div>
            ${directionsBtn}
          </div>`

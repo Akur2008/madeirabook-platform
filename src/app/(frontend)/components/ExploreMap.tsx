@@ -34,6 +34,7 @@ interface MapStay {
   lng: number
   pricePerNight?: number | null
   coverImage?: string | null
+  featured?: boolean | null
 }
 
 interface MapBeach {
@@ -43,6 +44,7 @@ interface MapBeach {
   lat: number
   lng: number
   heroImage?: string | null
+  featured?: boolean | null
 }
 
 interface MapRestaurant {
@@ -54,6 +56,7 @@ interface MapRestaurant {
   cuisine?: string | null
   averagePrice?: number | null
   heroImage?: string | null
+  featured?: boolean | null
 }
 
 interface MapTrail {
@@ -64,6 +67,7 @@ interface MapTrail {
   lng: number
   distanceKm?: number | null
   difficulty?: string | null
+  featured?: boolean | null
 }
 
 interface MapViewpoint {
@@ -74,6 +78,7 @@ interface MapViewpoint {
   lng: number
   elevationM?: number | null
   type?: string | null
+  featured?: boolean | null
 }
 
 interface AmbassadorBranding {
@@ -120,6 +125,11 @@ interface ExploreMapProps {
 const escHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
+// "Featured only" mode: keep just the flagged pins, but never empty a
+// category whose editors haven't marked anything yet.
+const pickFeatured = <T extends { featured?: boolean | null }>(items: T[]) =>
+  items.some((i) => i.featured) ? items.filter((i) => i.featured) : items
+
 export default function ExploreMap({
   properties,
   beaches,
@@ -138,6 +148,8 @@ export default function ExploreMap({
   const leafletRef = useRef<typeof Leaflet | null>(null)
   const router = useRouter()
   const [filter, setFilter] = useState<MapFilter>(activeFilter)
+  // Default decluttered map — "Show all points" opt-in brings back everything.
+  const [showAll, setShowAll] = useState(false)
   const [ready, setReady] = useState(false)
   const [escapeCity, setEscapeCity] = useState(FALLBACK_CITY)
   const [dirTarget, setDirTarget] = useState<{
@@ -225,6 +237,14 @@ export default function ExploreMap({
 
     layer.clearLayers()
 
+    const shownStays = showAll ? properties : pickFeatured(properties)
+    const shownBeaches = showAll ? visibleBeaches : pickFeatured(visibleBeaches)
+    const shownRestaurants = showAll
+      ? visibleRestaurants
+      : pickFeatured(visibleRestaurants)
+    const shownTrails = showAll ? trails : pickFeatured(trails)
+    const shownViewpoints = showAll ? viewpoints : pickFeatured(viewpoints)
+
     const pin = (bg: string, emoji: string) =>
       L.divIcon({
         className: 'explore-pin',
@@ -246,7 +266,7 @@ export default function ExploreMap({
 
     if (filter === 'all' || filter === 'stays') {
       const icon = pin('#10b981', '🏠')
-      properties.forEach((p) => addPin(p.lat, p.lng, icon, p.title, `/p/${p.slug}`))
+      shownStays.forEach((p) => addPin(p.lat, p.lng, icon, p.title, `/p/${p.slug}`))
 
       // Oasis stays — gold star pins, popup with a tracked "View hotel →" link
       // instead of the instant navigation used by regular pins.
@@ -266,7 +286,7 @@ export default function ExploreMap({
           marker.bindPopup(
             `<div style="max-width:220px;">` +
               (h.coverImage
-                ? `<img src="${escHtml(h.coverImage)}" alt="" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;" />`
+                ? `<img src="${escHtml(h.coverImage)}" alt="" loading="lazy" decoding="async" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;" />`
                 : '') +
               `<strong>${escHtml(h.title)}</strong>` +
               (h.shortDescription
@@ -282,21 +302,21 @@ export default function ExploreMap({
     }
     if (filter === 'all' || filter === 'beaches') {
       const icon = pin(ambassador?.accentColor || '#3b82f6', '🏖️')
-      visibleBeaches.forEach((b) => addPin(b.lat, b.lng, icon, b.name, `/beaches/${b.slug}`))
+      shownBeaches.forEach((b) => addPin(b.lat, b.lng, icon, b.name, `/beaches/${b.slug}`))
     }
     if (filter === 'all' || filter === 'food') {
       const icon = pin('#d4af37', '🍽️')
-      visibleRestaurants.forEach((r) =>
+      shownRestaurants.forEach((r) =>
         addPin(r.lat, r.lng, icon, r.name, `/restaurants/${r.slug}`),
       )
     }
     if (filter === 'all' || filter === 'trails') {
       const icon = pin('#f97316', '🥾')
-      trails.forEach((t) => addPin(t.lat, t.lng, icon, t.name, `/trails/${t.slug}`))
+      shownTrails.forEach((t) => addPin(t.lat, t.lng, icon, t.name, `/trails/${t.slug}`))
     }
     if (filter === 'all' || filter === 'views') {
       const icon = pin('#a855f7', '👁️')
-      viewpoints.forEach((v) =>
+      shownViewpoints.forEach((v) =>
         addPin(v.lat, v.lng, icon, v.name, `/viewpoints/${v.slug}`),
       )
     }
@@ -310,7 +330,7 @@ export default function ExploreMap({
         const media = p.videoUrl
           ? `<video src="${escHtml(p.videoUrl)}" controls playsinline style="width:100%;border-radius:8px;margin-top:6px;"></video>`
           : p.photoUrl
-            ? `<img src="${escHtml(p.photoUrl)}" alt="" style="width:100%;border-radius:8px;margin-top:6px;" />`
+            ? `<img src="${escHtml(p.photoUrl)}" alt="" loading="lazy" decoding="async" style="width:100%;border-radius:8px;margin-top:6px;" />`
             : ''
         marker.bindPopup(
           `<div style="max-width:220px;">` +
@@ -326,7 +346,7 @@ export default function ExploreMap({
         marker.addTo(layer)
       })
     }
-  }, [ready, filter, properties, oasisStays, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode])
+  }, [ready, filter, showAll, properties, oasisStays, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode])
 
   const onMapClick = (e: React.MouseEvent) => {
     // Delegated bridge: Leaflet popups are plain HTML inside the map
@@ -404,6 +424,30 @@ export default function ExploreMap({
             {f.label}
           </button>
         ))}
+      </div>
+      {/* Density toggle — featured curation by default; sits above the
+          escape CTA so it never collides with the ambassador card. */}
+      <div className="absolute bottom-16 left-1/2 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white/15 bg-[#0a1420]/90 p-1 backdrop-blur">
+        <button
+          type="button"
+          aria-pressed={!showAll}
+          onClick={() => setShowAll(false)}
+          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            !showAll ? 'bg-[#d4af37] text-[#0a1420]' : 'text-white/60 hover:text-white'
+          }`}
+        >
+          Featured only
+        </button>
+        <button
+          type="button"
+          aria-pressed={showAll}
+          onClick={() => setShowAll(true)}
+          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            showAll ? 'bg-[#d4af37] text-[#0a1420]' : 'text-white/60 hover:text-white'
+          }`}
+        >
+          Show all points
+        </button>
       </div>
       {/* Bottom-center keeps clear of the fixed WhatsApp/Sound buttons on the
           right edge and Leaflet's attribution corner */}

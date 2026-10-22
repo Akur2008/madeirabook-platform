@@ -200,6 +200,7 @@ export default async function HomePage({
         lng: loc.geoCoordinates.lng,
         pricePerNight: p.pricePerNight,
         coverImage: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+        featured: p.featured,
       },
     ]
   })
@@ -214,6 +215,7 @@ export default async function HomePage({
         lat: b.geoCoordinates.lat,
         lng: b.geoCoordinates.lng,
         heroImage: b.heroImage,
+        featured: b.featured,
       },
     ]
   })
@@ -230,6 +232,7 @@ export default async function HomePage({
         cuisine: r.cuisine,
         averagePrice: r.averagePrice,
         heroImage: r.heroImage,
+        featured: r.featured,
       },
     ]
   })
@@ -245,6 +248,7 @@ export default async function HomePage({
         lng: t.geoCoordinates.lng,
         distanceKm: t.distanceKm,
         difficulty: t.difficulty,
+        featured: t.featured,
       },
     ]
   })
@@ -260,6 +264,7 @@ export default async function HomePage({
         lng: v.geoCoordinates.lng,
         elevationM: v.elevationM,
         type: v.type,
+        featured: v.featured,
       },
     ]
   })
@@ -325,6 +330,18 @@ export default async function HomePage({
             viewpoints={mapViewpoints}
             ambassador={ambassador}
           />
+        </div>
+        {/* Offline navigation — Organic Maps deep link lives on every pin sheet */}
+        <div className="mt-6 flex justify-center">
+          <div className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 px-5 py-2.5 text-sm">
+            <span aria-hidden>🧭</span>
+            <span className="font-semibold uppercase tracking-widest text-[#d4af37]">
+              Offline Navigation
+            </span>
+            <span className="text-white/60">
+              Download once. Navigate anywhere.
+            </span>
+          </div>
         </div>
       </section>
 

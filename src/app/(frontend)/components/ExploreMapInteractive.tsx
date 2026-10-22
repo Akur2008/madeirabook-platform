@@ -45,6 +45,7 @@ interface MapStay {
   videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
+  featured?: boolean | null
 }
 
 interface MapBeach {
@@ -58,6 +59,7 @@ interface MapBeach {
   videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
+  featured?: boolean | null
 }
 
 interface MapRestaurant {
@@ -73,6 +75,7 @@ interface MapRestaurant {
   videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
+  featured?: boolean | null
 }
 
 interface MapTrail {
@@ -87,6 +90,7 @@ interface MapTrail {
   videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
+  featured?: boolean | null
 }
 
 interface MapViewpoint {
@@ -101,6 +105,7 @@ interface MapViewpoint {
   videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
+  featured?: boolean | null
 }
 
 interface MapCommunityPin {
@@ -130,9 +135,13 @@ interface ExploreMapInteractiveProps {
 
 interface MapPoint extends PointPreview {
   key: string
-  lat: number
-  lng: number
+  featured?: boolean | null
 }
+
+// "Featured only" mode: keep just the flagged pins, but never empty a
+// category whose editors haven't marked anything yet.
+const pickFeatured = <T extends { featured?: boolean | null }>(items: T[]) =>
+  items.some((i) => i.featured) ? items.filter((i) => i.featured) : items
 
 interface MarkerEntry {
   marker: Leaflet.Marker
@@ -162,6 +171,8 @@ export default function ExploreMapInteractive({
   // Holds the latest icon-sync closure so map event handlers stay stable
   const syncRef = useRef<() => void>(() => {})
   const [filter, setFilter] = useState<MapFilter>(activeFilter)
+  // Default decluttered map — "All points" opt-in brings back everything.
+  const [showAll, setShowAll] = useState(false)
   const [ready, setReady] = useState(false)
   const [preview, setPreview] = useState<PointPreview | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -257,6 +268,7 @@ export default function ExploreMapInteractive({
         meta?: string | null
         addedBy?: string | null
         href?: string | null
+        featured?: boolean | null
       },
       name: string,
     ) =>
@@ -267,6 +279,7 @@ export default function ExploreMapInteractive({
         name,
         lat: item.lat,
         lng: item.lng,
+        featured: item.featured,
         photoUrl: item.photoUrl ?? null,
         videoUrl: item.videoUrl ?? null,
         shortDescription: item.shortDescription ?? null,
@@ -275,26 +288,32 @@ export default function ExploreMapInteractive({
         href: item.href,
       })
 
+    const shownStays = showAll ? properties : pickFeatured(properties)
+    const shownBeaches = showAll ? beaches : pickFeatured(beaches)
+    const shownRestaurants = showAll ? restaurants : pickFeatured(restaurants)
+    const shownTrails = showAll ? trails : pickFeatured(trails)
+    const shownViewpoints = showAll ? viewpoints : pickFeatured(viewpoints)
+
     if (filter === 'all' || filter === 'stays') {
-      properties.forEach((p) =>
+      shownStays.forEach((p) =>
         push('property', { ...p, photoUrl: p.photoUrl ?? p.coverImage }, p.title),
       )
     }
     if (filter === 'all' || filter === 'beaches') {
-      beaches.forEach((b) =>
+      shownBeaches.forEach((b) =>
         push('beach', { ...b, photoUrl: b.photoUrl ?? b.heroImage }, b.name),
       )
     }
     if (filter === 'all' || filter === 'food') {
-      restaurants.forEach((r) =>
+      shownRestaurants.forEach((r) =>
         push('restaurant', { ...r, photoUrl: r.photoUrl ?? r.heroImage }, r.name),
       )
     }
     if (filter === 'all' || filter === 'trails') {
-      trails.forEach((t) => push('trail', t, t.name))
+      shownTrails.forEach((t) => push('trail', t, t.name))
     }
     if (filter === 'all' || filter === 'views') {
-      viewpoints.forEach((v) => push('viewpoint', v, v.name))
+      shownViewpoints.forEach((v) => push('viewpoint', v, v.name))
     }
     if (filter === 'all') {
       communityPins.forEach((p) =>
@@ -325,6 +344,8 @@ export default function ExploreMapInteractive({
           type: point.type,
           slug: point.slug,
           name: point.name,
+          lat: point.lat,
+          lng: point.lng,
           photoUrl: point.photoUrl,
           videoUrl: point.videoUrl,
           shortDescription: point.shortDescription,
@@ -377,7 +398,7 @@ export default function ExploreMapInteractive({
 
     syncRef.current = syncIcons
     syncIcons()
-  }, [ready, filter, properties, beaches, restaurants, trails, viewpoints, communityPins])
+  }, [ready, filter, showAll, properties, beaches, restaurants, trails, viewpoints, communityPins])
 
   return (
     <div className="relative h-full w-full">
@@ -397,6 +418,29 @@ export default function ExploreMapInteractive({
             {f.label}
           </button>
         ))}
+      </div>
+      {/* Density toggle — featured curation by default, all points on tap */}
+      <div className="absolute left-1/2 top-14 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white/15 bg-[#0a1420]/90 p-1 backdrop-blur">
+        <button
+          type="button"
+          aria-pressed={!showAll}
+          onClick={() => setShowAll(false)}
+          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            !showAll ? 'bg-[#d4af37] text-[#0a1420]' : 'text-white/60 hover:text-white'
+          }`}
+        >
+          Featured only
+        </button>
+        <button
+          type="button"
+          aria-pressed={showAll}
+          onClick={() => setShowAll(true)}
+          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            showAll ? 'bg-[#d4af37] text-[#0a1420]' : 'text-white/60 hover:text-white'
+          }`}
+        >
+          Show all points
+        </button>
       </div>
       <PointPreviewSheet
         open={sheetOpen}
