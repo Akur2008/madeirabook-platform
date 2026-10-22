@@ -5,6 +5,7 @@ import type * as Leaflet from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
+import FloatingPointCards, { pickTeasers, type MapTeaser } from './FloatingPointCards'
 import PointPreviewSheet, { type PointPreview, type PointType } from './PointPreviewSheet'
 
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
@@ -171,7 +172,7 @@ export default function ExploreMapInteractive({
   const markersRef = useRef<Map<string, MarkerEntry>>(new Map())
   // Holds the latest icon-sync closure so map event handlers stay stable
   const syncRef = useRef<() => void>(() => {})
-  // Fires once: auto-open the first pin's card on the initial load
+  // Fires once: auto-open the corner teaser cards on the initial load
   const autoOpenedRef = useRef(false)
   const [filter, setFilter] = useState<MapFilter>(activeFilter)
   // Default decluttered map — "All points" opt-in brings back everything.
@@ -179,6 +180,7 @@ export default function ExploreMapInteractive({
   const [ready, setReady] = useState(false)
   const [preview, setPreview] = useState<PointPreview | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [teasers, setTeasers] = useState<MapTeaser[]>([])
 
   // Map init — leaflet/maplibre are imported lazily so SSR never touches `window`
   useEffect(() => {
@@ -209,6 +211,11 @@ export default function ExploreMapInteractive({
       const onViewChange = () => syncRef.current()
       map.on('zoomend', onViewChange)
       map.on('moveend', onViewChange)
+
+      // Teaser cards hide the moment the visitor takes over the map.
+      map.on('movestart', () =>
+        setTeasers((ts) => (ts.length ? [] : ts)),
+      )
 
       // Debug hook so E2E/screenshot scripts can drive the map
       ;(window as unknown as { __exploreMap?: Leaflet.Map }).__exploreMap = map
@@ -405,23 +412,21 @@ export default function ExploreMapInteractive({
     syncRef.current = syncIcons
     syncIcons()
 
-    // Auto-open the first pin's card once the initial map settles so a map
-    // with few pins never reads as empty. Skipped on lat/lng deep links —
-    // the visitor came for a specific spot, don't cover it with a card.
-    // The ref flips when the timer fires, not on schedule, so a StrictMode
-    // remount or an early filter change just re-arms the open.
+    // Auto-open a few corner teaser cards once the initial map settles so
+    // the map reads as alive, not just pins. Skipped on lat/lng deep
+    // links — the visitor came for a specific spot, don't cover it with
+    // cards. The ref flips when the timer fires, not on schedule, so a
+    // StrictMode remount or an early filter change just re-arms the open.
     let autoOpenTimer: ReturnType<typeof setTimeout> | undefined
-    const first = points[0]
     if (
       !autoOpenedRef.current &&
       initialLat == null &&
       initialLng == null &&
-      first
+      points.length
     ) {
       autoOpenTimer = setTimeout(() => {
         autoOpenedRef.current = true
-        setPreview(first)
-        setSheetOpen(true)
+        setTeasers(pickTeasers(points))
       }, 600)
     }
 
@@ -429,6 +434,15 @@ export default function ExploreMapInteractive({
       if (autoOpenTimer) clearTimeout(autoOpenTimer)
     }
   }, [ready, filter, showAll, properties, beaches, restaurants, trails, viewpoints, communityPins, initialLat, initialLng])
+
+  const openTeaser = (t: MapTeaser) => {
+    setTeasers((ts) => ts.filter((x) => x.key !== t.key))
+    setPreview(t)
+    setSheetOpen(true)
+  }
+
+  const dismissTeaser = (key: string) =>
+    setTeasers((ts) => ts.filter((x) => x.key !== key))
 
   return (
     <div className="relative h-full w-full">
@@ -472,6 +486,11 @@ export default function ExploreMapInteractive({
           Show all points
         </button>
       </div>
+      <FloatingPointCards
+        teasers={teasers}
+        onSelect={openTeaser}
+        onDismiss={dismissTeaser}
+      />
       <PointPreviewSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}

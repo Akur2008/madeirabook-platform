@@ -8,6 +8,10 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { oasisBase } from '@/lib/oasis-domain'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+import FloatingPointCards, {
+  pickTeasers,
+  type MapTeaser,
+} from './FloatingPointCards'
 import PointPreviewSheet, {
   type PointPreview,
 } from './PointPreviewSheet'
@@ -171,6 +175,9 @@ export default function ExploreMap({
   const [dirOpen, setDirOpen] = useState(false)
   const [preview, setPreview] = useState<PointPreview | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [teasers, setTeasers] = useState<MapTeaser[]>([])
+  // Fires once: auto-open the corner teaser cards on the initial load
+  const autoOpenedRef = useRef(false)
 
   // Same geo-city lookup as the hero EscapeCard (/api/escape-card reads
   // Vercel IP headers; falls back to Lisbon when unknown).
@@ -224,6 +231,11 @@ export default function ExploreMap({
         scrollWheelZoom: false,
       })
       maplibreGL({ style: OPENFREEMAP_STYLE }).addTo(map)
+
+      // Teaser cards hide the moment the visitor takes over the map.
+      map.on('movestart', () =>
+        setTeasers((ts) => (ts.length ? [] : ts)),
+      )
 
       leafletRef.current = L
       mapRef.current = map
@@ -285,28 +297,32 @@ export default function ExploreMap({
       setSheetOpen(true)
     }
 
+    // Corner teaser candidates — the same PointPreview shape the full
+    // sheet renders when a teaser card is tapped.
+    const teaserPoints: MapTeaser[] = []
+
     if (filter === 'all' || filter === 'stays') {
       const icon = pin('#10b981', '🏠')
       shownStays.forEach((p) => {
+        const preview: PointPreview = {
+          type: 'property',
+          slug: p.slug,
+          name: p.title,
+          lat: p.lat,
+          lng: p.lng,
+          photoUrl: p.photoUrl ?? p.coverImage ?? null,
+          videoUrl: p.videoUrl ?? null,
+          shortDescription: p.shortDescription ?? null,
+          meta:
+            p.meta ??
+            (p.pricePerNight ? `€${p.pricePerNight} / night` : null),
+          address: p.address ?? null,
+          href: withRef(`/p/${p.slug}`),
+        }
         const marker = L.marker([p.lat, p.lng], { icon, title: p.title })
-        marker.on('click', () =>
-          openStaySheet({
-            type: 'property',
-            slug: p.slug,
-            name: p.title,
-            lat: p.lat,
-            lng: p.lng,
-            photoUrl: p.photoUrl ?? p.coverImage ?? null,
-            videoUrl: p.videoUrl ?? null,
-            shortDescription: p.shortDescription ?? null,
-            meta:
-              p.meta ??
-              (p.pricePerNight ? `€${p.pricePerNight} / night` : null),
-            address: p.address ?? null,
-            href: withRef(`/p/${p.slug}`),
-          }),
-        )
+        marker.on('click', () => openStaySheet(preview))
         marker.addTo(layer)
+        teaserPoints.push({ key: `property:${p.id}`, ...preview })
       })
 
       // Oasis stays — gold star pins; same card, linking to the Oasis
@@ -320,48 +336,92 @@ export default function ExploreMap({
           iconAnchor: [17, 17],
         })
         oasisStays.forEach((h) => {
+          const preview: PointPreview = {
+            type: 'property',
+            slug: h.slug,
+            name: h.title,
+            lat: h.lat,
+            lng: h.lng,
+            photoUrl: h.photoUrl ?? h.coverImage ?? null,
+            videoUrl: h.videoUrl ?? null,
+            shortDescription: h.shortDescription ?? null,
+            meta: null,
+            address: h.address ?? null,
+            href: withRef(`${base}/hotels/${h.slug}`),
+          }
           const marker = L.marker([h.lat, h.lng], {
             icon: oasisIcon,
             title: h.title,
           })
-          marker.on('click', () =>
-            openStaySheet({
-              type: 'property',
-              slug: h.slug,
-              name: h.title,
-              lat: h.lat,
-              lng: h.lng,
-              photoUrl: h.photoUrl ?? h.coverImage ?? null,
-              videoUrl: h.videoUrl ?? null,
-              shortDescription: h.shortDescription ?? null,
-              meta: null,
-              address: h.address ?? null,
-              href: withRef(`${base}/hotels/${h.slug}`),
-            }),
-          )
+          marker.on('click', () => openStaySheet(preview))
           marker.addTo(layer)
+          teaserPoints.push({ key: `oasis:${h.id}`, ...preview })
         })
       }
     }
     if (filter === 'all' || filter === 'beaches') {
       const icon = pin(ambassador?.accentColor || '#3b82f6', '🏖️')
-      shownBeaches.forEach((b) => addPin(b.lat, b.lng, icon, b.name, `/beaches/${b.slug}`))
+      shownBeaches.forEach((b) => {
+        addPin(b.lat, b.lng, icon, b.name, `/beaches/${b.slug}`)
+        teaserPoints.push({
+          key: `beach:${b.id}`,
+          type: 'beach',
+          slug: b.slug,
+          name: b.name,
+          lat: b.lat,
+          lng: b.lng,
+          photoUrl: b.heroImage ?? null,
+          href: withRef(`/beaches/${b.slug}`),
+        })
+      })
     }
     if (filter === 'all' || filter === 'food') {
       const icon = pin('#d4af37', '🍽️')
-      shownRestaurants.forEach((r) =>
-        addPin(r.lat, r.lng, icon, r.name, `/restaurants/${r.slug}`),
-      )
+      shownRestaurants.forEach((r) => {
+        addPin(r.lat, r.lng, icon, r.name, `/restaurants/${r.slug}`)
+        teaserPoints.push({
+          key: `restaurant:${r.id}`,
+          type: 'restaurant',
+          slug: r.slug,
+          name: r.name,
+          lat: r.lat,
+          lng: r.lng,
+          photoUrl: r.heroImage ?? null,
+          href: withRef(`/restaurants/${r.slug}`),
+        })
+      })
     }
     if (filter === 'all' || filter === 'trails') {
       const icon = pin('#f97316', '🥾')
-      shownTrails.forEach((t) => addPin(t.lat, t.lng, icon, t.name, `/trails/${t.slug}`))
+      shownTrails.forEach((t) => {
+        addPin(t.lat, t.lng, icon, t.name, `/trails/${t.slug}`)
+        teaserPoints.push({
+          key: `trail:${t.id}`,
+          type: 'trail',
+          slug: t.slug,
+          name: t.name,
+          lat: t.lat,
+          lng: t.lng,
+          photoUrl: null,
+          href: withRef(`/trails/${t.slug}`),
+        })
+      })
     }
     if (filter === 'all' || filter === 'views') {
       const icon = pin('#a855f7', '👁️')
-      shownViewpoints.forEach((v) =>
-        addPin(v.lat, v.lng, icon, v.name, `/viewpoints/${v.slug}`),
-      )
+      shownViewpoints.forEach((v) => {
+        addPin(v.lat, v.lng, icon, v.name, `/viewpoints/${v.slug}`)
+        teaserPoints.push({
+          key: `viewpoint:${v.id}`,
+          type: 'viewpoint',
+          slug: v.slug,
+          name: v.name,
+          lat: v.lat,
+          lng: v.lng,
+          photoUrl: null,
+          href: withRef(`/viewpoints/${v.slug}`),
+        })
+      })
     }
 
     // Ambassador's own approved spots — gold star pins opening a popup
@@ -389,7 +449,32 @@ export default function ExploreMap({
         marker.addTo(layer)
       })
     }
+
+    // Auto-open a few corner teaser cards once the initial map settles so
+    // the map reads as alive, not just pins. The ref flips when the timer
+    // fires, so a StrictMode remount or an early filter change just
+    // re-arms the teasers.
+    let autoOpenTimer: ReturnType<typeof setTimeout> | undefined
+    if (!autoOpenedRef.current && teaserPoints.length) {
+      autoOpenTimer = setTimeout(() => {
+        autoOpenedRef.current = true
+        setTeasers(pickTeasers(teaserPoints))
+      }, 600)
+    }
+
+    return () => {
+      if (autoOpenTimer) clearTimeout(autoOpenTimer)
+    }
   }, [ready, filter, showAll, properties, oasisStays, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode])
+
+  const openTeaser = (t: MapTeaser) => {
+    setTeasers((ts) => ts.filter((x) => x.key !== t.key))
+    setPreview(t)
+    setSheetOpen(true)
+  }
+
+  const dismissTeaser = (key: string) =>
+    setTeasers((ts) => ts.filter((x) => x.key !== key))
 
   const onMapClick = (e: React.MouseEvent) => {
     // Delegated bridge: Leaflet popups are plain HTML inside the map
@@ -505,6 +590,11 @@ export default function ExploreMap({
       >
         Escape from {escapeCity} →
       </button>
+      <FloatingPointCards
+        teasers={teasers}
+        onSelect={openTeaser}
+        onDismiss={dismissTeaser}
+      />
       <PointPreviewSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
