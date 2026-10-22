@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useRef, useState } from 'react'
 import { Drawer } from 'vaul'
 
 import OfflineNavButton from '@/components/OfflineNavButton'
@@ -86,48 +85,13 @@ export default function PointPreviewSheet({
   point,
   zIndex = 'z-[1200]',
 }: PointPreviewSheetProps) {
-  // Which value was last copied — a new pin renders "Copy Address" again
-  // without a reset effect.
-  const [copiedTarget, setCopiedTarget] = useState<string | null>(null)
-  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(
-    () => () => {
-      if (copyTimer.current) clearTimeout(copyTimer.current)
-    },
-    [],
-  )
-
-  const copyTarget = point
-    ? point.address?.trim() || `${point.lat}, ${point.lng}`
-    : ''
-  const copied = copiedTarget === copyTarget
-
-  const handleCopy = async () => {
-    if (!point) return
-    try {
-      await navigator.clipboard.writeText(copyTarget)
-    } catch {
-      const ta = document.createElement('textarea')
-      ta.value = copyTarget
-      ta.style.position = 'fixed'
-      ta.style.opacity = '0'
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      ta.remove()
-    }
-    setCopiedTarget(copyTarget)
-    if (copyTimer.current) clearTimeout(copyTimer.current)
-    copyTimer.current = setTimeout(() => setCopiedTarget(null), 2000)
-  }
-
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
-        {/* zIndex prop: z-[1200] above bare Leaflet panes, z-[1350] above the
-            map modal — the literal classes live in the callers' source. */}
-        <Drawer.Overlay
+        {/* Plain backdrop div instead of Drawer.Overlay — an overlay tap must
+            not close the card (only the ✕ or a swipe-down may). zIndex prop:
+            z-[1200] above bare Leaflet panes, z-[1350] above the map modal. */}
+        <div
           className={`fixed inset-0 ${zIndex} bg-black/60 backdrop-blur-sm`}
         />
         <Drawer.Content
@@ -222,45 +186,20 @@ export default function PointPreviewSheet({
               )}
 
               <div className="mt-6 flex flex-col gap-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <OfflineNavButton
-                    lat={point.lat}
-                    lng={point.lng}
-                    name={point.name}
-                    className="w-full whitespace-nowrap rounded-full border border-[#d4af37] bg-[#d4af37] py-3 text-xs font-semibold uppercase tracking-widest text-[#0a1420] transition-colors hover:bg-[#c9a227]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCopy}
-                    className="w-full whitespace-nowrap rounded-full border border-white/30 bg-white/10 py-3 text-xs font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white/20"
-                  >
-                    {copied ? '✓ Copied!' : '📋 Copy for Maps'}
-                  </button>
-                </div>
-                <p className="text-center text-xs leading-relaxed text-white/45">
-                  Step 1: Download Organic Maps. Step 2: Download the Madeira
-                  map inside the app.
-                </p>
+                <OfflineNavButton
+                  lat={point.lat}
+                  lng={point.lng}
+                  name={point.name}
+                  className="w-full whitespace-nowrap rounded-full border border-[#d4af37] bg-[#d4af37] py-3 text-xs font-semibold uppercase tracking-widest text-[#0a1420] transition-colors hover:bg-[#c9a227]"
+                />
                 {point.href !== null && (
                   <a
                     href={pointHref(point)}
-                    className="block w-full rounded-full border border-emerald-600 bg-emerald-600 py-3 text-center text-sm uppercase tracking-widest text-white transition-colors hover:bg-emerald-500"
+                    className="block w-full rounded-full border border-white/30 bg-white/10 py-3 text-center text-xs font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white/20"
                   >
-                    {point.type === 'community'
-                      ? 'See their map →'
-                      : point.type === 'property'
-                        ? 'View Hotel →'
-                        : 'View full page →'}
+                    View Details →
                   </a>
                 )}
-                <Drawer.Close asChild>
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-white/30 bg-white/10 py-3 text-sm uppercase tracking-widest text-white transition-colors hover:bg-white/20"
-                  >
-                    Close
-                  </button>
-                </Drawer.Close>
               </div>
             </div>
           )}

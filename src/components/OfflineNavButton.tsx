@@ -13,7 +13,7 @@ const PLAY_STORE_URL =
 
 // How long to wait for the OS to hand the om:// link to Organic Maps
 // before assuming the app is not installed.
-const DEEP_LINK_TIMEOUT_MS = 2000
+const DEEP_LINK_TIMEOUT_MS = 1500
 
 const isMobileDevice = () =>
   /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
