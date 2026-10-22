@@ -102,7 +102,11 @@ export default function OfflineNavButton({
             >
               ✕
             </button>
-            <div className="text-3xl" aria-hidden>
+            <p className="text-xs leading-relaxed text-white/50">
+              1. Download the app. 2. Download the Madeira map. 3. Come back
+              and tap &quot;Navigate Offline&quot;.
+            </p>
+            <div className="mt-3 text-3xl" aria-hidden>
               🧭
             </div>
             <h3

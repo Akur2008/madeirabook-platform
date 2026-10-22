@@ -158,7 +158,7 @@ export default function GetDirectionsSheet({
                       color: copied ? accent : theme === 'gold' ? '#1c1a16' : '#ffffff',
                     }}
                   >
-                    {copied ? '✓ Copied!' : '📋 Copy address'}
+                    {copied ? '✓ Copied!' : '📋 Copy for Maps'}
                   </button>
                   <OfflineNavButton
                     lat={lat}
@@ -167,6 +167,10 @@ export default function GetDirectionsSheet({
                     className="w-full whitespace-nowrap rounded-full border border-[#d4af37] bg-[#d4af37] py-3.5 text-xs font-semibold uppercase tracking-widest text-[#1c1a16] transition-colors hover:bg-[#c9a227] sm:text-sm"
                   />
                 </div>
+                <p className="text-center text-xs leading-relaxed text-white/45">
+                  Step 1: Download Organic Maps. Step 2: Download the Madeira
+                  map inside the app.
+                </p>
 
                 <a
                   href={appleMapsUrl}

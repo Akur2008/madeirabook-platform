@@ -104,7 +104,7 @@ export async function generateMetadata({
       and: [
         { slug: { equals: slug } },
         { status: { equals: 'published' } },
-        { brand: { equals: 'madeiraoasis' } },
+        { brand: { in: ['madeiraoasis', 'both'] } },
       ],
     },
     limit: 1,
@@ -143,7 +143,7 @@ export default async function OasisHotelPage({
       and: [
         { slug: { equals: slug } },
         { status: { equals: 'published' } },
-        { brand: { equals: 'madeiraoasis' } },
+        { brand: { in: ['madeiraoasis', 'both'] } },
       ],
     },
     limit: 1,

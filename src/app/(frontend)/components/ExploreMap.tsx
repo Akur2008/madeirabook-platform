@@ -8,6 +8,9 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { oasisBase } from '@/lib/oasis-domain'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+import PointPreviewSheet, {
+  type PointPreview,
+} from './PointPreviewSheet'
 
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 const MADEIRA_CENTER: [number, number] = [32.75, -16.95]
@@ -34,6 +37,11 @@ interface MapStay {
   lng: number
   pricePerNight?: number | null
   coverImage?: string | null
+  photoUrl?: string | null
+  videoUrl?: string | null
+  shortDescription?: string | null
+  meta?: string | null
+  address?: string | null
   featured?: boolean | null
 }
 
@@ -107,6 +115,9 @@ interface MapOasisStay {
   lng: number
   shortDescription?: string | null
   coverImage?: string | null
+  photoUrl?: string | null
+  videoUrl?: string | null
+  address?: string | null
 }
 
 interface ExploreMapProps {
@@ -158,6 +169,8 @@ export default function ExploreMap({
     name: string
   } | null>(null)
   const [dirOpen, setDirOpen] = useState(false)
+  const [preview, setPreview] = useState<PointPreview | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   // Same geo-city lookup as the hero EscapeCard (/api/escape-card reads
   // Vercel IP headers; falls back to Lisbon when unknown).
@@ -264,12 +277,40 @@ export default function ExploreMap({
       marker.addTo(layer)
     }
 
+    // Stay and Oasis pins open the shared preview card (photo, copy,
+    // offline navigation) instead of navigating away — one golden card
+    // everywhere a hotel pin is tapped.
+    const openStaySheet = (p: PointPreview) => {
+      setPreview(p)
+      setSheetOpen(true)
+    }
+
     if (filter === 'all' || filter === 'stays') {
       const icon = pin('#10b981', '🏠')
-      shownStays.forEach((p) => addPin(p.lat, p.lng, icon, p.title, `/p/${p.slug}`))
+      shownStays.forEach((p) => {
+        const marker = L.marker([p.lat, p.lng], { icon, title: p.title })
+        marker.on('click', () =>
+          openStaySheet({
+            type: 'property',
+            slug: p.slug,
+            name: p.title,
+            lat: p.lat,
+            lng: p.lng,
+            photoUrl: p.photoUrl ?? p.coverImage ?? null,
+            videoUrl: p.videoUrl ?? null,
+            shortDescription: p.shortDescription ?? null,
+            meta:
+              p.meta ??
+              (p.pricePerNight ? `€${p.pricePerNight} / night` : null),
+            address: p.address ?? null,
+            href: withRef(`/p/${p.slug}`),
+          }),
+        )
+        marker.addTo(layer)
+      })
 
-      // Oasis stays — gold star pins, popup with a tracked "View hotel →" link
-      // instead of the instant navigation used by regular pins.
+      // Oasis stays — gold star pins; same card, linking to the Oasis
+      // hotel page (/hotels/* on madeiraoasis.com, /oasis/hotels/* else).
       if (oasisStays.length) {
         const base = oasisBase(window.location.hostname)
         const oasisIcon = L.divIcon({
@@ -283,18 +324,20 @@ export default function ExploreMap({
             icon: oasisIcon,
             title: h.title,
           })
-          marker.bindPopup(
-            `<div style="max-width:220px;">` +
-              (h.coverImage
-                ? `<img src="${escHtml(h.coverImage)}" alt="" loading="lazy" decoding="async" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;" />`
-                : '') +
-              `<strong>${escHtml(h.title)}</strong>` +
-              (h.shortDescription
-                ? `<p style="margin:4px 0 0;font-size:12px;">${escHtml(h.shortDescription)}</p>`
-                : '') +
-              `<a href="${escHtml(withRef(`${base}/hotels/${h.slug}`))}" style="display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View hotel →</a>` +
-              `<button type="button" class="js-get-directions" data-lat="${h.lat}" data-lng="${h.lng}" data-name="${escHtml(h.title)}" style="display:inline-block;margin-top:8px;margin-left:10px;font-size:12px;font-weight:600;color:#1c1a16;background:none;border:none;border-bottom:1px solid #10b981;padding:0 0 1px;cursor:pointer;">Get Directions →</button>` +
-              `</div>`,
+          marker.on('click', () =>
+            openStaySheet({
+              type: 'property',
+              slug: h.slug,
+              name: h.title,
+              lat: h.lat,
+              lng: h.lng,
+              photoUrl: h.photoUrl ?? h.coverImage ?? null,
+              videoUrl: h.videoUrl ?? null,
+              shortDescription: h.shortDescription ?? null,
+              meta: null,
+              address: h.address ?? null,
+              href: withRef(`${base}/hotels/${h.slug}`),
+            }),
           )
           marker.addTo(layer)
         })
@@ -462,6 +505,11 @@ export default function ExploreMap({
       >
         Escape from {escapeCity} →
       </button>
+      <PointPreviewSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        point={preview}
+      />
       {dirTarget && (
         <GetDirectionsSheet
           hideTrigger

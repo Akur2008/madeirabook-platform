@@ -216,6 +216,15 @@ export default async function AmbassadorMapPage(props: {
         shortDescription: p.shortDescription,
         coverImage:
           cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+        address:
+          [
+            p.address?.street,
+            [p.address?.postal, p.address?.city].filter(Boolean).join(' ') ||
+              null,
+            p.address?.country,
+          ]
+            .filter(Boolean)
+            .join(', ') || null,
       },
     ]
   })

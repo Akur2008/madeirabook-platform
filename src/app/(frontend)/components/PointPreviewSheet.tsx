@@ -47,12 +47,15 @@ export interface PointPreview {
   meta?: string | null
   addedBy?: string | null
   href?: string | null
+  address?: string | null
 }
 
 interface PointPreviewSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   point: PointPreview | null
+  /** Stacking context — 'z-[1350]' when the map itself sits in a z-1300 modal. */
+  zIndex?: string
 }
 
 const TYPE_LABEL: Record<PointType, string> = {
@@ -81,6 +84,7 @@ export default function PointPreviewSheet({
   open,
   onOpenChange,
   point,
+  zIndex = 'z-[1200]',
 }: PointPreviewSheetProps) {
   // Which value was last copied — a new pin renders "Copy Address" again
   // without a reset effect.
@@ -94,7 +98,9 @@ export default function PointPreviewSheet({
     [],
   )
 
-  const copyTarget = point ? `${point.lat}, ${point.lng}` : ''
+  const copyTarget = point
+    ? point.address?.trim() || `${point.lat}, ${point.lng}`
+    : ''
   const copied = copiedTarget === copyTarget
 
   const handleCopy = async () => {
@@ -119,9 +125,14 @@ export default function PointPreviewSheet({
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
-        {/* z-[1200] to stay above Leaflet map panes/controls (z-index up to 1000) */}
-        <Drawer.Overlay className="fixed inset-0 z-[1200] bg-black/60 backdrop-blur-sm" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-[1200] mx-auto flex max-h-[85dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/15 border-b-0 bg-[#0a1420] outline-none">
+        {/* zIndex prop: z-[1200] above bare Leaflet panes, z-[1350] above the
+            map modal — the literal classes live in the callers' source. */}
+        <Drawer.Overlay
+          className={`fixed inset-0 ${zIndex} bg-black/60 backdrop-blur-sm`}
+        />
+        <Drawer.Content
+          className={`fixed inset-x-0 bottom-0 ${zIndex} mx-auto flex max-h-[85dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/15 border-b-0 bg-[#0a1420] outline-none`}
+        >
           <Drawer.Handle className="mx-auto mb-2 mt-2 h-1 w-10 shrink-0 rounded-full bg-white/20" />
           <Drawer.Close
             aria-label="Close"
@@ -223,9 +234,13 @@ export default function PointPreviewSheet({
                     onClick={handleCopy}
                     className="w-full whitespace-nowrap rounded-full border border-white/30 bg-white/10 py-3 text-xs font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white/20"
                   >
-                    {copied ? '✓ Copied!' : '📋 Copy Address'}
+                    {copied ? '✓ Copied!' : '📋 Copy for Maps'}
                   </button>
                 </div>
+                <p className="text-center text-xs leading-relaxed text-white/45">
+                  Step 1: Download Organic Maps. Step 2: Download the Madeira
+                  map inside the app.
+                </p>
                 {point.href !== null && (
                   <a
                     href={pointHref(point)}

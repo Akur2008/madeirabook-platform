@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: {
         and: [
           { status: { equals: 'published' } },
-          { brand: { equals: 'madeiraoasis' } },
+          { brand: { in: ['madeiraoasis', 'both'] } },
         ],
       },
       limit: 1000,

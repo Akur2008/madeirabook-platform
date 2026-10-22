@@ -45,6 +45,7 @@ interface MapStay {
   videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
+  address?: string | null
   featured?: boolean | null
 }
 
@@ -268,6 +269,7 @@ export default function ExploreMapInteractive({
         meta?: string | null
         addedBy?: string | null
         href?: string | null
+        address?: string | null
         featured?: boolean | null
       },
       name: string,
@@ -286,6 +288,7 @@ export default function ExploreMapInteractive({
         meta: item.meta ?? null,
         addedBy: item.addedBy ?? null,
         href: item.href,
+        address: item.address ?? null,
       })
 
     const shownStays = showAll ? properties : pickFeatured(properties)
@@ -352,6 +355,7 @@ export default function ExploreMapInteractive({
           meta: point.meta,
           addedBy: point.addedBy,
           href: point.href,
+          address: point.address,
         })
         setSheetOpen(true)
       })

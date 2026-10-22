@@ -189,17 +189,48 @@ export default async function HomePage({
 
   const mapStays = mapProperties.flatMap((p) => {
     const loc = typeof p.location === 'object' ? p.location : null
-    if (loc?.geoCoordinates?.lat == null || loc?.geoCoordinates?.lng == null) return []
-    const cover = p.media?.[0]?.image
+    const geo =
+      p.geoCoordinates?.lat != null && p.geoCoordinates?.lng != null
+        ? p.geoCoordinates
+        : loc?.geoCoordinates
+    if (geo?.lat == null || geo?.lng == null) return []
+    const mediaItems = (p.media ?? []).map((m) => m.image)
+    const cover = mediaItems.find(
+      (img) =>
+        typeof img === 'object' &&
+        img !== null &&
+        !(
+          img.mimeType?.startsWith('video/') ||
+          /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(img.url)
+        ),
+    )
+    const video = mediaItems.find(
+      (img) =>
+        typeof img === 'object' &&
+        img !== null &&
+        (img.mimeType?.startsWith('video/') ||
+          /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(img.url)),
+    )
     return [
       {
         id: p.id,
         slug: p.slug,
         title: p.title,
-        lat: loc.geoCoordinates.lat,
-        lng: loc.geoCoordinates.lng,
+        lat: geo.lat,
+        lng: geo.lng,
         pricePerNight: p.pricePerNight,
         coverImage: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+        videoUrl: video && typeof video === 'object' ? (video.url ?? null) : null,
+        shortDescription: p.shortDescription,
+        address:
+          [
+            p.address?.street,
+            [p.address?.postal, p.address?.city].filter(Boolean).join(' ') ||
+              null,
+            p.address?.country,
+          ]
+            .filter(Boolean)
+            .join(', ') || null,
         featured: p.featured,
       },
     ]

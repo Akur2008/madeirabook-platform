@@ -33,13 +33,13 @@ export default async function OasisPage({
   const payload = await getPayload({ config: await config })
 
   // "tenant: oasis" maps to brand = madeiraoasis on the shared Properties
-  // collection. Only published madeiraoasis inventory reaches the map —
-  // Orquídea and the rest of the madeirabook catalogue stay off it.
+  // collection; brand 'both' (e.g. Hotel Orquídea) is published on the
+  // Oasis map and on madeirabook at the same time.
   const { docs: properties } = await payload.find({
     collection: 'properties',
     where: {
       and: [
-        { brand: { equals: 'madeiraoasis' } },
+        { brand: { in: ['madeiraoasis', 'both'] } },
         { status: { equals: 'published' } },
       ],
     },
@@ -114,7 +114,16 @@ export default async function OasisPage({
           : null
     if (geo?.lat == null || geo?.lng == null) return []
 
-    const cover = p.media?.[0]?.image
+    const mediaItems = (p.media ?? []).map((m) => m.image)
+    const isVideo = (img: (typeof mediaItems)[number]) =>
+      typeof img === 'object' &&
+      img !== null &&
+      Boolean(
+        img.mimeType?.startsWith('video/') ||
+          /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(img.url),
+      )
+    const cover = mediaItems.find((img) => !isVideo(img))
+    const video = mediaItems.find(isVideo)
     return [
       {
         id: p.id,
@@ -128,6 +137,19 @@ export default async function OasisPage({
         shortDescription: p.shortDescription,
         coverImage:
           cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+        photoUrl:
+          cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+        videoUrl:
+          video && typeof video === 'object' ? (video.url ?? null) : null,
+        address:
+          [
+            p.address?.street,
+            [p.address?.postal, p.address?.city].filter(Boolean).join(' ') ||
+              null,
+            p.address?.country,
+          ]
+            .filter(Boolean)
+            .join(', ') || null,
       },
     ]
   })

@@ -7,6 +7,9 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { oasisBase } from '@/lib/oasis-domain'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+import PointPreviewSheet, {
+  type PointPreview,
+} from './PointPreviewSheet'
 
 // CartoDB Positron as a vector GL style (same Positron design as the raster
 // tiles, but served without the API-key watermark).
@@ -26,6 +29,9 @@ export interface OasisHotelPin {
   locationName?: string | null
   shortDescription?: string | null
   coverImage?: string | null
+  photoUrl?: string | null
+  videoUrl?: string | null
+  address?: string | null
 }
 
 export interface OasisPoiPin {
@@ -93,6 +99,8 @@ export default function OasisMap({
     name: string
   } | null>(null)
   const [dirOpen, setDirOpen] = useState(false)
+  const [preview, setPreview] = useState<PointPreview | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const locations = useMemo(
     () =>
@@ -188,29 +196,28 @@ export default function OasisMap({
       })
 
     if (layers.hotels) {
+      // Hotel pins open the shared preview card — the same BottomSheet
+      // madeirabook shows on its own map (photo, copy, offline nav, hotel page).
       visible.forEach((h) => {
         const marker = L.marker([h.lat, h.lng], { icon, title: h.title })
-        const mailto = `mailto:hello@madeiraoasis.com?subject=${encodeURIComponent(
-          `Inquiry about ${h.title}`,
-        )}`
-        const popupHtml = `
-        <div style="font-family:'Inter',system-ui,sans-serif;min-width:200px;max-width:240px;">
-          ${
-            h.coverImage
-              ? `<img src="${escapeHtml(h.coverImage)}" alt="" loading="lazy" decoding="async" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;" />`
-              : ''
-          }
-          <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:#1c1a16;line-height:1.3;">${escapeHtml(h.title)}</div>
-          ${
-            h.category
-              ? `<div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#b8952e;margin-top:3px;">${escapeHtml(h.category)}</div>`
-              : ''
-          }
-          <a href="${base}/hotels/${escapeHtml(h.slug)}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View residence →</a>
-          <button type="button" class="js-get-directions" data-lat="${h.lat}" data-lng="${h.lng}" data-name="${escapeHtml(h.title)}" style="display:inline-block;margin-top:10px;margin-left:10px;font-size:12px;font-weight:600;color:#8a7020;background:none;border:none;border-bottom:1px solid #d4af37;padding:0 0 1px;cursor:pointer;">Get Directions →</button>
-          <a href="${mailto}" style="display:block;margin-top:12px;padding:7px 10px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-align:center;text-decoration:none;color:#1c1a16;background:#d4af37;border-radius:9999px;">Contact via Email</a>
-        </div>`
-        marker.bindPopup(popupHtml, { maxWidth: 260, closeButton: false })
+        marker.on('click', () => {
+          setPreview({
+            type: 'property',
+            slug: h.slug,
+            name: h.title,
+            lat: h.lat,
+            lng: h.lng,
+            photoUrl: h.photoUrl ?? h.coverImage ?? null,
+            videoUrl: h.videoUrl ?? null,
+            shortDescription: h.shortDescription ?? null,
+            meta:
+              [h.category, h.locationName].filter(Boolean).join(' · ') ||
+              null,
+            address: h.address ?? null,
+            href: `${base}/hotels/${h.slug}`,
+          })
+          setSheetOpen(true)
+        })
         marker.addTo(layer)
       })
     }
@@ -328,6 +335,14 @@ export default function OasisMap({
         {layers.restaurants &&
           `${layers.hotels || layers.beaches ? ' · ' : ''}${restaurants.length} ${restaurants.length === 1 ? 'restaurant' : 'restaurants'}`}
       </div>
+      {/* z-[1350]: the map renders inside MapModal (z-1300) — the card must
+          stack above it; the offline fallback modal stays on top (z-1400). */}
+      <PointPreviewSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        point={preview}
+        zIndex="z-[1350]"
+      />
       {dirTarget && (
         <GetDirectionsSheet
           hideTrigger

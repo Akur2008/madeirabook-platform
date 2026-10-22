@@ -147,6 +147,15 @@ export default async function ExplorePage({
           null,
         shortDescription: p.shortDescription,
         meta: p.pricePerNight ? `€${p.pricePerNight} / night` : null,
+        address:
+          [
+            p.address?.street,
+            [p.address?.postal, p.address?.city].filter(Boolean).join(' ') ||
+              null,
+            p.address?.country,
+          ]
+            .filter(Boolean)
+            .join(', ') || null,
         featured: p.featured,
       },
     ]
