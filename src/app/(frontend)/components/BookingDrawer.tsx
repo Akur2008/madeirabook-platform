@@ -10,6 +10,7 @@ import { useAudioEngine } from '@/audio/useAudioEngine'
 
 import {
   SEARCH_URL,
+  contactMailto,
   formatMoney,
   normalizeImage,
   toISODate,
@@ -253,7 +254,13 @@ export default function BookingDrawer({
 
                 {status === 'empty' && (
                   <p className="mb-0 mt-6 text-center text-sm text-white/60">
-                    No availability. Try other dates.
+                    No availability for these dates.{' '}
+                    <a
+                      href={contactMailto()}
+                      className="text-white/90 underline underline-offset-2"
+                    >
+                      Contact us via email for availability
+                    </a>
                   </p>
                 )}
 
@@ -268,6 +275,40 @@ export default function BookingDrawer({
                     {results.map((item) => {
                       const img = normalizeImage(item.coverImage)
                       const isCreating = creatingSlug === item.slug
+                      if (item.price == null) {
+                        return (
+                          <a
+                            key={item.slug}
+                            href={contactMailto(item.name)}
+                            className="group flex w-full items-center gap-4 rounded-xl border border-white/15 bg-white/5 p-3 text-left transition-colors hover:bg-white/10"
+                          >
+                            {img ? (
+                              <Image
+                                src={img}
+                                alt={item.name}
+                                width={64}
+                                height={64}
+                                className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-white/10 text-xs text-white/40">
+                                no photo
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="mb-0 truncate text-sm font-medium text-white/90">
+                                {item.name}
+                              </p>
+                              <p className="mb-0 mt-1 text-sm text-white/60">
+                                Contact us via email for availability
+                              </p>
+                            </div>
+                            <span className="text-white/40 transition-transform group-hover:translate-x-1">
+                              →
+                            </span>
+                          </a>
+                        )
+                      }
                       return (
                         <button
                           key={item.slug}
@@ -300,6 +341,7 @@ export default function BookingDrawer({
                               ) : (
                                 <>
                                   <span className="font-semibold text-white/90">
+                                    {item.estimate ? 'from ' : ''}
                                     {formatMoney(item.price, item.currency)}
                                   </span>
                                   {` total · ${searchedDates.nights} nights`}

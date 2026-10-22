@@ -225,15 +225,19 @@ async function checkApartmentAvailability(
 export interface AvailabilityItem {
   slug: string
   name: string
-  price: number
+  price: number | null
   currency: string
   coverImage: string | null
+  // True when price comes from the DB pricePerNight rather than a live PMS
+  // rate (no pmsPropertyId, or the PMS check failed).
+  estimate?: boolean
 }
 
-// Availability search across all published properties that have a Smoobu id
-// (pmsPropertyId). Ported from core routes/search.js: Smoobu ids are joined
-// with Payload properties, first media image becomes coverImage, result is
-// sorted by price asc.
+// Availability search across all published properties. Properties with a
+// Smoobu id (pmsPropertyId) get a live availability/price check; everything
+// else falls back to the DB pricePerNight (marked `estimate: true`) instead
+// of being dropped or failing the search. Items without any price keep
+// `price: null` — the UI renders those as "contact us" entries.
 export async function checkAvailability({
   arrivalDate,
   departureDate,
@@ -246,7 +250,6 @@ export async function checkAvailability({
     collection: 'properties',
     where: {
       and: [
-        { pmsPropertyId: { exists: true } },
         { status: { equals: 'published' } },
         { brand: { not_equals: 'madeiraoasis' } },
       ],
@@ -255,18 +258,45 @@ export async function checkAvailability({
     depth: 1,
   })
 
+  const nights = Math.max(
+    1,
+    Math.round(
+      (Date.parse(departureDate) - Date.parse(arrivalDate)) / 86400000,
+    ),
+  )
+
   const ids = found.docs
     .map((doc) => Number(doc.pmsPropertyId))
     .filter(Number.isFinite)
-  if (!ids.length) return []
 
-  const avail = await checkApartmentAvailability(ids, arrivalDate, departureDate)
+  let avail: Record<number, SmoobuAvailabilityEntry> = {}
+  if (ids.length) {
+    try {
+      avail = await checkApartmentAvailability(ids, arrivalDate, departureDate)
+    } catch (err) {
+      console.warn(
+        'checkAvailability: Smoobu check failed, falling back to DB prices',
+        err,
+      )
+    }
+  }
 
   const items: AvailabilityItem[] = []
   for (const doc of found.docs) {
     const id = Number(doc.pmsPropertyId)
-    const entry = avail[id]
-    if (!entry || !entry.available) continue
+    const entry = Number.isFinite(id) ? avail[id] : undefined
+    if (entry && !entry.available) continue
+
+    const livePrice =
+      entry?.available && Number.isFinite(Number(entry.price))
+        ? Number(entry.price)
+        : null
+    const perNight = Number(doc.pricePerNight)
+    const estimate = livePrice === null
+    const price =
+      livePrice ??
+      (Number.isFinite(perNight) && perNight > 0 ? perNight * nights : null)
+
     const firstImage = doc.media?.[0]?.image
     const coverImage =
       firstImage && typeof firstImage === 'object' && firstImage.url
@@ -275,12 +305,18 @@ export async function checkAvailability({
     items.push({
       slug: doc.slug,
       name: doc.title,
-      price: Number(entry.price),
-      currency: entry.currency === '€' ? 'EUR' : entry.currency || 'EUR',
+      price,
+      currency:
+        entry?.currency && entry.currency !== '€' ? entry.currency : 'EUR',
       coverImage,
+      ...(estimate ? { estimate: true } : {}),
     })
   }
-  items.sort((a, b) => a.price - b.price)
+  items.sort(
+    (a, b) =>
+      (a.price ?? Number.MAX_SAFE_INTEGER) -
+      (b.price ?? Number.MAX_SAFE_INTEGER),
+  )
   return items
 }
 

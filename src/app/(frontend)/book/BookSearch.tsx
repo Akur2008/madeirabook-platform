@@ -10,6 +10,7 @@ import { useAudioEngine } from '@/audio/useAudioEngine'
 
 import {
   SEARCH_URL,
+  contactMailto,
   formatMoney,
   normalizeImage,
   toISODate,
@@ -193,7 +194,13 @@ export default function BookSearch() {
 
               {status === 'empty' && (
                 <p className="mb-0 mt-6 text-center text-sm text-white/60">
-                  No availability. Try other dates.
+                  No availability for these dates.{' '}
+                  <a
+                    href={contactMailto()}
+                    className="text-white/90 underline underline-offset-2"
+                  >
+                    Contact us via email for availability
+                  </a>
                 </p>
               )}
 
@@ -233,9 +240,12 @@ export default function BookSearch() {
                           <p className="mb-0 mt-1 text-sm text-white/60">
                             {isCreating ? (
                               'Opening checkout…'
+                            ) : item.price == null ? (
+                              'Contact us via email for availability'
                             ) : (
                               <>
                                 <span className="font-semibold text-white/90">
+                                  {item.estimate ? 'from ' : ''}
                                   {formatMoney(item.price, item.currency)}
                                 </span>
                                 {` total · ${searchedDates.nights} nights`}
@@ -243,7 +253,14 @@ export default function BookSearch() {
                             )}
                           </p>
                         </div>
-                        {isCreating ? (
+                        {item.price == null ? (
+                          <a
+                            href={contactMailto(item.name)}
+                            className="shrink-0 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/20"
+                          >
+                            Email
+                          </a>
+                        ) : isCreating ? (
                           <span className="h-4 w-4 shrink-0 animate-spin rounded-full border border-white/30 border-t-white" />
                         ) : (
                           <button

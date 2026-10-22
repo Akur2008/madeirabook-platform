@@ -15,9 +15,20 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 export type SearchResult = {
   slug: string
   name: string
-  price: number
+  price: number | null
   currency?: string
   coverImage?: string | null
+  // True when price is a DB estimate (no live PMS rate) — render "from €X".
+  estimate?: boolean
+}
+
+export const CONTACT_EMAIL = 'hello@madeiraoasis.com'
+
+export function contactMailto(name?: string): string {
+  const subject = name
+    ? `Availability inquiry — ${name}`
+    : 'Availability inquiry'
+  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`
 }
 
 type Status = 'idle' | 'loading' | 'results' | 'empty' | 'error'
@@ -261,7 +272,13 @@ export default function BookingSearchSheet({
 
           {status === 'empty' && (
             <p className="mb-0 mt-6 text-center text-sm text-white/60">
-              No availability. Try other dates.
+              No availability for these dates.{' '}
+              <a
+                href={contactMailto()}
+                className="text-white/90 underline underline-offset-2"
+              >
+                Contact us via email for availability
+              </a>
             </p>
           )}
 
@@ -275,7 +292,10 @@ export default function BookingSearchSheet({
             <div className="mt-6 flex flex-col gap-3">
               {results.map((item) => {
                 const img = normalizeImage(item.coverImage)
-                const href = `${STAY_BASE_URL}/p/${item.slug}?arrival=${arrival}&departure=${departure}`
+                const href =
+                  item.price == null
+                    ? contactMailto(item.name)
+                    : `${STAY_BASE_URL}/p/${item.slug}?arrival=${arrival}&departure=${departure}`
                 return (
                   <a
                     key={item.slug}
@@ -300,10 +320,17 @@ export default function BookingSearchSheet({
                         {item.name}
                       </p>
                       <p className="mb-0 mt-1 text-sm text-white/60">
-                        <span className="font-semibold text-white/90">
-                          {formatMoney(item.price, item.currency)}
-                        </span>
-                        {nights !== null && ` total · ${nights} nights`}
+                        {item.price == null ? (
+                          'Contact us via email for availability'
+                        ) : (
+                          <>
+                            <span className="font-semibold text-white/90">
+                              {item.estimate ? 'from ' : ''}
+                              {formatMoney(item.price, item.currency)}
+                            </span>
+                            {nights !== null && ` total · ${nights} nights`}
+                          </>
+                        )}
                       </p>
                     </div>
                     <span className="text-white/40 transition-transform group-hover:translate-x-1">
@@ -468,7 +495,10 @@ export function BookingSearchInline({
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
             {results.map((item) => {
               const img = normalizeImage(item.coverImage)
-              const href = `${STAY_BASE_URL}/p/${item.slug}?arrival=${searched.arrival}&departure=${searched.departure}`
+              const href =
+                item.price == null
+                  ? contactMailto(item.name)
+                  : `${STAY_BASE_URL}/p/${item.slug}?arrival=${searched.arrival}&departure=${searched.departure}`
               return (
                 <a
                   key={item.slug}
@@ -492,11 +522,12 @@ export function BookingSearchInline({
                     {item.name}
                   </div>
                   <div className="mt-0.5 text-sm font-semibold text-white/90">
-                    {formatMoney(item.price, item.currency)} · {searched.nights}{' '}
-                    nights
+                    {item.price == null
+                      ? 'Contact us via email for availability'
+                      : `${item.estimate ? 'from ' : ''}${formatMoney(item.price, item.currency)} · ${searched.nights} nights`}
                   </div>
                   <span className="mt-2 block w-full rounded-full border border-white/30 bg-white/10 py-1.5 text-center text-xs uppercase tracking-widest text-white transition-colors group-hover:bg-white/20">
-                    Book →
+                    {item.price == null ? 'Email →' : 'Book →'}
                   </span>
                 </a>
               )
@@ -507,7 +538,13 @@ export function BookingSearchInline({
 
       {status === 'empty' && (
         <div className="mb-3 text-sm text-white/60">
-          No availability. Try other dates.
+          No availability for these dates.{' '}
+          <a
+            href={contactMailto()}
+            className="text-white/90 underline underline-offset-2"
+          >
+            Contact us via email for availability
+          </a>
         </div>
       )}
       {status === 'error' && (
