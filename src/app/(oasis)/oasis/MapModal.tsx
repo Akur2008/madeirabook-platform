@@ -4,12 +4,15 @@ import { useEffect } from 'react'
 
 import OasisMap, {
   type OasisHotelPin,
+  type OasisPoiPin,
 } from '../../(frontend)/components/OasisMap'
 
 interface MapModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   hotels: OasisHotelPin[]
+  beaches?: OasisPoiPin[]
+  restaurants?: OasisPoiPin[]
   initialLat?: number
   initialLng?: number
   initialZoom?: number
@@ -19,6 +22,8 @@ export default function MapModal({
   open,
   onOpenChange,
   hotels,
+  beaches,
+  restaurants,
   initialLat,
   initialLng,
   initialZoom,
@@ -57,6 +62,8 @@ export default function MapModal({
             mounts — and downloads — when the modal is open */}
         <OasisMap
           hotels={hotels}
+          beaches={beaches}
+          restaurants={restaurants}
           initialLat={initialLat}
           initialLng={initialLng}
           initialZoom={initialZoom}

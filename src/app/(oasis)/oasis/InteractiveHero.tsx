@@ -15,7 +15,10 @@ import {
   serverSoundMuted,
   subscribeSoundMuted,
 } from '@/audio/soundMuted'
-import type { OasisHotelPin } from '../../(frontend)/components/OasisMap'
+import type {
+  OasisHotelPin,
+  OasisPoiPin,
+} from '../../(frontend)/components/OasisMap'
 import MapModal from './MapModal'
 import VideoBottomSheet from './VideoBottomSheet'
 
@@ -164,6 +167,8 @@ const MapIcon = () => (
 
 interface InteractiveHeroProps {
   hotels: OasisHotelPin[]
+  beaches?: OasisPoiPin[]
+  restaurants?: OasisPoiPin[]
   initialLat?: number
   initialLng?: number
   initialZoom?: number
@@ -171,6 +176,8 @@ interface InteractiveHeroProps {
 
 export default function InteractiveHero({
   hotels,
+  beaches,
+  restaurants,
   initialLat,
   initialLng,
   initialZoom,
@@ -385,6 +392,8 @@ export default function InteractiveHero({
         open={mapOpen}
         onOpenChange={setMapOpen}
         hotels={hotels}
+        beaches={beaches}
+        restaurants={restaurants}
         initialLat={initialLat}
         initialLng={initialLng}
         initialZoom={initialZoom}

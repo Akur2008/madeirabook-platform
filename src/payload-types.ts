@@ -583,6 +583,10 @@ export interface Beach {
   posterUrl?: string | null;
   status: 'draft' | 'published';
   featured?: boolean | null;
+  /**
+   * Curated pick — shown on the Madeira Oasis map.
+   */
+  isFeaturedOasis?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -642,6 +646,10 @@ export interface Restaurant {
   posterUrl?: string | null;
   status: 'draft' | 'published';
   featured?: boolean | null;
+  /**
+   * Curated pick — shown on the Madeira Oasis map.
+   */
+  isFeaturedOasis?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1692,6 +1700,7 @@ export interface BeachesSelect<T extends boolean = true> {
   posterUrl?: T;
   status?: T;
   featured?: T;
+  isFeaturedOasis?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1734,6 +1743,7 @@ export interface RestaurantsSelect<T extends boolean = true> {
   posterUrl?: T;
   status?: T;
   featured?: T;
+  isFeaturedOasis?: T;
   updatedAt?: T;
   createdAt?: T;
 }

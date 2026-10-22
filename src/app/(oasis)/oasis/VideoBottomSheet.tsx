@@ -78,8 +78,8 @@ export default function VideoBottomSheet({ spot, onClose, liveSlugs }: VideoBott
                   href={
                     live
                       ? `${base}/hotels/${spot.hotelSlug}`
-                      : `mailto:concierge@madeirabook.com?subject=${encodeURIComponent(
-                          `Stay request — ${spot.title}`,
+                      : `mailto:hello@madeiraoasis.com?subject=${encodeURIComponent(
+                          `Inquiry about ${spot.title}`,
                         )}`
                   }
                   className="mt-6 block w-full rounded-full border border-[#d4af37] bg-[#d4af37] py-3.5 text-center text-sm font-semibold uppercase tracking-[0.15em] text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#d4af37]"

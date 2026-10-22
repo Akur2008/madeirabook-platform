@@ -81,6 +81,17 @@ export default async function PropertyPage({
   if (!docs.length) notFound()
   const p = docs[0]
 
+  const { docs: unitTypes } = await payload.find({
+    collection: 'unit-types',
+    where: {
+      and: [
+        { property: { equals: p.id } },
+        { status: { equals: 'active' } },
+      ],
+    },
+    limit: 50,
+  })
+
   const images = (p.media ?? [])
     .map((m) => m.image)
     .filter((img): img is Media => typeof img === 'object' && img !== null)
@@ -93,6 +104,31 @@ export default async function PropertyPage({
   )
   const locationName =
     p.location && typeof p.location === 'object' ? p.location.name : null
+  const geo =
+    p.geoCoordinates?.lat != null && p.geoCoordinates?.lng != null
+      ? p.geoCoordinates
+      : typeof p.location === 'object'
+        ? p.location?.geoCoordinates
+        : null
+
+  const streetAddress = [
+    p.address?.street,
+    [p.address?.postal, p.address?.city].filter(Boolean).join(' ') || null,
+    p.address?.country,
+  ]
+    .filter(Boolean)
+    .join(', ')
+
+  // aggregateRating is emitted only when the PMS sync has carried a real
+  // rating + review count over — Google rejects self-serving stubs.
+  const pmsMeta =
+    p.pmsMeta && typeof p.pmsMeta === 'object' && !Array.isArray(p.pmsMeta)
+      ? (p.pmsMeta as Record<string, unknown>)
+      : null
+  const ratingValue =
+    typeof pmsMeta?.rating === 'number' ? pmsMeta.rating : null
+  const reviewCount =
+    typeof pmsMeta?.reviewCount === 'number' ? pmsMeta.reviewCount : null
 
   const specs = [
     p.pricePerNight ? `From €${p.pricePerNight} / night` : null,
@@ -138,21 +174,41 @@ export default async function PropertyPage({
         addressCountry: p.address?.country ?? 'PT',
       },
     }),
-    ...(p.location &&
-      typeof p.location === 'object' &&
-      p.location.geoCoordinates && {
+    ...(geo?.lat != null &&
+      geo?.lng != null && {
         geo: {
           '@type': 'GeoCoordinates',
-          latitude: p.location.geoCoordinates.lat,
-          longitude: p.location.geoCoordinates.lng,
+          latitude: geo.lat,
+          longitude: geo.lng,
         },
       }),
     ...(amenities.length > 0 && {
       amenityFeature: amenities.map((a) => ({
         '@type': 'LocationFeatureSpecification',
         name: a.name,
+        value: true,
       })),
     }),
+    ...(unitTypes.length > 0 && {
+      containsPlace: unitTypes.map((ut) => ({
+        '@type': 'Room',
+        name: ut.name,
+        ...(ut.capacity && {
+          occupancy: {
+            '@type': 'QuantitativeValue',
+            maxValue: ut.capacity,
+          },
+        }),
+      })),
+    }),
+    ...(ratingValue != null &&
+      reviewCount != null && {
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue,
+          reviewCount,
+        },
+      }),
     ...(p.pricePerNight && {
       offers: {
         '@type': 'Offer',
@@ -261,19 +317,17 @@ export default async function PropertyPage({
           </section>
         )}
 
-        {typeof p.location === 'object' &&
-          p.location?.geoCoordinates?.lat &&
-          p.location?.geoCoordinates?.lng && (
+        {geo?.lat != null && geo?.lng != null && (
             <section className="mt-12">
               <h2 className="text-2xl font-light text-white/90" style={SERIF}>
                 Location
               </h2>
               <div className="mt-4">
                 <PropertyMap
-                  latitude={p.location.geoCoordinates.lat}
-                  longitude={p.location.geoCoordinates.lng}
+                  latitude={geo.lat}
+                  longitude={geo.lng}
                   title={p.title}
-                  address={locationName ?? undefined}
+                  address={streetAddress || locationName || undefined}
                   imageUrl={
                     Array.isArray(p.media) && p.media[0]?.image &&
                     typeof p.media[0].image === 'object'
@@ -284,10 +338,10 @@ export default async function PropertyPage({
               </div>
               <div className="mt-4">
                 <GetDirectionsSheet
-                  lat={p.location.geoCoordinates.lat}
-                  lng={p.location.geoCoordinates.lng}
+                  lat={geo.lat}
+                  lng={geo.lng}
                   name={p.title}
-                  address={locationName}
+                  address={streetAddress || locationName}
                   theme="dark"
                 />
               </div>

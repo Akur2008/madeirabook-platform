@@ -189,5 +189,13 @@ export const Restaurants: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
     },
+    {
+      name: 'isFeaturedOasis',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Curated pick — shown on the Madeira Oasis map.',
+      },
+    },
   ],
 }

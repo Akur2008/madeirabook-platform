@@ -76,7 +76,9 @@ export default function GetDirectionsSheet({
     copyTimer.current = setTimeout(() => setCopied(false), 2000)
   }
 
-  const appleMapsUrl = `https://maps.apple.com/?daddr=${lat},${lng}&q=${encodeURIComponent(name)}`
+  // `ll` drops a pin at the exact coordinates (with the name as its label) —
+  // `daddr`/`q`-only URLs left Apple Maps free to geocode the name wrong.
+  const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lng}&q=${encodeURIComponent(name)}`
   const fullMapHref =
     mapHref ??
     (theme === 'gold'

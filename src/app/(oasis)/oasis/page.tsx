@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
-import { getPayload } from 'payload'
+import { getPayload, type Where } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
-import type { OasisHotelPin } from '../../(frontend)/components/OasisMap'
+import type {
+  OasisHotelPin,
+  OasisPoiPin,
+} from '../../(frontend)/components/OasisMap'
 import InteractiveHero from './InteractiveHero'
 
 export const revalidate = 60
@@ -44,6 +47,64 @@ export default async function OasisPage({
     depth: 1,
   })
 
+  // Curated side layers — only entries hand-picked for the Oasis map.
+  const featuredWhere: Where = {
+    and: [
+      { status: { equals: 'published' } },
+      { isFeaturedOasis: { equals: true } },
+    ],
+  }
+  const [{ docs: beachDocs }, { docs: restaurantDocs }] = await Promise.all([
+    payload.find({
+      collection: 'beaches',
+      where: featuredWhere,
+      limit: 50,
+    }),
+    payload.find({
+      collection: 'restaurants',
+      where: featuredWhere,
+      limit: 50,
+    }),
+  ])
+
+  const toPoiPin = (
+    doc: {
+      id: number | string
+      slug: string
+      name: string
+      geoCoordinates?: { lat?: number | null; lng?: number | null } | null
+      shortDescription?: string | null
+    },
+    kind: OasisPoiPin['kind'],
+    subtitle?: string | null,
+  ): OasisPoiPin[] =>
+    doc.geoCoordinates?.lat != null && doc.geoCoordinates?.lng != null
+      ? [
+          {
+            id: doc.id,
+            slug: doc.slug,
+            name: doc.name,
+            kind,
+            lat: doc.geoCoordinates.lat,
+            lng: doc.geoCoordinates.lng,
+            subtitle: subtitle ?? null,
+          },
+        ]
+      : []
+
+  const beaches: OasisPoiPin[] = beachDocs.flatMap((b) =>
+    toPoiPin(b, 'beach', b.shortDescription),
+  )
+  const restaurants: OasisPoiPin[] = restaurantDocs.flatMap((r) =>
+    toPoiPin(
+      r,
+      'restaurant',
+      [r.cuisine, r.michelinStars ? '★'.repeat(r.michelinStars) : null]
+        .filter(Boolean)
+        .join(' · ') || null,
+    ),
+  )
+
   const hotels: OasisHotelPin[] = properties.flatMap((p) => {
     const geo =
       p.geoCoordinates?.lat != null && p.geoCoordinates?.lng != null
@@ -75,6 +136,8 @@ export default async function OasisPage({
     <div className="h-dvh overflow-hidden bg-[#171310]">
       <InteractiveHero
         hotels={hotels}
+        beaches={beaches}
+        restaurants={restaurants}
         initialLat={hasCenter ? parsedLat : undefined}
         initialLng={hasCenter ? parsedLng : undefined}
         initialZoom={zoom != null && Number.isFinite(parsedZoom) ? parsedZoom : undefined}

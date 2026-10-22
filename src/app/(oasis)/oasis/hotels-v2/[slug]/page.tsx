@@ -163,6 +163,9 @@ export default async function OasisHotelV2Page({
   )
   const locationName =
     p.location && typeof p.location === 'object' ? p.location.name : null
+  const contactMailto = `mailto:hello@madeiraoasis.com?subject=${encodeURIComponent(
+    `Inquiry about ${p.title}`,
+  )}`
 
   return (
     <div className="min-h-dvh bg-[#fdfbf7] pt-16 text-[#1c1a16]">
@@ -269,6 +272,14 @@ export default async function OasisHotelV2Page({
         </p>
         <div className="mt-10">
           <OasisInquiryForm hotelTitle={p.title} />
+        </div>
+        <div className="mt-6 text-center">
+          <a
+            href={contactMailto}
+            className="inline-flex items-center justify-center rounded-full border border-[#d4af37] px-6 py-3 text-sm font-semibold tracking-wide text-[#8a7020] transition-colors hover:bg-[#d4af37] hover:text-[#1c1a16]"
+          >
+            Contact via Email
+          </a>
         </div>
       </section>
 

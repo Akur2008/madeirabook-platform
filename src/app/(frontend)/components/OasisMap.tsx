@@ -28,12 +28,37 @@ export interface OasisHotelPin {
   coverImage?: string | null
 }
 
+export interface OasisPoiPin {
+  id: string | number
+  slug: string
+  name: string
+  kind: 'beach' | 'restaurant'
+  lat: number
+  lng: number
+  subtitle?: string | null
+}
+
 interface OasisMapProps {
   hotels: OasisHotelPin[]
+  beaches?: OasisPoiPin[]
+  restaurants?: OasisPoiPin[]
   initialLat?: number
   initialLng?: number
   initialZoom?: number
 }
+
+type LayerKey = 'hotels' | 'beaches' | 'restaurants'
+
+const LAYER_DEFS: Array<{
+  key: LayerKey
+  label: string
+  color: string
+  emoji: string
+}> = [
+  { key: 'hotels', label: 'Hotels', color: '#d4af37', emoji: '' },
+  { key: 'beaches', label: 'Beaches', color: '#3b82f6', emoji: '🏖' },
+  { key: 'restaurants', label: 'Restaurants', color: '#b0562f', emoji: '🍽' },
+]
 
 const escapeHtml = (s: string) =>
   s
@@ -44,6 +69,8 @@ const escapeHtml = (s: string) =>
 
 export default function OasisMap({
   hotels,
+  beaches = [],
+  restaurants = [],
   initialLat,
   initialLng,
   initialZoom,
@@ -55,6 +82,11 @@ export default function OasisMap({
   const [ready, setReady] = useState(false)
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('all')
+  const [layers, setLayers] = useState<Record<LayerKey, boolean>>({
+    hotels: true,
+    beaches: true,
+    restaurants: true,
+  })
   const [dirTarget, setDirTarget] = useState<{
     lat: number
     lng: number
@@ -147,9 +179,21 @@ export default function OasisMap({
       iconAnchor: [13, 13],
     })
 
-    visible.forEach((h) => {
-      const marker = L.marker([h.lat, h.lng], { icon, title: h.title })
-      const popupHtml = `
+    const poiIcon = (color: string, emoji: string) =>
+      L.divIcon({
+        className: 'oasis-pin oasis-pin-poi',
+        html: `<div style="width:26px;height:26px;border-radius:9999px;background:${color};border:2px solid #1c1a16;box-shadow:0 2px 10px rgba(28,26,22,0.35);display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1;cursor:pointer;">${emoji}</div>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+      })
+
+    if (layers.hotels) {
+      visible.forEach((h) => {
+        const marker = L.marker([h.lat, h.lng], { icon, title: h.title })
+        const mailto = `mailto:hello@madeiraoasis.com?subject=${encodeURIComponent(
+          `Inquiry about ${h.title}`,
+        )}`
+        const popupHtml = `
         <div style="font-family:'Inter',system-ui,sans-serif;min-width:200px;max-width:240px;">
           ${
             h.coverImage
@@ -164,11 +208,42 @@ export default function OasisMap({
           }
           <a href="${base}/hotels/${escapeHtml(h.slug)}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View residence →</a>
           <button type="button" class="js-get-directions" data-lat="${h.lat}" data-lng="${h.lng}" data-name="${escapeHtml(h.title)}" style="display:inline-block;margin-top:10px;margin-left:10px;font-size:12px;font-weight:600;color:#8a7020;background:none;border:none;border-bottom:1px solid #d4af37;padding:0 0 1px;cursor:pointer;">Get Directions →</button>
+          <a href="${mailto}" style="display:block;margin-top:12px;padding:7px 10px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-align:center;text-decoration:none;color:#1c1a16;background:#d4af37;border-radius:9999px;">Contact via Email</a>
         </div>`
-      marker.bindPopup(popupHtml, { maxWidth: 260, closeButton: false })
-      marker.addTo(layer)
+        marker.bindPopup(popupHtml, { maxWidth: 260, closeButton: false })
+        marker.addTo(layer)
+      })
+    }
+
+    const poiLayers: Array<{ on: boolean; pins: OasisPoiPin[]; color: string; emoji: string }> = [
+      { on: layers.beaches, pins: beaches, color: '#3b82f6', emoji: '🏖' },
+      { on: layers.restaurants, pins: restaurants, color: '#b0562f', emoji: '🍽' },
+    ]
+    poiLayers.forEach(({ on, pins, color, emoji }) => {
+      if (!on) return
+      const icon = poiIcon(color, emoji)
+      pins.forEach((poi) => {
+        const marker = L.marker([poi.lat, poi.lng], {
+          icon,
+          title: poi.name,
+        })
+        const href = `/${poi.kind === 'beach' ? 'beaches' : 'restaurants'}/${escapeHtml(poi.slug)}`
+        const popupHtml = `
+        <div style="font-family:'Inter',system-ui,sans-serif;min-width:180px;max-width:220px;">
+          <div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:#1c1a16;line-height:1.3;">${escapeHtml(poi.name)}</div>
+          ${
+            poi.subtitle
+              ? `<div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#b8952e;margin-top:3px;">${escapeHtml(poi.subtitle)}</div>`
+              : ''
+          }
+          <a href="${href}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View details →</a>
+          <button type="button" class="js-get-directions" data-lat="${poi.lat}" data-lng="${poi.lng}" data-name="${escapeHtml(poi.name)}" style="display:inline-block;margin-top:10px;margin-left:10px;font-size:12px;font-weight:600;color:#8a7020;background:none;border:none;border-bottom:1px solid #d4af37;padding:0 0 1px;cursor:pointer;">Get Directions →</button>
+        </div>`
+        marker.bindPopup(popupHtml, { maxWidth: 240, closeButton: false })
+        marker.addTo(layer)
+      })
     })
-  }, [ready, visible])
+  }, [ready, visible, layers, beaches, restaurants])
 
   const onMapClick = (e: React.MouseEvent) => {
     // Delegated bridge: Leaflet popups are plain HTML inside the map
@@ -224,8 +299,34 @@ export default function OasisMap({
         </select>
       </div>
 
+      {/* Layer toggles — hotels / curated beaches / curated restaurants */}
+      <div className="absolute left-1/2 top-[7.75rem] z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-[#1c1a16]/10 bg-[#fdfbf7]/95 p-1 shadow-lg shadow-[#1c1a16]/5 backdrop-blur">
+        {LAYER_DEFS.map((l) => (
+          <button
+            key={l.key}
+            type="button"
+            aria-pressed={layers[l.key]}
+            onClick={() =>
+              setLayers((prev) => ({ ...prev, [l.key]: !prev[l.key] }))
+            }
+            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+              layers[l.key]
+                ? 'bg-[#d4af37] text-[#1c1a16]'
+                : 'text-[#1c1a16]/45 hover:text-[#1c1a16]/80'
+            }`}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
+
       <div className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 rounded-full border border-[#1c1a16]/10 bg-[#fdfbf7]/95 px-4 py-1.5 text-xs text-[#1c1a16]/60 backdrop-blur">
-        {visible.length} {visible.length === 1 ? 'residence' : 'residences'}
+        {layers.hotels &&
+          `${visible.length} ${visible.length === 1 ? 'residence' : 'residences'}`}
+        {layers.beaches &&
+          `${layers.hotels ? ' · ' : ''}${beaches.length} ${beaches.length === 1 ? 'beach' : 'beaches'}`}
+        {layers.restaurants &&
+          `${layers.hotels || layers.beaches ? ' · ' : ''}${restaurants.length} ${restaurants.length === 1 ? 'restaurant' : 'restaurants'}`}
       </div>
       {dirTarget && (
         <GetDirectionsSheet

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import AiConciergeWidget from '@/components/AiConciergeWidget'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import OasisLink from '../../../../(frontend)/components/OasisLink'
-import { BookingLink, ConciergeAskButton } from './V3Actions'
+import { ConciergeAskButton } from './V3Actions'
 import V3ReelVideo from './V3ReelVideo'
 
 const R2 = 'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev/uploads'
@@ -23,7 +23,9 @@ const IMG = {
   spa: `${R2}/quinta-da-serra-v3-spa.jpg`,
 }
 
-const BOOKING_URL = 'https://www.hotelquintadaserra.com/en'
+const CONTACT_MAILTO = `mailto:hello@madeiraoasis.com?subject=${encodeURIComponent(
+  'Inquiry about Quinta da Serra',
+)}`
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = 'Quinta da Serra — Bio Luxury Sanctuary | Madeira Oasis'
@@ -93,12 +95,12 @@ export default function QuintaDaSerraV3Page() {
             >
               Inquire via AI Concierge
             </ConciergeAskButton>
-            <BookingLink
-              href={BOOKING_URL}
+            <a
+              href={CONTACT_MAILTO}
               className="rounded-full border border-white/50 px-7 py-3.5 text-sm font-semibold tracking-wide text-white transition-colors hover:border-[#d4af37] hover:text-[#d4af37]"
             >
-              View Availability
-            </BookingLink>
+              Contact via Email
+            </a>
           </div>
         </div>
       </section>
