@@ -42,6 +42,7 @@ interface MapStay {
   pricePerNight?: number | null
   coverImage?: string | null
   photoUrl?: string | null
+  videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
 }
@@ -54,6 +55,7 @@ interface MapBeach {
   lng: number
   heroImage?: string | null
   photoUrl?: string | null
+  videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
 }
@@ -68,6 +70,7 @@ interface MapRestaurant {
   averagePrice?: number | null
   heroImage?: string | null
   photoUrl?: string | null
+  videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
 }
@@ -81,6 +84,7 @@ interface MapTrail {
   distanceKm?: number | null
   difficulty?: string | null
   photoUrl?: string | null
+  videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
 }
@@ -94,6 +98,7 @@ interface MapViewpoint {
   elevationM?: number | null
   type?: string | null
   photoUrl?: string | null
+  videoUrl?: string | null
   shortDescription?: string | null
   meta?: string | null
 }

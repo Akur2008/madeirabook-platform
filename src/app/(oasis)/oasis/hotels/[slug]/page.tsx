@@ -7,11 +7,20 @@ import React from 'react'
 import config from '@/payload.config'
 import type { Amenity, Media } from '@/payload-types'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+import MutedAutoplayVideo from '../../../../(frontend)/components/MutedAutoplayVideo'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import OasisInquiryForm from '../../../../(frontend)/components/OasisInquiryForm'
 import OasisLink from '../../../../(frontend)/components/OasisLink'
 
 export const revalidate = 60
+
+// Media rows are URL references — a video is marked by its mimeType, with the
+// file extension as a fallback for rows where mimeType was never filled in.
+const isVideoMedia = (img: Media) =>
+  Boolean(
+    img.mimeType?.startsWith('video/') ||
+      /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(img.url),
+  )
 
 const escapeHtml = (s: string) =>
   s
@@ -143,9 +152,11 @@ export default async function OasisHotelPage({
   if (!docs.length) notFound()
   const p = docs[0]
 
-  const images = (p.media ?? [])
+  const media = (p.media ?? [])
     .map((m) => m.image)
     .filter((img): img is Media => typeof img === 'object' && img !== null)
+  const video = media.find(isVideoMedia)
+  const images = media.filter((img) => !isVideoMedia(img))
   const [hero, ...gallery] = images
 
   const amenities = (p.amenities ?? []).filter(
@@ -204,6 +215,29 @@ export default async function OasisHotelPage({
           )}
         </div>
       </section>
+
+      {/* Media — muted-autoplay video (or the cover photo) right under the title */}
+      {(video || hero) && (
+        <section className="mx-auto max-w-5xl px-6 pt-10 md:pt-14">
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-[#e8e2d5]">
+            {video ? (
+              <MutedAutoplayVideo
+                src={video.url}
+                poster={hero?.url ?? null}
+                alt={`${p.title} — video`}
+              />
+            ) : hero ? (
+              <Image
+                src={hero.url}
+                alt={hero.alt || p.title}
+                fill
+                sizes="(max-width: 1024px) 100vw, 1024px"
+                className="object-cover"
+              />
+            ) : null}
+          </div>
+        </section>
+      )}
 
       {/* Intro */}
       <section className="mx-auto max-w-3xl px-6 py-16 md:py-20">

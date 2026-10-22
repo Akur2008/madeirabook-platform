@@ -13,6 +13,18 @@ const uploadUrl = (u: unknown): string | null =>
     ? (u as { url: string }).url
     : null
 
+// Media/upload doc -> video URL. Marked by mimeType, with the file extension
+// as a fallback for media rows where mimeType was never filled in.
+const videoMediaUrl = (u: unknown): string | null => {
+  const url = uploadUrl(u)
+  if (!url || typeof u !== 'object' || u === null) return null
+  const mimeType = (u as { mimeType?: unknown }).mimeType
+  return (typeof mimeType === 'string' && mimeType.startsWith('video/')) ||
+    /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(url)
+    ? url
+    : null
+}
+
 export const metadata: Metadata = {
   title: 'Explore Madeira — 92 curated places | Madeirabook',
   description:
@@ -116,7 +128,10 @@ export default async function ExplorePage({
         ? p.geoCoordinates
         : loc?.geoCoordinates
     if (geo?.lat == null || geo?.lng == null) return []
-    const cover = p.media?.[0]?.image
+    const mediaItems = (p.media ?? []).map((m) => m.image)
+    const cover = mediaItems.find(
+      (img) => typeof img === 'object' && img !== null && !videoMediaUrl(img),
+    )
     return [
       {
         id: p.id,
@@ -127,6 +142,9 @@ export default async function ExplorePage({
         pricePerNight: p.pricePerNight,
         coverImage: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
         photoUrl: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
+        videoUrl:
+          mediaItems.map(videoMediaUrl).find((u): u is string => Boolean(u)) ??
+          null,
         shortDescription: p.shortDescription,
         meta: p.pricePerNight ? `€${p.pricePerNight} / night` : null,
       },
@@ -144,6 +162,7 @@ export default async function ExplorePage({
         lng: b.geoCoordinates.lng,
         heroImage: b.heroImage,
         photoUrl: uploadUrl(b.media?.[0]?.image) ?? b.heroImage ?? null,
+        videoUrl: videoMediaUrl(b.videoFile),
         shortDescription: b.shortDescription,
         meta:
           [b.highlights?.[0], b.bestTimeToVisit].filter(Boolean).join(' · ') || null,
@@ -164,6 +183,7 @@ export default async function ExplorePage({
         averagePrice: r.averagePrice,
         heroImage: r.heroImage,
         photoUrl: uploadUrl(r.media?.[0]?.image) ?? r.heroImage ?? null,
+        videoUrl: videoMediaUrl(r.videoFile),
         shortDescription: r.shortDescription,
         meta:
           [
@@ -189,6 +209,7 @@ export default async function ExplorePage({
         distanceKm: t.distanceKm,
         difficulty: t.difficulty,
         photoUrl: uploadUrl(t.media?.[0]?.image) ?? t.heroImage ?? null,
+        videoUrl: videoMediaUrl(t.videoFile),
         shortDescription: t.shortDescription,
         meta:
           [t.prCode, t.distanceKm ? `${t.distanceKm} km` : null, t.difficulty]
@@ -210,6 +231,7 @@ export default async function ExplorePage({
         elevationM: v.elevationM,
         type: v.type,
         photoUrl: uploadUrl(v.media?.[0]?.image) ?? v.heroImage ?? null,
+        videoUrl: videoMediaUrl(v.videoFile),
         shortDescription: v.shortDescription,
         meta:
           [v.type, v.elevationM ? `${v.elevationM} m` : null, v.bestTime]

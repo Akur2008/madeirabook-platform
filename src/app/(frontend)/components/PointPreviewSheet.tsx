@@ -2,6 +2,8 @@
 
 import { Drawer } from 'vaul'
 
+import MutedAutoplayVideo from './MutedAutoplayVideo'
+
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
 export type PointType =
@@ -79,13 +81,16 @@ export default function PointPreviewSheet({
 
           {point && (
             <div className="overflow-y-auto px-6 pb-6">
-              <div className="mt-2 flex justify-center">
+              <div className="mt-2 overflow-hidden rounded-xl border border-white/10">
                 {point.videoUrl ? (
-                  <video
+                  // key remounts the video when another pin is selected so
+                  // the muted autoplay is attempted again for the new src
+                  <MutedAutoplayVideo
+                    key={point.videoUrl}
                     src={point.videoUrl}
-                    controls
-                    playsInline
-                    className="h-auto max-h-[40vh] w-auto rounded-xl border border-white/10"
+                    poster={point.photoUrl ?? null}
+                    alt={point.name}
+                    className="aspect-video w-full"
                   />
                 ) : point.photoUrl ? (
                   // photoUrl comes from CMS/Wikimedia — arbitrary host, plain <img>
@@ -93,10 +98,10 @@ export default function PointPreviewSheet({
                   <img
                     src={point.photoUrl}
                     alt={point.name}
-                    className="aspect-[9/16] h-auto max-h-[40vh] w-auto rounded-xl border border-white/10 object-cover"
+                    className="aspect-video w-full object-cover"
                   />
                 ) : (
-                  <div className="flex aspect-[9/16] max-h-[40vh] w-full items-center justify-center rounded-xl border border-white/10 bg-[#0f1d2e] text-6xl">
+                  <div className="flex aspect-video w-full items-center justify-center bg-[#0f1d2e] text-6xl">
                     {TYPE_EMOJI[point.type]}
                   </div>
                 )}
@@ -139,7 +144,11 @@ export default function PointPreviewSheet({
                     href={pointHref(point)}
                     className="block w-full rounded-full border border-emerald-600 bg-emerald-600 py-3 text-center text-sm uppercase tracking-widest text-white transition-colors hover:bg-emerald-500"
                   >
-                    {point.type === 'community' ? 'See their map →' : 'View full page →'}
+                    {point.type === 'community'
+                      ? 'See their map →'
+                      : point.type === 'property'
+                        ? 'View Hotel →'
+                        : 'View full page →'}
                   </a>
                 )}
                 <Drawer.Close asChild>
