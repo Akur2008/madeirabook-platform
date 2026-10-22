@@ -318,7 +318,7 @@ export default function FlightCalendarSearch() {
         <Drawer.Portal>
           {/* z-[1200] to stay above Leaflet map panes/controls (z-index up to 1000) */}
           <Drawer.Overlay className="fixed inset-0 z-[1200] bg-black/60 backdrop-blur-sm" />
-          <Drawer.Content className="fixed inset-x-0 bottom-0 z-[1200] mx-auto flex max-h-[85dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/15 border-b-0 bg-[#0a1420] outline-none">
+          <Drawer.Content className="fixed inset-x-0 bottom-0 z-[1200] mx-auto flex max-h-[80dvh] w-full max-w-md flex-col rounded-t-2xl border border-white/15 border-b-0 bg-[#0a1420] outline-none">
             <Drawer.Handle className="mx-auto mb-2 mt-2 h-1 w-10 shrink-0 rounded-full bg-white/20" />
             <Drawer.Close
               aria-label="Close"
@@ -331,13 +331,13 @@ export default function FlightCalendarSearch() {
               Fare for the picked date and the cheapest alternatives.
             </Drawer.Description>
 
-            <div className="overflow-y-auto px-6 pb-4 pt-4">
+            <div className="overflow-y-auto px-4 pb-3 pt-3">
               <p className="mb-0 text-center text-xs uppercase tracking-widest text-white/40">
                 {origin} → {DESTINATION_IATA} · {TRIP_NIGHTS}-night return
               </p>
 
               {selectedDate && (
-                <div className="mt-4 rounded-xl border border-emerald-500/50 bg-emerald-500/10 p-4 text-center">
+                <div className="mt-3 rounded-xl border border-emerald-500/50 bg-emerald-500/10 p-3 text-center">
                   <p className="mb-0 text-sm text-white/60">Depart</p>
                   <p className="mb-0 mt-1 text-lg font-semibold text-white">
                     {format(selectedDate, 'EEE d MMM yyyy')}
@@ -357,7 +357,7 @@ export default function FlightCalendarSearch() {
               )}
 
               {cheapest.length > 0 && (
-                <div className="mt-5">
+                <div className="mt-4">
                   <p className="mb-2 text-xs uppercase tracking-widest text-white/40">
                     Cheapest dates
                   </p>
@@ -394,7 +394,7 @@ export default function FlightCalendarSearch() {
             </div>
 
             {/* The only Aviasales exit on the page: books the selected date. */}
-            <div className="shrink-0 border-t border-white/10 px-6 pb-8 pt-4">
+            <div className="shrink-0 border-t border-white/10 px-4 pb-6 pt-3">
               <button
                 type="button"
                 onClick={() =>
