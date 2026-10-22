@@ -171,6 +171,8 @@ export default function ExploreMapInteractive({
   const markersRef = useRef<Map<string, MarkerEntry>>(new Map())
   // Holds the latest icon-sync closure so map event handlers stay stable
   const syncRef = useRef<() => void>(() => {})
+  // Fires once: auto-open the first pin's card on the initial load
+  const autoOpenedRef = useRef(false)
   const [filter, setFilter] = useState<MapFilter>(activeFilter)
   // Default decluttered map — "All points" opt-in brings back everything.
   const [showAll, setShowAll] = useState(false)
@@ -402,7 +404,31 @@ export default function ExploreMapInteractive({
 
     syncRef.current = syncIcons
     syncIcons()
-  }, [ready, filter, showAll, properties, beaches, restaurants, trails, viewpoints, communityPins])
+
+    // Auto-open the first pin's card once the initial map settles so a map
+    // with few pins never reads as empty. Skipped on lat/lng deep links —
+    // the visitor came for a specific spot, don't cover it with a card.
+    // The ref flips when the timer fires, not on schedule, so a StrictMode
+    // remount or an early filter change just re-arms the open.
+    let autoOpenTimer: ReturnType<typeof setTimeout> | undefined
+    const first = points[0]
+    if (
+      !autoOpenedRef.current &&
+      initialLat == null &&
+      initialLng == null &&
+      first
+    ) {
+      autoOpenTimer = setTimeout(() => {
+        autoOpenedRef.current = true
+        setPreview(first)
+        setSheetOpen(true)
+      }, 600)
+    }
+
+    return () => {
+      if (autoOpenTimer) clearTimeout(autoOpenTimer)
+    }
+  }, [ready, filter, showAll, properties, beaches, restaurants, trails, viewpoints, communityPins, initialLat, initialLng])
 
   return (
     <div className="relative h-full w-full">

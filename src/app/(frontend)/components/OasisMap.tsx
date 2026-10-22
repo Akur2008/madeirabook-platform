@@ -101,6 +101,8 @@ export default function OasisMap({
   const [dirOpen, setDirOpen] = useState(false)
   const [preview, setPreview] = useState<PointPreview | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  // Fires once: auto-open the first pin's card on the initial load
+  const autoOpenedRef = useRef(false)
 
   const locations = useMemo(
     () =>
@@ -195,29 +197,30 @@ export default function OasisMap({
         iconAnchor: [13, 13],
       })
 
+    // Hotel pins open the shared preview card — the same BottomSheet
+    // madeirabook shows on its own map (photo, copy, offline nav, hotel page).
+    const openHotelSheet = (h: OasisHotelPin) => {
+      setPreview({
+        type: 'property',
+        slug: h.slug,
+        name: h.title,
+        lat: h.lat,
+        lng: h.lng,
+        photoUrl: h.photoUrl ?? h.coverImage ?? null,
+        videoUrl: h.videoUrl ?? null,
+        shortDescription: h.shortDescription ?? null,
+        meta:
+          [h.category, h.locationName].filter(Boolean).join(' · ') || null,
+        address: h.address ?? null,
+        href: `${base}/hotels/${h.slug}`,
+      })
+      setSheetOpen(true)
+    }
+
     if (layers.hotels) {
-      // Hotel pins open the shared preview card — the same BottomSheet
-      // madeirabook shows on its own map (photo, copy, offline nav, hotel page).
       visible.forEach((h) => {
         const marker = L.marker([h.lat, h.lng], { icon, title: h.title })
-        marker.on('click', () => {
-          setPreview({
-            type: 'property',
-            slug: h.slug,
-            name: h.title,
-            lat: h.lat,
-            lng: h.lng,
-            photoUrl: h.photoUrl ?? h.coverImage ?? null,
-            videoUrl: h.videoUrl ?? null,
-            shortDescription: h.shortDescription ?? null,
-            meta:
-              [h.category, h.locationName].filter(Boolean).join(' · ') ||
-              null,
-            address: h.address ?? null,
-            href: `${base}/hotels/${h.slug}`,
-          })
-          setSheetOpen(true)
-        })
+        marker.on('click', () => openHotelSheet(h))
         marker.addTo(layer)
       })
     }
@@ -250,7 +253,41 @@ export default function OasisMap({
         marker.addTo(layer)
       })
     })
-  }, [ready, visible, layers, beaches, restaurants])
+
+    // Auto-open the first pin's card once the initial map settles — a map
+    // with one or two pins looks empty otherwise. Deep links (?lat&lng)
+    // skip it. The ref flips when the timer fires, so a StrictMode remount
+    // or an early layer toggle just re-arms the open.
+    let autoOpenTimer: ReturnType<typeof setTimeout> | undefined
+    if (!autoOpenedRef.current && initialLat == null && initialLng == null) {
+      const firstHotel = layers.hotels ? visible[0] : undefined
+      const firstPoi =
+        (layers.beaches ? beaches[0] : undefined) ??
+        (layers.restaurants ? restaurants[0] : undefined)
+      if (firstHotel ?? firstPoi) {
+        autoOpenTimer = setTimeout(() => {
+          autoOpenedRef.current = true
+          if (firstHotel) {
+            openHotelSheet(firstHotel)
+          } else if (firstPoi) {
+            setPreview({
+              type: firstPoi.kind,
+              slug: firstPoi.slug,
+              name: firstPoi.name,
+              lat: firstPoi.lat,
+              lng: firstPoi.lng,
+              shortDescription: firstPoi.subtitle ?? null,
+            })
+            setSheetOpen(true)
+          }
+        }, 600)
+      }
+    }
+
+    return () => {
+      if (autoOpenTimer) clearTimeout(autoOpenTimer)
+    }
+  }, [ready, visible, layers, beaches, restaurants, initialLat, initialLng])
 
   const onMapClick = (e: React.MouseEvent) => {
     // Delegated bridge: Leaflet popups are plain HTML inside the map
