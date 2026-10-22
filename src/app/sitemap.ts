@@ -1,11 +1,51 @@
 import type { MetadataRoute } from 'next'
+import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
+import { isOasisHost } from '@/lib/oasis-domain'
 import config from '@/payload.config'
 
 const baseUrl = 'https://www.madeirabook.com'
+const oasisBaseUrl = 'https://www.madeiraoasis.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const host = (await headers()).get('host')
+  const payload = await getPayload({ config: await config })
+
+  // madeiraoasis.com: only Oasis URLs (clean paths — the middleware rewrites
+  // /hotels/* to the /oasis route group on this host).
+  if (isOasisHost(host)) {
+    const { docs: oasisProperties } = await payload.find({
+      collection: 'properties',
+      where: {
+        and: [
+          { status: { equals: 'published' } },
+          { brand: { equals: 'madeiraoasis' } },
+        ],
+      },
+      limit: 1000,
+      depth: 0,
+    })
+
+    const entries: MetadataRoute.Sitemap = [
+      {
+        url: `${oasisBaseUrl}/`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 1.0,
+      },
+    ]
+    for (const p of oasisProperties) {
+      entries.push({
+        url: `${oasisBaseUrl}/hotels/${p.slug}`,
+        lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.8,
+      })
+    }
+    return entries
+  }
+
   const routes = [
     { path: '/', priority: 1.0, changeFrequency: 'weekly' },
     { path: '/explore', priority: 0.8, changeFrequency: 'weekly' },
@@ -68,7 +108,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route.priority,
   }))
 
-  const payload = await getPayload({ config: await config })
   const { docs: guides } = await payload.find({
     collection: 'guides',
     where: { status: { equals: 'published' } },
