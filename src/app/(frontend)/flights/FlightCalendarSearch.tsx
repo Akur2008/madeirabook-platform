@@ -16,61 +16,32 @@ import { Drawer } from 'vaul'
 
 import { useAudioEngine } from '@/audio/useAudioEngine'
 
+import {
+  DEFAULT_DESTINATION_IATA,
+  DEFAULT_ORIGIN_IATA,
+  aviasalesUrl as buildAviasalesUrl,
+  resolveCity,
+  toISODate,
+  type PriceRow,
+} from './flightUtils'
+
 const SHEET_MS = 400
-const DESTINATION_IATA = 'FNC'
-const AVIASALES_MARKER = '779585'
+const DESTINATION_IATA = DEFAULT_DESTINATION_IATA
 const TRIP_NIGHTS = 7
 const MAX_MONTHS_AHEAD = 6
 const ORIGIN_DEBOUNCE_MS = 400
-const IATA_RE = /^[a-zA-Z]{3}$/
 
-// Cities that have dedicated "-to-madeira" pages on the site.
-const CITY_TO_IATA: Record<string, string> = {
-  amsterdam: 'AMS',
-  barcelona: 'BCN',
-  berlin: 'BER',
-  brussels: 'BRU',
-  dublin: 'DUB',
-  edinburgh: 'EDI',
-  frankfurt: 'FRA',
-  lisbon: 'LIS',
-  liverpool: 'LPL',
-  london: 'LON',
-  madrid: 'MAD',
-  manchester: 'MAN',
-  munich: 'MUC',
-  paris: 'PAR',
-  porto: 'OPO',
-  vienna: 'VIE',
-  zurich: 'ZRH',
-}
-
-const DEFAULT_ORIGIN = 'LIS'
+const DEFAULT_ORIGIN = DEFAULT_ORIGIN_IATA
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
-type PriceRow = { date: string; price: number }
-
-function toISODate(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-function resolveOrigin(input: string): string {
-  const trimmed = input.trim()
-  if (IATA_RE.test(trimmed)) return trimmed.toUpperCase()
-  return CITY_TO_IATA[trimmed.toLowerCase()] ?? DEFAULT_ORIGIN
-}
-
-function ddmm(d: Date): string {
-  return `${String(d.getDate()).padStart(2, '0')}${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
 function aviasalesUrl(origin: string, depISO: string): string {
-  const dep = new Date(`${depISO}T12:00:00`)
-  const ret = addDays(dep, TRIP_NIGHTS)
-  return `https://www.aviasales.com/search/${origin}${ddmm(dep)}${DESTINATION_IATA}${ddmm(ret)}?marker=${AVIASALES_MARKER}`
+  const returnISO = toISODate(addDays(new Date(`${depISO}T12:00:00`), TRIP_NIGHTS))
+  return buildAviasalesUrl({
+    origin,
+    destination: DESTINATION_IATA,
+    departISO: depISO,
+    returnISO,
+  })
 }
 
 // Aviasales-style price calendar. The official Travelpayouts calendar widget
@@ -126,7 +97,7 @@ export default function FlightCalendarSearch() {
 
   // Debounce the free-text origin into a resolved IATA code.
   useEffect(() => {
-    const t = setTimeout(() => setOrigin(resolveOrigin(originInput)), ORIGIN_DEBOUNCE_MS)
+    const t = setTimeout(() => setOrigin(resolveCity(originInput, DEFAULT_ORIGIN)), ORIGIN_DEBOUNCE_MS)
     return () => clearTimeout(t)
   }, [originInput])
 

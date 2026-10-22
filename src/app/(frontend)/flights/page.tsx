@@ -4,6 +4,7 @@ import React from 'react'
 
 import Header from '../components/Header'
 import FlightCalendarSearch from './FlightCalendarSearch'
+import FlightSearchForm from './FlightSearchForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,6 +56,7 @@ export default function FlightsPage() {
           Live fares to Funchal (FNC). Pick the cheapest day on the calendar.
         </p>
 
+        <FlightSearchForm />
         <FlightCalendarSearch />
       </div>
     </div>

@@ -16,11 +16,16 @@ export async function GET(req: NextRequest) {
   const origin = (req.nextUrl.searchParams.get('origin') ?? '')
     .trim()
     .toUpperCase()
+  const destination = (
+    req.nextUrl.searchParams.get('destination') ?? MADEIRA_IATA
+  )
+    .trim()
+    .toUpperCase()
   const month = (req.nextUrl.searchParams.get('month') ?? '').trim()
 
-  if (!ORIGIN_RE.test(origin) || !MONTH_RE.test(month)) {
+  if (!ORIGIN_RE.test(origin) || !ORIGIN_RE.test(destination) || !MONTH_RE.test(month)) {
     return NextResponse.json(
-      { error: 'Expected origin=<IATA> and month=<YYYY-MM>' },
+      { error: 'Expected origin=<IATA>, destination=<IATA> and month=<YYYY-MM>' },
       { status: 400 },
     )
   }
@@ -36,7 +41,7 @@ export async function GET(req: NextRequest) {
   try {
     const url =
       `https://api.travelpayouts.com/v1/prices/calendar` +
-      `?origin=${origin}&destination=${MADEIRA_IATA}` +
+      `?origin=${origin}&destination=${destination}` +
       `&depart_date=${month}&calendar_type=departure_date` +
       `&currency=EUR&token=${token}`
     const res = await fetch(url, {
@@ -57,7 +62,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         origin,
-        destination: MADEIRA_IATA,
+        destination,
         month,
         currency: 'EUR',
         prices,
