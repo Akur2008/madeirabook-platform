@@ -31,7 +31,7 @@ const R2 = 'https://pub-f74fa992eaf9435c83af63e8d0b4fc51.r2.dev'
 const OCEAN_URL = `${R2}/sounds/ocean-ambient.m4a`
 const CICADAS_URL = `${R2}/sounds/oasis-cicadas-ocean.m4a`
 const BIRDS_URL = `${R2}/sounds/oasis-birds.wav`
-const OCEAN_VOLUME = 0.25
+const OCEAN_VOLUME = 0.05
 const CICADAS_VOLUME = 0.2
 const BIRDS_VOLUME = 0.1
 const DUCKED_VOLUME = 0.05
@@ -45,81 +45,51 @@ export interface HeroVideoSpot {
   thumbnailUrl: string
   description: string
   // Position on the hero stage in % — m: mobile, d: desktop.
-  // Tuned to the artwork in /images/oasis-hero-bg.jpg; adjust with the final image.
+  // Tuned to the artwork in /images/oasis-bg.jpg; adjust with the final image.
   x: { m: string; d: string }
   y: { m: string; d: string }
   size?: { m: string; d: string }
 }
 
-// MVP: static config. The circles mirror the video bubbles baked into the
-// hero artwork; videoUrl placeholders get replaced by real 9:16 reels.
+// MVP: static config — three video circles over the Funchal bay artwork,
+// each opening the VideoBottomSheet with a hotel reel.
 const HERO_VIDEOS: HeroVideoSpot[] = [
-  {
-    id: 'quinta-da-serra',
-    title: 'Quinta da Serra',
-    videoUrl: `${R2}/uploads/quinta-da-serra-v3-reel-with-audio.mp4`,
-    hotelSlug: 'quinta-da-serra',
-    thumbnailUrl: `${R2}/uploads/quinta-da-serra-hero.jpg`,
-    description: 'A bio-luxury sanctuary above the clouds of Câmara de Lobos.',
-    x: { m: '17%', d: '16%' },
-    y: { m: '32%', d: '36%' },
-  },
   {
     id: 'savoy-palace',
     title: 'Savoy Palace',
-    videoUrl: '/videos/reference-33s.mp4',
+    videoUrl: '/images/savoy-palace/video-unconditional-world.mp4',
     hotelSlug: 'savoy-palace',
-    thumbnailUrl: `${R2}/uploads/savoy-palace-photo-2.jpg`,
+    thumbnailUrl: '/images/savoy-palace/video-unconditional-world-poster.jpg',
     description: 'Funchal’s grand dame — rooftop pool over the harbour.',
-    x: { m: '82%', d: '72%' },
-    y: { m: '30%', d: '30%' },
+    x: { m: '17%', d: '16%' },
+    y: { m: '37%', d: '40%' },
   },
   {
-    id: 'reids-palace',
-    title: "Reid's Palace",
-    videoUrl: '/videos/hd-dolby-42s.mp4',
-    hotelSlug: 'reids-palace-belmond',
-    thumbnailUrl: `${R2}/uploads/reids-palace-belmond-exterior-1.jpg`,
-    description: 'A Belmond legend on its own cliff above the Atlantic.',
-    x: { m: '14%', d: '28%' },
-    y: { m: '54%', d: '68%' },
+    id: 'pestana-casino-park',
+    title: 'Pestana Casino Park',
+    videoUrl: '/images/pestana-casino/video-elenabeatriz61.mp4',
+    hotelSlug: 'pestana-casino-park',
+    thumbnailUrl: '/images/pestana-casino/IMG_0128.jpg',
+    description: 'Niemeyer lines and palm gardens above the marina.',
+    x: { m: '80%', d: '83%' },
+    y: { m: '27%', d: '30%' },
   },
   {
-    id: 'cliff-bay',
-    title: 'The Cliff Bay',
-    videoUrl: `${R2}/homepage-video-ocean-1.mp4`,
-    hotelSlug: 'the-cliff-bay',
-    thumbnailUrl: `${R2}/uploads/the-cliff-bay-view-1.jpg`,
-    description: 'PortoBay’s clifftop classic with the island’s calmest pool.',
-    x: { m: '88%', d: '84%' },
-    y: { m: '53%', d: '58%' },
-  },
-  {
-    id: 'ponta-do-sol',
-    title: 'Ponta do Sol',
-    videoUrl: '/videos/reference-33s.mp4',
-    hotelSlug: 'estalagem-da-ponta-do-sol',
-    thumbnailUrl: `${R2}/uploads/estalagem-da-ponta-do-sol-exterior-1.jpg`,
-    description: 'Design hotel on the sunniest point of the island.',
-    x: { m: '21%', d: '38%' },
-    y: { m: '80%', d: '82%' },
-  },
-  {
-    id: 'saccharum',
-    title: 'Saccharum',
-    videoUrl: '/videos/hd-dolby-42s.mp4',
-    hotelSlug: 'saccharum-resort',
-    thumbnailUrl: `${R2}/uploads/saccharum-resort-photo-2.jpg`,
-    description: 'A sugar-cane estate turned resort in Calheta’s marina.',
-    x: { m: '73%', d: '64%' },
-    y: { m: '78%', d: '80%' },
+    id: 'barcelo-funchal-oldtown',
+    title: 'Barceló Funchal Oldtown',
+    videoUrl: '/images/barcelo/video-worldwithasuitcase.mp4',
+    hotelSlug: 'barcelo-funchal-oldtown',
+    thumbnailUrl: '/images/barcelo/IMG_0165.PNG',
+    description: 'A design-led hideaway tucked into the old town.',
+    x: { m: '24%', d: '26%' },
+    y: { m: '62%', d: '60%' },
   },
 ]
 
-// The whiskey/cigar tray in the artwork centre and the map bubble in the
-// bottom-right corner — both open the map modal.
-const TRAY_POS = { x: { m: '50%', d: '50%' }, y: { m: '62%', d: '60%' } }
-const MAP_POS = { x: { m: '86%', d: '91%' }, y: { m: '88%', d: '85%' } }
+// The whiskey tray sits centre-bottom on the ledge of the artwork and acts
+// as the map button; the gold map bubble is pinned above the floating
+// WhatsApp / AI / sound buttons instead of anchored to the artwork.
+const TRAY_POS = { x: { m: '50%', d: '50%' }, y: { m: '78%', d: '78%' } }
 
 const anchorVars = (p: {
   x: { m: string; d: string }
@@ -286,11 +256,11 @@ export default function InteractiveHero({
         // Local file supplied by the owner — plain <img> on purpose.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src="/images/oasis-hero-bg.jpg"
+          src="/images/oasis-bg.jpg"
           alt=""
           aria-hidden
           onError={() => setBgMissing(true)}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 z-0 h-full w-full object-cover"
         />
       )}
 
@@ -314,9 +284,6 @@ export default function InteractiveHero({
         </p>
       </div>
 
-      {/* Video circles hidden until the real 9:16 reels are ready — the
-          spots in HERO_VIDEOS point at drafted hotels and placeholder clips.
-          Restore the map block below (and the matching reels) to re-enable.
       {HERO_VIDEOS.map((v) => (
         <button
           key={v.id}
@@ -331,6 +298,7 @@ export default function InteractiveHero({
             className="oasis-pulse absolute inset-0 rounded-full border border-[#d4af37]/70"
           />
           <span className="absolute inset-0 overflow-hidden rounded-full border-2 border-[#d4af37]/80 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={v.thumbnailUrl} alt="" className="h-full w-full object-cover" />
           </span>
           <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/25 transition-colors duration-300 group-hover:bg-black/10">
@@ -341,35 +309,32 @@ export default function InteractiveHero({
           </span>
         </button>
       ))}
-      */}
 
-      {/* 3D tray — the centrepiece of the artwork, acts as the map button */}
-      <div className="oasis-anchored oasis-tray-stage" style={anchorVars(TRAY_POS)}>
+      {/* 3D whiskey tray — centre-bottom on the ledge, opens the map */}
+      <div
+        className="oasis-anchored oasis-tray-stage z-20"
+        style={anchorVars(TRAY_POS)}
+      >
         <button
           type="button"
           onClick={() => setMapOpen(true)}
           aria-label="Open the hotel map"
-          className="oasis-tray block w-[min(54vw,300px)] rounded-2xl border border-[#d4af37]/60 bg-[#14100c]/55 px-6 py-4 text-center backdrop-blur-sm"
+          className="oasis-tray block w-[min(72vw,400px)]"
         >
-          <span className="font-serif block text-lg leading-tight text-[#f5efe3] md:text-xl">
-            The Collection
-          </span>
-          <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">
-            Explore the map
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/oasis-tray.png" alt="" className="w-full" />
         </button>
       </div>
 
-      {/* Map bubble — bottom right of the artwork */}
+      {/* Gold map button — fixed 180px from the bottom so it clears the
+          WhatsApp / AI / sound FAB column on the right edge. On mobile it
+          sits left (the tray occupies centre-bottom); on desktop it floats
+          left of the FAB column. */}
       <button
         type="button"
         onClick={() => setMapOpen(true)}
         aria-label="Open the map"
-        className="oasis-anchored oasis-spot group rounded-full"
-        style={anchorVars({
-          ...MAP_POS,
-          size: { m: '56px', d: '72px' },
-        })}
+        className="group absolute bottom-[180px] left-8 z-20 h-14 w-14 rounded-full md:left-auto md:right-24 md:h-[72px] md:w-[72px]"
       >
         <span
           aria-hidden
