@@ -11,6 +11,29 @@ const BASE =
   process.env.ZEEVOU_SANDBOX_URL ||
   'https://sandbox.zeevou.com'
 
+// Request/response trace buffer — lets sync tooling build a precise error
+// report for Zeevou support (exact JSON payload sent + response received).
+export interface ZeevouRequestLogEntry {
+  method: string
+  url: string
+  requestBody: unknown
+  status: number
+  responseBody: unknown
+  at: string
+}
+
+const globalForLog = globalThis as unknown as {
+  __zeevouRequestLog?: ZeevouRequestLogEntry[]
+}
+
+export function getZeevouRequestLog(): ZeevouRequestLogEntry[] {
+  return globalForLog.__zeevouRequestLog ?? []
+}
+
+export function clearZeevouRequestLog(): void {
+  globalForLog.__zeevouRequestLog = []
+}
+
 async function zeevouRequest(
   method: string,
   path: string,
@@ -46,6 +69,16 @@ async function zeevouRequest(
   } catch {
     parsed = { raw: text }
   }
+  const log = (globalForLog.__zeevouRequestLog ??= [])
+  log.push({
+    method,
+    url,
+    requestBody: bodyObj ?? null,
+    status: res.status,
+    responseBody: parsed,
+    at: new Date().toISOString(),
+  })
+  if (log.length > 200) log.splice(0, log.length - 200)
   if (!res.ok) {
     throw new Error(
       `Zeevou ${method} ${path} ${res.status}: ${JSON.stringify(parsed).slice(0, 400)}`,
@@ -58,6 +91,7 @@ const apiGet = (path: string, query?: Record<string, string | number>) =>
   zeevouRequest('GET', path, null, query)
 const apiPost = (path: string, body: Record<string, unknown> | Record<string, unknown>[]) =>
   zeevouRequest('POST', path, body)
+const apiDelete = (path: string) => zeevouRequest('DELETE', path)
 
 function hydraMembers(data: unknown): Record<string, unknown>[] {
   if (Array.isArray(data)) return data as Record<string, unknown>[]
@@ -178,6 +212,8 @@ export interface ZeevouPropertyInput {
     postalCode?: string
     city?: string
     country?: string
+    lat?: number
+    lng?: number
   }
   maxGuests?: number
   bedrooms?: number
@@ -191,6 +227,21 @@ export interface ZeevouCreatedIds {
   ratePlanId: number | null
 }
 
+// Zeevou address write shape — latitude/longitude are strings per OpenAPI.
+// first_line must be non-blank ("First line of address should not be blank").
+// postal_code must match [A-Za-z0-9] — a bare "-" fails validation, so it is
+// omitted rather than sent as a placeholder.
+function writeAddress(a: ZeevouPropertyInput['address']) {
+  return {
+    first_line: a?.street || '-',
+    ...(a?.postalCode ? { postal_code: a.postalCode } : {}),
+    city: a?.city || 'Funchal',
+    country: a?.country || 'PT',
+    ...(typeof a?.lat === 'number' ? { latitude: String(a.lat) } : {}),
+    ...(typeof a?.lng === 'number' ? { longitude: String(a.lng) } : {}),
+  }
+}
+
 export async function createProperty(
   input: ZeevouPropertyInput,
 ): Promise<ZeevouCreatedIds> {
@@ -200,12 +251,7 @@ export async function createProperty(
     name: input.name,
     short_name: (input.shortName || input.name || '').slice(0, 50),
     description: input.description || '',
-    address: {
-      first_line: input.address?.street || '-',
-      postal_code: input.address?.postalCode || '-',
-      city: input.address?.city || 'Funchal',
-      country: input.address?.country || 'PT',
-    },
+    address: writeAddress(input.address),
     area: ids.area,
     default_currency: ids.currency,
     is_active: true,
@@ -291,29 +337,78 @@ export interface ZeevouComplexResult {
   unitTypes: ZeevouComplexUnitTypeResult[]
 }
 
+// Unit names must be unique org-wide ("name: This value is already used").
+// Scope them to property + unit type, slugified to stay within 50 chars.
+function scopedUnitName(
+  propertyShortName: string,
+  unitTypeName: string,
+  unitName: string,
+): string {
+  return `${propertyShortName}-${unitTypeName}-${unitName}`
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50)
+}
+
+// Best-effort rollback: deletes whatever createComplex already created so a
+// failed sync leaves no orphan objects behind (units first, then types,
+// then the property). Individual deletes never throw.
+async function cleanupComplex(parts: {
+  propertyIri?: string
+  unitTypeIris: string[]
+  unitIris: string[]
+}): Promise<void> {
+  for (const iri of parts.unitIris) {
+    await apiDelete(iri).catch(() => {})
+  }
+  for (const iri of parts.unitTypeIris) {
+    await apiDelete(iri).catch(() => {})
+  }
+  if (parts.propertyIri) {
+    await apiDelete(parts.propertyIri).catch(() => {})
+  }
+}
+
 export async function createComplex(
   property: ZeevouPropertyInput,
   unitTypes: ZeevouUnitTypeInput[],
 ): Promise<ZeevouComplexResult> {
   const ids = await getZeevouIds()
 
-  const created = (await apiPost('/apis/properties', {
-    name: property.name,
-    short_name: (property.shortName || property.name || '').slice(0, 50),
-    description: property.description || '',
-    address: {
-      first_line: property.address?.street || '-',
-      postal_code: property.address?.postalCode || '-',
-      city: property.address?.city || 'Funchal',
-      country: property.address?.country || 'PT',
-    },
-    area: ids.area,
-    default_currency: ids.currency,
-    is_single_unit: false,
-    is_active: true,
-    allow_direct_booking: true,
-  })) as Record<string, unknown>
-  const propertyId = toId(created.id)
+  // Zeevou enforces org-wide unique name/short_name — including against
+  // soft-deleted properties (DELETE 204 does not free the name). Retry with
+  // a numeric suffix when the violation is the unique-name constraint.
+  const baseName = property.name
+  const baseShort = (property.shortName || property.name || '').slice(0, 46)
+  let zeevouName = baseName
+  let zeevouShort = baseShort
+  let created: Record<string, unknown> | null = null
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    if (attempt > 0) {
+      zeevouName = `${baseName} ${attempt + 1}`
+      zeevouShort = `${baseShort}-${attempt + 1}`.slice(0, 50)
+    }
+    try {
+      created = (await apiPost('/apis/properties', {
+        name: zeevouName,
+        short_name: zeevouShort,
+        description: property.description || '',
+        address: writeAddress(property.address),
+        area: ids.area,
+        default_currency: ids.currency,
+        is_single_unit: false,
+        is_active: true,
+        allow_direct_booking: true,
+      })) as Record<string, unknown>
+      break
+    } catch (e) {
+      if (attempt < 4 && /already used/i.test(String((e as Error)?.message))) {
+        continue
+      }
+      throw e
+    }
+  }
+  const propertyId = toId(created?.id)
   if (!propertyId) {
     throw new Error(
       `Zeevou did not return a property id: ${JSON.stringify(created).slice(0, 300)}`,
@@ -322,66 +417,83 @@ export async function createComplex(
   const propertyIri = `/apis/properties/${propertyId}`
 
   const results: ZeevouComplexUnitTypeResult[] = []
-  for (const ut of unitTypes) {
-    // Unit-type names must be unique org-wide — prefix with the property name.
-    const utName = `${property.name} — ${ut.name}`.slice(0, 50)
-    const defaultPlan =
-      ut.ratePlans?.find((rp) => rp.isDefault) ?? ut.ratePlans?.[0]
+  const createdUnitTypeIris: string[] = []
+  const createdUnitIris: string[] = []
+  try {
+    for (const ut of unitTypes) {
+      // Unit-type names must be unique org-wide — prefix with the property name.
+      const utName = `${zeevouName} — ${ut.name}`.slice(0, 50)
+      const defaultPlan =
+        ut.ratePlans?.find((rp) => rp.isDefault) ?? ut.ratePlans?.[0]
 
-    const unitType = (await apiPost('/apis/unit_types', {
-      property: propertyIri,
-      name: utName,
-      description: ut.description || '',
-      maximum_capacity: ut.capacity || 2,
-      rate_plans: [
-        {
-          name: defaultPlan?.name || 'Standard',
+      const unitType = (await apiPost('/apis/unit_types', {
+        property: propertyIri,
+        name: utName,
+        description: ut.description || '',
+        maximum_capacity: ut.capacity || 2,
+        rate_plans: [
+          {
+            name: defaultPlan?.name || 'Standard',
+            type: 'Nightly',
+            is_default: true,
+            min_stay: defaultPlan?.minNights || 1,
+            weekday_price:
+              defaultPlan?.basePrice || property.basePrice || 100,
+            weekend_price:
+              defaultPlan?.basePrice || property.basePrice || 100,
+          },
+        ],
+      })) as Record<string, unknown>
+      const unitTypeId = toId(unitType.id)
+      const embedded = Array.isArray(unitType.rate_plans)
+        ? (unitType.rate_plans as Record<string, unknown>[])
+        : []
+      const defaultRatePlanId = toId(
+        (embedded.find((rp) => rp.is_default === true) ?? embedded[0])?.id,
+      )
+      const unitTypeIri = unitTypeId
+        ? `/apis/unit_types/${unitTypeId}`
+        : (unitType['@id'] as string)
+      if (unitTypeIri) createdUnitTypeIris.push(unitTypeIri)
+
+      const ratePlanIds: number[] = defaultRatePlanId ? [defaultRatePlanId] : []
+      for (const rp of ut.ratePlans ?? []) {
+        if (rp === defaultPlan) continue // already created embedded
+        const plan = (await apiPost('/apis/rate_plans', {
+          unit_type: unitTypeIri,
+          name: rp.name,
           type: 'Nightly',
-          is_default: true,
-          min_stay: defaultPlan?.minNights || 1,
-          weekday_price: defaultPlan?.basePrice || property.basePrice || 100,
-          weekend_price: defaultPlan?.basePrice || property.basePrice || 100,
-        },
-      ],
-    })) as Record<string, unknown>
-    const unitTypeId = toId(unitType.id)
-    const embedded = Array.isArray(unitType.rate_plans)
-      ? (unitType.rate_plans as Record<string, unknown>[])
-      : []
-    const defaultRatePlanId = toId(
-      (embedded.find((rp) => rp.is_default === true) ?? embedded[0])?.id,
-    )
-    const unitTypeIri = unitTypeId
-      ? `/apis/unit_types/${unitTypeId}`
-      : (unitType['@id'] as string)
+          is_default: false,
+          min_stay: rp.minNights || 1,
+          weekday_price: rp.basePrice,
+          weekend_price: rp.basePrice,
+        })) as Record<string, unknown>
+        const rpId = toId(plan.id)
+        if (rpId) ratePlanIds.push(rpId)
+      }
 
-    const ratePlanIds: number[] = defaultRatePlanId ? [defaultRatePlanId] : []
-    for (const rp of ut.ratePlans ?? []) {
-      if (rp === defaultPlan) continue // already created embedded
-      const plan = (await apiPost('/apis/rate_plans', {
-        unit_type: unitTypeIri,
-        name: rp.name,
-        type: 'Nightly',
-        is_default: false,
-        min_stay: rp.minNights || 1,
-        weekday_price: rp.basePrice,
-        weekend_price: rp.basePrice,
-      })) as Record<string, unknown>
-      const rpId = toId(plan.id)
-      if (rpId) ratePlanIds.push(rpId)
+      const unitIds: number[] = []
+      for (const u of ut.units ?? []) {
+        const unit = (await apiPost('/apis/units', {
+          unit_type: unitTypeIri,
+          name: scopedUnitName(zeevouShort, ut.name, u.name),
+        })) as Record<string, unknown>
+        const unitId = toId(unit.id)
+        if (unitId) {
+          unitIds.push(unitId)
+          createdUnitIris.push(`/apis/units/${unitId}`)
+        }
+      }
+
+      results.push({ unitTypeId, unitIds, ratePlanIds, defaultRatePlanId })
     }
-
-    const unitIds: number[] = []
-    for (const u of ut.units ?? []) {
-      const unit = (await apiPost('/apis/units', {
-        unit_type: unitTypeIri,
-        name: u.name,
-      })) as Record<string, unknown>
-      const unitId = toId(unit.id)
-      if (unitId) unitIds.push(unitId)
-    }
-
-    results.push({ unitTypeId, unitIds, ratePlanIds, defaultRatePlanId })
+  } catch (e) {
+    await cleanupComplex({
+      propertyIri,
+      unitTypeIris: createdUnitTypeIris,
+      unitIris: createdUnitIris,
+    })
+    throw e
   }
 
   return { propertyId, unitTypes: results }
