@@ -56,6 +56,25 @@ const nextConfig: NextConfig = {
         destination: '/legal/privacy',
         permanent: true,
       },
+      // Short links for Instagram bio — wa.me URLs get mangled there.
+      // 302 so the concierge number can be swapped later without stale caches.
+      {
+        source: '/chat',
+        destination: 'https://wa.me/351919304028',
+        permanent: false,
+      },
+      {
+        source: '/map-access',
+        destination:
+          'https://wa.me/351919304028?text=Hi!%20I%20want%20access%20to%20the%20map',
+        permanent: false,
+      },
+      {
+        source: '/owner-chat',
+        destination:
+          'https://wa.me/351919304028?text=Hi!%20I%20am%20a%20property%20owner',
+        permanent: false,
+      },
     ]
   },
   async rewrites() {
