@@ -1,8 +1,10 @@
 # Madeirabook
 
-> Madeirabook is a local booking platform for Madeira, Portugal: ocean-view apartments, villas and holiday homes booked directly from local hosts. The platform charges 10% commission instead of the 15–20% charged by global platforms, and returning guests get −10% forever. The site also publishes data-driven travel guides: real flight prices from 17 European cities, where to stay, what to eat, and island safety facts.
+> Madeirabook is a quiet-luxury booking platform for Madeira, Portugal: private sanctuaries, ocean-view villas and quiet retreats booked directly from local hosts — no middlemen. The platform charges 10% commission instead of the 15–20% charged by global platforms, and returning guests get −10% forever. The site also publishes data-driven travel guides: real flight prices from 17 European cities, where to stay, what to eat, and island safety facts.
 
-- [Home](https://www.madeirabook.com/): Book ocean-view apartments in Madeira directly from local hosts. Best price guaranteed, no platform fees.
+> Semantic core: quiet luxury Madeira, book sanctuary Madeira, escape to Madeira, direct booking Madeira, ocean view villa Madeira, private retreat Madeira, Madeira holiday homes direct, ocean-view apartments Funchal, quiet places to stay Madeira, Madeira concierge booking.
+
+- [Home](https://www.madeirabook.com/): Book private sanctuaries, ocean-view villas, and quiet retreats in Madeira. Direct booking, no middlemen.
 
 ## Flights
 

@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import type { ComponentProps } from 'react'
 
 const PropertyMap = dynamic(() => import('./PropertyMap'), {
   ssr: false,
@@ -11,16 +12,7 @@ const PropertyMap = dynamic(() => import('./PropertyMap'), {
   ),
 })
 
-interface PropertyMapLoaderProps {
-  latitude: number
-  longitude: number
-  title: string
-  imageUrl?: string
-  address?: string
-  endLatitude?: number
-  endLongitude?: number
-  endTitle?: string
-}
+type PropertyMapLoaderProps = ComponentProps<typeof PropertyMap>
 
 export default function PropertyMapLoader(props: PropertyMapLoaderProps) {
   return <PropertyMap {...props} />

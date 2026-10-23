@@ -13,9 +13,9 @@ import './oasis.css'
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.madeiraoasis.com'),
   alternates: { canonical: 'https://www.madeiraoasis.com' },
-  title: 'Madeira Oasis — A private collection of Madeira’s finest hotels',
+  title: 'Madeira Oasis — Curated Luxury Hotels & Villas',
   description:
-    'Fifteen hand-picked luxury addresses across Madeira. Oceanfront resorts, historic quintas and boutique suites — booked through the Madeira Oasis concierge.',
+    'A private collection of rare addresses across Madeira. Booked through one concierge.',
   manifest: '/manifest-oasis.json',
   icons: { icon: '/icon-512.png', apple: '/apple-touch-icon.png' },
   appleWebApp: {
@@ -25,9 +25,9 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   openGraph: {
-    title: 'Madeira Oasis',
+    title: 'Madeira Oasis — Curated Luxury Hotels & Villas',
     description:
-      'A private collection of Madeira’s finest hotels, booked through one concierge.',
+      'A private collection of rare addresses across Madeira. Booked through one concierge.',
     url: 'https://www.madeiraoasis.com',
     siteName: 'Madeira Oasis',
     images: [

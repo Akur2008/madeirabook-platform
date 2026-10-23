@@ -9,7 +9,9 @@ import type { Amenity, Media } from '@/payload-types'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 import WatchVideoButton from '@/components/WatchVideoButton'
 import { isVideoMedia } from '@/lib/media'
+import { isBookable } from '@/lib/pricing-rules'
 import MutedAutoplayVideo from '../../../../(frontend)/components/MutedAutoplayVideo'
+import PropertyMap from '../../../../(frontend)/components/PropertyMapLoader'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import OasisInquiryForm from '../../../../(frontend)/components/OasisInquiryForm'
 import OasisLink from '../../../../(frontend)/components/OasisLink'
@@ -108,12 +110,18 @@ export async function generateMetadata({
   const p = docs[0]
   const cover = p.media?.[0]?.image
   const image = cover && typeof cover === 'object' ? cover.url : undefined
-  const desc = p.shortDescription || `Discover ${p.title} — Madeira Oasis.`
+  const locationName =
+    p.location && typeof p.location === 'object' ? p.location.name : null
+  const base = p.shortDescription || `Discover ${p.title} — Madeira Oasis.`
+  const desc = `${base} Quiet luxury${locationName ? ` in ${locationName}` : ' in Madeira'} — ocean view, direct booking.`
+  const title = locationName
+    ? `${p.title} — ${locationName} | Madeira Oasis`
+    : `${p.title} | Madeira Oasis`
   return {
-    title: `${p.title} — Madeira Oasis`,
+    title,
     description: desc,
     openGraph: {
-      title: p.title,
+      title,
       description: desc,
       images: image ? [{ url: image }] : [],
       type: 'website',
@@ -173,6 +181,44 @@ export default async function OasisHotelPage({
   const contactMailto = `mailto:hello@madeiraoasis.com?subject=${encodeURIComponent(
     `Inquiry about ${p.title}`,
   )}`
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Hotel',
+    name: p.title,
+    description: p.description || p.shortDescription || '',
+    url: `https://www.madeiraoasis.com/hotels/${p.slug}`,
+    identifier: p.slug,
+    image: images.map((img) => img.url),
+    brand: {
+      '@type': 'Brand',
+      name: 'Madeira Oasis',
+    },
+    ...((p.address || locationName) && {
+      address: {
+        '@type': 'PostalAddress',
+        ...(p.address?.street && { streetAddress: p.address.street }),
+        addressLocality: p.address?.city ?? locationName ?? undefined,
+        ...(p.address?.postal && { postalCode: p.address.postal }),
+        addressCountry: p.address?.country ?? 'PT',
+      },
+    }),
+    ...(geo?.lat != null &&
+      geo?.lng != null && {
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: geo.lat,
+          longitude: geo.lng,
+        },
+      }),
+    ...(amenities.length > 0 && {
+      amenityFeature: amenities.map((a) => ({
+        '@type': 'LocationFeatureSpecification',
+        name: a.name,
+        value: true,
+      })),
+    }),
+  }
 
   return (
     <div className="min-h-dvh bg-[#fdfbf7] pt-16 text-[#1c1a16]">
@@ -308,6 +354,45 @@ export default async function OasisHotelPage({
         </section>
       )}
 
+      {/* Location — light map centred on the address; the stay's card
+          opens on load, same as the map pin tap */}
+      {geo?.lat != null && geo?.lng != null && (
+        <section className="mx-auto max-w-5xl px-6 pb-16">
+          <h2 className="font-serif text-3xl font-medium">Location</h2>
+          <div className="mt-6">
+            <PropertyMap
+              latitude={geo.lat}
+              longitude={geo.lng}
+              title={p.title}
+              address={
+                streetAddress ||
+                (locationName ? `${locationName}, Madeira` : undefined)
+              }
+              pinColor="#d4af37"
+              pinEmoji="★"
+              point={{
+                type: 'property',
+                slug: p.slug,
+                name: p.title,
+                lat: geo.lat,
+                lng: geo.lng,
+                photoUrl: hero?.url ?? null,
+                videoUrl: video?.url ?? null,
+                shortDescription: p.shortDescription ?? null,
+                meta:
+                  [p.category, locationName].filter(Boolean).join(' · ') ||
+                  null,
+                address:
+                  streetAddress ||
+                  (locationName ? `${locationName}, Madeira` : null),
+                href: '#inquiry',
+                bookable: isBookable(p),
+              }}
+            />
+          </div>
+        </section>
+      )}
+
       {/* Inquiry */}
       <section id="inquiry" className="mx-auto max-w-3xl px-6 py-16 md:py-20">
         <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#b8952e]">
@@ -351,6 +436,11 @@ export default async function OasisHotelPage({
           <SaveAsAppSheet variant="light" />
         </div>
       </footer>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     </div>
   )
 }

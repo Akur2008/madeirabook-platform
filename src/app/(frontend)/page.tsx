@@ -21,13 +21,13 @@ import HomepageTrioRotation from './components/HomepageTrioRotation'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Madeirabook — rare places to stay in Madeira',
+  title: 'Madeirabook — Quiet Luxury & Direct Booking in Madeira',
   description:
-    'Curated stays in Madeira — direct booking, honest prices, no mass tourism.',
+    'Book private sanctuaries, ocean-view villas, and quiet retreats in Madeira. Direct booking, no middlemen.',
   openGraph: {
-    title: 'Madeirabook',
+    title: 'Madeirabook — Quiet Luxury & Direct Booking in Madeira',
     description:
-      'Curated stays in Madeira — direct booking, honest prices.',
+      'Book private sanctuaries, ocean-view villas, and quiet retreats in Madeira. Direct booking, no middlemen.',
     type: 'website',
     url: 'https://www.madeirabook.com/',
   },
@@ -44,7 +44,7 @@ const WEBSITE_JSONLD = {
   name: 'Madeirabook',
   url: 'https://www.madeirabook.com/',
   description:
-    'Curated stays in Madeira — direct booking, honest prices.',
+    'Book private sanctuaries, ocean-view villas, and quiet retreats in Madeira. Direct booking, no middlemen.',
   potentialAction: {
     '@type': 'SearchAction',
     target:

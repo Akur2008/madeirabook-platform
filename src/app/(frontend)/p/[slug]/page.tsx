@@ -43,13 +43,19 @@ export async function generateMetadata({
   const p = docs[0]
   const cover = p.media?.[0]?.image
   const image = cover && typeof cover === 'object' ? cover.url : undefined
-  const desc =
+  const locationName =
+    p.location && typeof p.location === 'object' ? p.location.name : null
+  const base =
     p.shortDescription || p.description || `Stay at ${p.title} in Madeira.`
+  const desc = `${base} Quiet luxury${locationName ? ` in ${locationName}` : ' in Madeira'} — ocean view, direct booking.`
+  const title = locationName
+    ? `${p.title} — ${locationName} | Madeirabook`
+    : `${p.title} | Madeirabook`
   return {
-    title: `${p.title} — Madeirabook`,
+    title,
     description: desc,
     openGraph: {
-      title: p.title,
+      title,
       description: desc,
       images: image ? [{ url: image }] : [],
       type: 'website',
@@ -363,6 +369,23 @@ export default async function PropertyPage({
                       ? (p.media[0].image as { url: string }).url
                       : undefined
                   }
+                  point={{
+                    type: 'property',
+                    slug: p.slug,
+                    name: p.title,
+                    lat: geo.lat,
+                    lng: geo.lng,
+                    photoUrl: images[0]?.url ?? null,
+                    videoUrl: video?.url ?? null,
+                    shortDescription: p.shortDescription ?? null,
+                    meta:
+                      bookable && p.pricePerNight
+                        ? `€${p.pricePerNight} / night`
+                        : null,
+                    address: streetAddress || locationName,
+                    href: '#book',
+                    bookable,
+                  }}
                 />
               </div>
               <div className="mt-4">

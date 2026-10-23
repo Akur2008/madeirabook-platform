@@ -15,9 +15,9 @@ import InteractiveHero from './InteractiveHero'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Madeira Oasis — The collection',
+  title: 'Madeira Oasis — Curated Luxury Hotels & Villas',
   description:
-    'Fifteen hand-picked luxury hotels across Madeira on one map. Request a stay through the Madeira Oasis concierge.',
+    'A private collection of rare addresses across Madeira. Booked through one concierge.',
   alternates: { canonical: '/' },
 }
 

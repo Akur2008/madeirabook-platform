@@ -109,12 +109,18 @@ export async function generateMetadata({
       ? raw
       : `https://www.madeiraoasis.com${raw}`
     : undefined
-  const desc = p.shortDescription || `Discover ${p.title} — Madeira Oasis.`
+  const locationName =
+    p.location && typeof p.location === 'object' ? p.location.name : null
+  const base = p.shortDescription || `Discover ${p.title} — Madeira Oasis.`
+  const desc = `${base} Quiet luxury${locationName ? ` in ${locationName}` : ' in Madeira'} — ocean view, direct booking.`
+  const title = locationName
+    ? `${p.title} — ${locationName} | Madeira Oasis`
+    : `${p.title} | Madeira Oasis`
   return {
-    title: `${p.title} — Madeira Oasis`,
+    title,
     description: desc,
     openGraph: {
-      title: `${p.title} — Madeira Oasis`,
+      title,
       description: desc,
       images: heroImage
         ? [{ url: heroImage, width: 1200, height: 630, alt: p.title }]

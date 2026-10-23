@@ -12,9 +12,9 @@ import AiConciergeWidget from '@/components/AiConciergeWidget'
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.madeirabook.com'),
   alternates: { canonical: 'https://www.madeirabook.com' },
-  title: 'Madeirabook — Curated escapes to Madeira',
+  title: 'Madeirabook — Quiet Luxury & Direct Booking in Madeira',
   description:
-    'Emotional gateways to Madeira. Two-minute escapes from the city noise.',
+    'Book private sanctuaries, ocean-view villas, and quiet retreats in Madeira. Direct booking, no middlemen.',
   manifest: '/manifest.json',
   icons: { icon: '/icon-512.png', apple: '/apple-touch-icon.png' },
   appleWebApp: {
@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   openGraph: {
-    title: 'Madeirabook — Quiet Luxury in Madeira',
+    title: 'Madeirabook — Quiet Luxury & Direct Booking in Madeira',
     description:
-      'Emotional gateways to Madeira. Two-minute escapes from the city noise.',
+      'Book private sanctuaries, ocean-view villas, and quiet retreats in Madeira. Direct booking, no middlemen.',
     url: 'https://www.madeirabook.com',
     siteName: 'Madeirabook',
     images: [
