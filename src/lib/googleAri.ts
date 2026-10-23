@@ -13,6 +13,7 @@ import type { Where } from 'payload'
 
 import config from '@payload-config'
 import { getRates } from '@/lib/pms'
+import { PRICING_RULES, getScenario } from '@/lib/pricing-rules'
 
 export const GOOGLE_UPLOADS_BASE = 'https://www.google.com/travel/hotels/uploads'
 export const GOOGLE_PUSH_ENDPOINT = `${GOOGLE_UPLOADS_BASE}/property_data`
@@ -152,6 +153,7 @@ interface PropertyDoc {
   pms?: string | null
   pmsPropertyId?: string | number | null
   pmsMeta?: unknown
+  pricingScenario?: string | null
   pricePerNight?: number | null
   cleaningFee?: number | null
 }
@@ -194,19 +196,26 @@ export function buildLandingUrl(
 }
 
 // Fetches per-day ARI from the PMS router and folds it into a Google-style
-// result. Missing days fall back to property.pricePerNight and are treated as
+// result. The pricingScenario manifest decides where the price comes from:
+// smoobu/zeevou query the PMS, manual uses the DB rate as authoritative, and
+// display_only/siteminder never reach Google (serveAriQuery 404s them first;
+// computeAri still reports not_bookable as a belt-and-braces guard).
+// Missing PMS days fall back to property.pricePerNight and are treated as
 // sellable — our own checkout re-validates availability before payment.
-// Properties without a PMS link, or a failed PMS call, are reported as
-// unavailable (Baserate -1) rather than guessed prices: Google penalizes
-// inaccurate pricing.
+// A failed PMS call reports the stay unavailable (Baserate -1) rather than
+// guessed prices: Google penalizes inaccurate pricing.
 export async function computeAri(
   property: PropertyDoc,
   q: AriQuery,
 ): Promise<AriResult> {
   const dates = nightsBetween(q.checkin, q.checkout)
 
+  const rule = PRICING_RULES[getScenario(property)]
   const pmsIdNum = Number(property.pmsPropertyId)
-  const hasPms = Number.isFinite(pmsIdNum) && pmsIdNum > 0
+  const hasPms =
+    (rule.priceSource === 'smoobu_api' || rule.priceSource === 'zeevou_api') &&
+    Number.isFinite(pmsIdNum) &&
+    pmsIdNum > 0
   let pmsError = false
   let rates: Awaited<ReturnType<typeof getRates>> = {}
   if (hasPms) {
@@ -237,7 +246,8 @@ export async function computeAri(
   const minStayAtCheckin = detail[0]?.minStay ?? null
   let reason: string | null = null
   if (!detail.length) reason = 'no_nights'
-  else if (!hasPms) reason = 'no_pms_link'
+  else if (!rule.isBookable) reason = 'not_bookable'
+  else if (rule.priceSource !== 'payload_db' && !hasPms) reason = 'no_pms_link'
   else if (pmsError) reason = 'pms_unavailable'
   else if (detail.some((d) => !d.available)) reason = 'closed_or_unpriced_night'
   else if (minStayAtCheckin && detail.length < minStayAtCheckin)
@@ -283,6 +293,9 @@ export async function serveAriQuery(q: AriQuery): Promise<AriResponse | null> {
 
   const property = await findProperty(q.hotelId)
   if (!property) return null
+  // Only scenarios the manifest marks showInGoogle answer Google queries —
+  // display_only and siteminder stays are not part of the ARI surface.
+  if (!PRICING_RULES[getScenario(property)].showInGoogle) return null
   const result = await computeAri(property, q)
   ariCache.set(cacheKey, { at: Date.now(), result })
   return { result, cached: false, durationMs: Date.now() - started }

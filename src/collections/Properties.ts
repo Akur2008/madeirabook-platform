@@ -306,5 +306,26 @@ export const Properties: CollectionConfig = {
       required: true,
       defaultValue: 'draft',
     },
+    {
+      name: 'pricingScenario',
+      type: 'select',
+      label: 'Pricing Scenario',
+      options: [
+        { label: 'Smoobu (PMS)', value: 'smoobu' },
+        { label: 'Zeevou (PMS)', value: 'zeevou' },
+        { label: 'SiteMinder (Channel Manager)', value: 'siteminder' },
+        { label: 'Manual (our DB)', value: 'manual' },
+        { label: 'Display only', value: 'display_only' },
+      ],
+      required: true,
+      defaultValue: 'display_only',
+      admin: {
+        description:
+          'Price source of truth for this stay. Click ? for what each scenario means.',
+        components: {
+          Label: '@/components/admin/PricingScenarioLabel',
+        },
+      },
+    },
   ],
 }

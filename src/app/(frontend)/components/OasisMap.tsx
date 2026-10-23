@@ -32,8 +32,9 @@ export interface OasisHotelPin {
   photoUrl?: string | null
   videoUrl?: string | null
   address?: string | null
-  // brand 'both' stays (Orquídea) are bookable through the PMS-backed
-  // search — the pin card shows a live price for the selected dates.
+  // Bookable stays (per the pricingScenario manifest) are bookable through
+  // the PMS-backed search — the pin card shows a live price for the
+  // selected dates. display_only stays show no price and no booking UI.
   bookable?: boolean | null
 }
 

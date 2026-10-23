@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
+import { isBookable } from '@/lib/pricing-rules'
 import ExploreMapInteractive from '../components/ExploreMapInteractive'
 import Header from '../components/Header'
 
@@ -132,6 +133,9 @@ export default async function ExplorePage({
     const cover = mediaItems.find(
       (img) => typeof img === 'object' && img !== null && !videoMediaUrl(img),
     )
+    // Non-bookable scenarios (display_only — e.g. Orquídea) render the pin
+    // card without a price or booking UI.
+    const bookable = isBookable(p)
     return [
       {
         id: p.id,
@@ -139,14 +143,16 @@ export default async function ExplorePage({
         title: p.title,
         lat: geo.lat,
         lng: geo.lng,
-        pricePerNight: p.pricePerNight,
+        pricePerNight: bookable ? p.pricePerNight : null,
+        bookable,
         coverImage: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
         photoUrl: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
         videoUrl:
           mediaItems.map(videoMediaUrl).find((u): u is string => Boolean(u)) ??
           null,
         shortDescription: p.shortDescription,
-        meta: p.pricePerNight ? `€${p.pricePerNight} / night` : null,
+        meta:
+          bookable && p.pricePerNight ? `€${p.pricePerNight} / night` : null,
         address:
           [
             p.address?.street,

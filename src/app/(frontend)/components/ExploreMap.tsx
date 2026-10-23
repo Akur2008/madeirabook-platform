@@ -47,6 +47,9 @@ interface MapStay {
   meta?: string | null
   address?: string | null
   featured?: boolean | null
+  // Per the pricingScenario manifest — false hides the price/book block on
+  // the pin card (display_only stays like Orquídea).
+  bookable?: boolean | null
 }
 
 interface MapBeach {
@@ -315,10 +318,14 @@ export default function ExploreMap({
           shortDescription: p.shortDescription ?? null,
           meta:
             p.meta ??
-            (p.pricePerNight ? `€${p.pricePerNight} / night` : null),
+            (p.bookable === false
+              ? null
+              : p.pricePerNight
+                ? `€${p.pricePerNight} / night`
+                : null),
           address: p.address ?? null,
           href: withRef(`/p/${p.slug}`),
-          bookable: true,
+          bookable: p.bookable ?? null,
         }
         const marker = L.marker([p.lat, p.lng], { icon, title: p.title })
         marker.on('click', () => openStaySheet(preview))

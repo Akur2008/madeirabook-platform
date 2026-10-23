@@ -5,6 +5,7 @@ import React from 'react'
 
 import config from '@payload-config'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
+import { isBookable } from '@/lib/pricing-rules'
 import B2BContactButtons from '../components/B2BContactButtons'
 import B2BLeadForm from '../components/B2BLeadForm'
 import ExploreMap from '../components/ExploreMap'
@@ -67,6 +68,7 @@ export default async function AmbassadorPage() {
     const loc = typeof p.location === 'object' ? p.location : null
     if (loc?.geoCoordinates?.lat == null || loc?.geoCoordinates?.lng == null)
       return []
+    const bookable = isBookable(p)
     return [
       {
         id: p.id,
@@ -74,7 +76,8 @@ export default async function AmbassadorPage() {
         title: p.title,
         lat: loc.geoCoordinates.lat,
         lng: loc.geoCoordinates.lng,
-        pricePerNight: p.pricePerNight,
+        pricePerNight: bookable ? p.pricePerNight : null,
+        bookable,
       },
     ]
   })

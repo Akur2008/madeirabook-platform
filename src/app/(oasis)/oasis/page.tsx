@@ -5,6 +5,7 @@ import React from 'react'
 import config from '@/payload.config'
 import HotelStories from '@/components/HotelStories'
 import { HOTEL_STORIES } from '@/lib/hotel-stories'
+import { isBookable } from '@/lib/pricing-rules'
 import type {
   OasisHotelPin,
   OasisPoiPin,
@@ -143,9 +144,10 @@ export default async function OasisPage({
           cover && typeof cover === 'object' ? (cover.url ?? null) : null,
         videoUrl:
           video && typeof video === 'object' ? (video.url ?? null) : null,
-        // 'both' brands are on madeirabook too — bookable via the PMS
-        // search; pure madeiraoasis stays keep the concierge card.
-        bookable: p.brand === 'both',
+        // The pricing manifest decides: only isBookable scenarios get the
+        // live-price block; display_only (e.g. Orquídea) shows just the
+        // offline-nav + details card, never a price or a book button.
+        bookable: isBookable(p),
         address:
           [
             p.address?.street,

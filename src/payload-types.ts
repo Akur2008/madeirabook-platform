@@ -408,6 +408,10 @@ export interface Property {
    */
   isVerified?: boolean | null;
   status: 'draft' | 'published' | 'archived';
+  /**
+   * Price source of truth for this stay. Click ? for what each scenario means.
+   */
+  pricingScenario: 'smoobu' | 'zeevou' | 'siteminder' | 'manual' | 'display_only';
   updatedAt: string;
   createdAt: string;
 }
@@ -1565,6 +1569,7 @@ export interface PropertiesSelect<T extends boolean = true> {
   featured?: T;
   isVerified?: T;
   status?: T;
+  pricingScenario?: T;
   updatedAt?: T;
   createdAt?: T;
 }

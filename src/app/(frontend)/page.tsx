@@ -8,6 +8,7 @@ import React from 'react'
 import config from '@/payload.config'
 import HotelStories from '@/components/HotelStories'
 import { HOTEL_STORIES } from '@/lib/hotel-stories'
+import { isBookable } from '@/lib/pricing-rules'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import SubscribeForm from '@/components/SubscribeForm'
 import AcquisitionSection from './components/AcquisitionSection'
@@ -213,6 +214,8 @@ export default async function HomePage({
         (img.mimeType?.startsWith('video/') ||
           /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(img.url)),
     )
+    // Non-bookable scenarios (display_only — e.g. Orquídea) show no price.
+    const bookable = isBookable(p)
     return [
       {
         id: p.id,
@@ -220,7 +223,8 @@ export default async function HomePage({
         title: p.title,
         lat: geo.lat,
         lng: geo.lng,
-        pricePerNight: p.pricePerNight,
+        pricePerNight: bookable ? p.pricePerNight : null,
+        bookable,
         coverImage: cover && typeof cover === 'object' ? (cover.url ?? null) : null,
         videoUrl: video && typeof video === 'object' ? (video.url ?? null) : null,
         shortDescription: p.shortDescription,
@@ -416,7 +420,7 @@ export default async function HomePage({
                     >
                       {p.title}
                     </h3>
-                    {p.pricePerNight && (
+                    {isBookable(p) && p.pricePerNight && (
                       <p className="mb-0 mt-2 text-sm text-white/60">
                         From €{p.pricePerNight} / night
                       </p>

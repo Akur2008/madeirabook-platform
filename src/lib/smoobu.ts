@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { PRICING_RULES, getScenario } from '@/lib/pricing-rules'
 
 // Direct Smoobu API client, ported from madeirabook-core
 // (src/services/pms/smoobu.js). Requests are signed with HMAC-SHA256:
@@ -312,11 +313,13 @@ async function checkZeevouStay(
   }
 }
 
-// Availability search across all published properties. Each property's PMS
-// (property.pms — Smoobu or Zeevou) is the source of truth for the price:
-// Smoobu ids go to the batch checkApartmentAvailability call, Zeevou
-// properties get a per-property rates+bookings check. Properties whose PMS
-// check fails or that have no pmsPropertyId fall back to the DB
+// Availability search across all published, bookable properties. The
+// pricingScenario manifest (src/lib/pricing-rules.ts) decides the price
+// source per property: smoobu ids go to the batch checkApartmentAvailability
+// call, zeevou properties get a per-property rates+bookings check, and
+// manual prices come straight from the DB. Non-bookable scenarios
+// (display_only, siteminder) are excluded — they are never sold. Properties
+// whose PMS check fails or that have no pmsPropertyId fall back to the DB
 // pricePerNight (marked `estimate: true`) instead of being dropped.
 // Items without any price keep `price: null` — the UI renders those as
 // "contact us" entries.
@@ -347,15 +350,22 @@ export async function checkAvailability({
     ),
   )
 
-  // Split by backend — sending a Zeevou id to Smoobu fails the whole batch
-  // ("customer not owner for one or more apartments").
+  // Only bookable scenarios are sellable here — display_only / siteminder
+  // stays are skipped entirely (no PMS calls, no search rows).
+  const sellable = found.docs.filter(
+    (doc) => PRICING_RULES[getScenario(doc)].isBookable,
+  )
+
+  // Split by the scenario's price source — sending a Zeevou id to Smoobu
+  // fails the whole batch ("customer not owner for one or more apartments").
   const smoobuIds: number[] = []
   const zeevouDocs: typeof found.docs = []
-  for (const doc of found.docs) {
+  for (const doc of sellable) {
+    const source = PRICING_RULES[getScenario(doc)].priceSource
     const id = Number(doc.pmsPropertyId)
     if (!Number.isFinite(id) || id <= 0) continue
-    if (doc.pms === 'zeevou') zeevouDocs.push(doc)
-    else smoobuIds.push(id)
+    if (source === 'zeevou_api') zeevouDocs.push(doc)
+    else if (source === 'smoobu_api') smoobuIds.push(id)
   }
 
   let avail: Record<number, SmoobuAvailabilityEntry> = {}
@@ -394,12 +404,13 @@ export async function checkAvailability({
   }
 
   const items: AvailabilityItem[] = []
-  for (const doc of found.docs) {
+  for (const doc of sellable) {
+    const source = PRICING_RULES[getScenario(doc)].priceSource
     const id = Number(doc.pmsPropertyId)
     const entry =
-      doc.pms === 'zeevou'
+      source === 'zeevou_api'
         ? zeevouAvail.get(doc.id)
-        : Number.isFinite(id)
+        : source === 'smoobu_api' && Number.isFinite(id)
           ? avail[id]
           : undefined
     if (entry && !entry.available) continue

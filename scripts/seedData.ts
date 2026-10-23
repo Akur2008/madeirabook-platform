@@ -259,6 +259,7 @@ export async function seedData(): Promise<void> {
         collection: 'properties',
         data: {
           ...property,
+          pricingScenario: 'manual' as const,
           location: propertyLocations[i],
           amenities: allAmenities.docs.map((a) => a.id),
         },

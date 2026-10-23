@@ -170,6 +170,9 @@ async function main() {
         slug: row.slug,
         brand: row.brand ?? 'madeirabook',
         pmsPropertyId: row.pms_property_id ?? row.smoobu_id ?? undefined,
+        pricingScenario: (row.pms_property_id ?? row.smoobu_id)
+          ? ('smoobu' as const)
+          : ('display_only' as const),
         pricePerNight: toNum(row.price_per_night) ?? FALLBACK_PRICE_PER_NIGHT,
         cleaningFee: toNum(row.cleaning_fee),
         description: row.description ?? undefined,

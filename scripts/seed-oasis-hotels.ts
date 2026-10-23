@@ -398,6 +398,7 @@ async function seedOasisHotels(): Promise<void> {
       brand: 'madeiraoasis' as const,
       hotelType: 'hotel' as const,
       status: 'published' as const,
+      pricingScenario: 'display_only' as const,
       category: h.category,
       shortDescription: h.shortDescription,
       description: h.description,

@@ -48,6 +48,9 @@ interface MapStay {
   meta?: string | null
   address?: string | null
   featured?: boolean | null
+  // Per the pricingScenario manifest — false hides the price/book block on
+  // the pin card (display_only stays like Orquídea).
+  bookable?: boolean | null
 }
 
 interface MapBeach {
@@ -312,7 +315,7 @@ export default function ExploreMapInteractive({
       shownStays.forEach((p) =>
         push(
           'property',
-          { ...p, photoUrl: p.photoUrl ?? p.coverImage, bookable: true },
+          { ...p, photoUrl: p.photoUrl ?? p.coverImage, bookable: p.bookable ?? null },
           p.title,
         ),
       )

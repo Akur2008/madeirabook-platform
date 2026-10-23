@@ -14,10 +14,17 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { getRates } from '@/lib/pms'
 import { BASE_CURRENCY, isValidDate, nightsBetween } from '@/lib/googleAri'
+import { PRICING_RULES, getScenario } from '@/lib/pricing-rules'
 
-// Hotels published to the Google feed. Overridable per request via the
-// `hotels` query param, or globally via GOOGLE_HOTEL_FEED_SLUGS.
-export const FEED_HOTEL_SLUGS = ['hotel-orquidea', 'barcelo-funchal-oldtown']
+// Hotels published to the Google feed — must be showInGoogle scenarios per
+// the pricing manifest (the bookable Smoobu apartments by default).
+// Overridable per request via the `hotels` query param, or globally via
+// GOOGLE_HOTEL_FEED_SLUGS.
+export const FEED_HOTEL_SLUGS = [
+  'apartamentos-do-mar-303',
+  'apartamentos-do-mar-607',
+  'penthouse-on-the-beach-madeira',
+]
 
 export const HOTEL_CENTER_ROOM_ID = 'standard-room'
 export const HOTEL_CENTER_OCCUPANCY = 2
@@ -120,6 +127,7 @@ interface FeedPropertyDoc {
   pms?: string | null
   pmsPropertyId?: string | number | null
   pmsMeta?: unknown
+  pricingScenario?: string | null
   shortDescription?: string | null
   geoCoordinates?: { lat?: number | null; lng?: number | null } | null
   address?: {
@@ -145,6 +153,8 @@ export function hotelCenterLandingUrl(slug: string): string {
 }
 
 // Published properties matching the requested slugs, in slug-list order.
+// Non-Google scenarios (display_only, siteminder) are filtered out — the
+// manifest forbids them from the ARI surface.
 async function findFeedProperties(slugs: string[]): Promise<FeedPropertyDoc[]> {
   const payload = await getPayload({ config: await config })
   const found = await payload.find({
@@ -155,7 +165,9 @@ async function findFeedProperties(slugs: string[]): Promise<FeedPropertyDoc[]> {
     limit: slugs.length,
     depth: 2,
   })
-  const docs = found.docs as unknown as FeedPropertyDoc[]
+  const docs = (found.docs as unknown as FeedPropertyDoc[]).filter(
+    (doc) => PRICING_RULES[getScenario(doc)].showInGoogle,
+  )
   const order = new Map(slugs.map((slug, i) => [slug, i]))
   return docs.sort(
     (a, b) => (order.get(a.slug) ?? slugs.length) - (order.get(b.slug) ?? slugs.length),
@@ -270,8 +282,12 @@ async function buildHotelEntry(
     })
   }
 
+  const rule = PRICING_RULES[getScenario(doc)]
   const pmsId = Number(doc.pmsPropertyId)
-  const hasPms = Number.isFinite(pmsId) && pmsId > 0
+  const hasPms =
+    (rule.priceSource === 'smoobu_api' || rule.priceSource === 'zeevou_api') &&
+    Number.isFinite(pmsId) &&
+    pmsId > 0
   let pmsError = false
   let rates: Awaited<ReturnType<typeof getRates>> = {}
   if (hasPms) {

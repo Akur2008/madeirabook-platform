@@ -32,6 +32,7 @@ import * as migration_20261020_212935_add_rooms_structure from './20261020_21293
 import * as migration_20261021_212730_add_b2b_lead_fields from './20261021_212730_add_b2b_lead_fields';
 import * as migration_20261022_120000_add_is_featured_oasis from './20261022_120000_add_is_featured_oasis';
 import * as migration_20261023_120000_add_wallet_fields_to_referrals from './20261023_120000_add_wallet_fields_to_referrals';
+import * as migration_20261023_130000_add_pricing_scenario from './20261023_130000_add_pricing_scenario';
 
 export const migrations = [
   {
@@ -203,5 +204,10 @@ export const migrations = [
     up: migration_20261023_120000_add_wallet_fields_to_referrals.up,
     down: migration_20261023_120000_add_wallet_fields_to_referrals.down,
     name: '20261023_120000_add_wallet_fields_to_referrals'
+  },
+  {
+    up: migration_20261023_130000_add_pricing_scenario.up,
+    down: migration_20261023_130000_add_pricing_scenario.down,
+    name: '20261023_130000_add_pricing_scenario'
   },
 ];

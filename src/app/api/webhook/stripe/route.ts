@@ -5,6 +5,7 @@ import Stripe from 'stripe'
 
 import config from '@payload-config'
 import { sendAdminAlert, sendBookingPaidEmail } from '@/lib/notify'
+import { PRICING_RULES, getScenario } from '@/lib/pricing-rules'
 import { createReservation, markPaid } from '@/lib/smoobu'
 
 export const runtime = 'nodejs'
@@ -233,12 +234,13 @@ async function handleCheckoutCompleted(
 
   // Split fields live on the Payload property; owner email via the
   // owner relationship (replaces the legacy properties/users JOIN).
+  const rule = property ? PRICING_RULES[getScenario(property)] : null
   const isPlatform = property?.isPlatform !== false
   const platformFeeCents = isPlatform
     ? 0
     : calcFee(
         amountCents,
-        property?.commissionPercent ?? DEFAULT_COMMISSION_PERCENT,
+        property?.commissionPercent ?? rule?.commission ?? DEFAULT_COMMISSION_PERCENT,
       )
   const ownerEmail = ownerEmailOf(property)
 
@@ -319,22 +321,47 @@ async function handleCheckoutCompleted(
     }
   }
 
-  // Create the Smoobu reservation (payment-first flow, same as core).
+  // Create the PMS reservation (payment-first flow, same as core). The
+  // pricingScenario manifest picks the backend: smoobu -> Smoobu API,
+  // zeevou -> Zeevou API. manual/display_only have no PMS target — the
+  // catch below flags paid_no_pms and alerts an admin to book by hand.
   let smoobuBookingId: number | null = null
   try {
     if (!smoobuId) {
       throw new Error(`property '${propertySlug}' has no pmsPropertyId`)
     }
-    smoobuBookingId = await createReservation({
-      propertyId: smoobuId,
-      arrivalDate: arrival,
-      departureDate: departure,
-      guestEmail,
-      arrivalTime:
-        typeof property?.checkInTime === 'string'
-          ? property.checkInTime
-          : '15:00',
-    })
+    if (rule?.priceSource === 'zeevou_api') {
+      const pms = await import('@/lib/pms')
+      smoobuBookingId = await pms.createBooking(property!, {
+        arrivalDate: arrival,
+        departureDate: departure,
+        guestEmail,
+        totalPrice: amountCents / 100,
+      })
+    } else if (rule?.priceSource === 'smoobu_api' || rule === null) {
+      smoobuBookingId = await createReservation({
+        propertyId: smoobuId,
+        arrivalDate: arrival,
+        departureDate: departure,
+        guestEmail,
+        arrivalTime:
+          typeof property?.checkInTime === 'string'
+            ? property.checkInTime
+            : '15:00',
+      })
+      try {
+        await markPaid(smoobuBookingId)
+      } catch (err) {
+        console.warn(
+          `webhook: smoobu markPaid failed for ${smoobuBookingId} (non-critical)`,
+          err,
+        )
+      }
+    } else {
+      throw new Error(
+        `property '${propertySlug}' pricing scenario '${getScenario(property)}' has no PMS booking target`,
+      )
+    }
     if (bookingId) {
       await payload.update({
         collection: 'bookings',
@@ -343,16 +370,8 @@ async function handleCheckoutCompleted(
       })
     }
     console.log(
-      `webhook: Smoobu reservation ${smoobuBookingId} created for booking ${bookingId} (session ${session.id})`,
+      `webhook: PMS reservation ${smoobuBookingId} created for booking ${bookingId} (session ${session.id})`,
     )
-    try {
-      await markPaid(smoobuBookingId)
-    } catch (err) {
-      console.warn(
-        `webhook: smoobu markPaid failed for ${smoobuBookingId} (non-critical)`,
-        err,
-      )
-    }
   } catch (err) {
     // Payment succeeded but PMS rejected — flag for manual handling.
     if (bookingId) {

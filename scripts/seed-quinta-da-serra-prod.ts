@@ -145,6 +145,7 @@ async function main() {
     brand: 'madeiraoasis' as const,
     hotelType: 'hotel' as const,
     status: 'published' as const,
+    pricingScenario: 'display_only' as const,
     category: '5★ Bio Hotel & Mountain Retreat',
     shortDescription:
       '5-Star organic retreat nestled at 820m in Madeira mountains.',

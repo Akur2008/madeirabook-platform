@@ -22,6 +22,7 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { default as default_dea13dff44aaa2ee70b75005c7a07eb2 } from '@/components/admin/IcalUrlField'
+import { default as default_a27e2fb4f47501db87c98dfee2ddad21 } from '@/components/admin/PricingScenarioLabel'
 import { default as default_22aebd41f70fb080c9fc6c4df1a45608 } from '@/components/admin/ZeevouPublishPanel'
 import { default as default_e9dc17d3a0781f6c52d3e88d6211aa6f } from '@/components/admin/AmbassadorPayoutPanel'
 import { default as default_427eed1d72a1c7acac62a8a9dd336426 } from '@/components/admin/PinStatusCell'
@@ -54,6 +55,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/components/admin/IcalUrlField#default": default_dea13dff44aaa2ee70b75005c7a07eb2,
+  "@/components/admin/PricingScenarioLabel#default": default_a27e2fb4f47501db87c98dfee2ddad21,
   "@/components/admin/ZeevouPublishPanel#default": default_22aebd41f70fb080c9fc6c4df1a45608,
   "@/components/admin/AmbassadorPayoutPanel#default": default_e9dc17d3a0781f6c52d3e88d6211aa6f,
   "@/components/admin/PinStatusCell#default": default_427eed1d72a1c7acac62a8a9dd336426,

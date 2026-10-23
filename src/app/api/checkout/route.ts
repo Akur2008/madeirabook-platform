@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import Stripe from 'stripe'
 
 import config from '@payload-config'
+import { PRICING_RULES, getScenario } from '@/lib/pricing-rules'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -124,6 +125,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'property_not_found' }, { status: 404 })
     }
 
+    // The pricing manifest decides whether this stay is sellable at all —
+    // display_only/siteminder properties can never open a checkout.
+    const rule = PRICING_RULES[getScenario(property)]
+    if (!rule.isBookable) {
+      return NextResponse.json(
+        { error: 'property_not_bookable' },
+        { status: 409 },
+      )
+    }
+
     // Availability + authoritative stay price via the existing core
     // endpoint. Smoobu remains the source of truth for the total.
     let offer: AvailabilityOffer | undefined
@@ -182,7 +193,7 @@ export async function POST(req: NextRequest) {
       ? 0
       : calcFee(
           amountCents,
-          property.commissionPercent ?? DEFAULT_COMMISSION_PERCENT,
+          property.commissionPercent ?? rule.commission ?? DEFAULT_COMMISSION_PERCENT,
         )
 
     const nights = Math.round(

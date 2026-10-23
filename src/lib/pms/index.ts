@@ -1,8 +1,12 @@
-// PMS router — dispatches calendar/rate/booking calls to the right backend
-// based on property.pms: 'smoobu' (Gold, direct API) or 'zeevou' (Silver,
-// free API, single organization). Empty pms = legacy Smoobu.
+// PMS router — dispatches calendar/rate/booking calls to the right backend.
+// Routing follows the pricingScenario manifest (src/lib/pricing-rules.ts):
+// smoobu -> Smoobu API (Gold, direct), zeevou -> Zeevou API (Silver, free
+// API, single organization). manual/display_only have no PMS; siteminder is
+// a channel manager — transport only, never a price source.
 // Adapters are loaded via dynamic import so a broken/unconfigured backend
 // never breaks the other one.
+
+import { PRICING_RULES, getScenario } from '@/lib/pricing-rules'
 
 export type PmsName = 'smoobu' | 'zeevou'
 
@@ -16,10 +20,21 @@ export interface PmsPropertyRef {
   pms?: string | null
   pmsPropertyId?: string | number | null
   pmsMeta?: unknown
+  pricingScenario?: string | null
 }
 
+// Which PMS backend owns this property per the pricing manifest.
+// Non-PMS scenarios (manual, siteminder, display_only) still resolve to a
+// name for labelling; the call sites below gate the actual API traffic on
+// the scenario's priceSource.
 export function resolvePms(property: PmsPropertyRef | null | undefined): PmsName {
-  return property?.pms === 'zeevou' ? 'zeevou' : 'smoobu'
+  return priceSource(property) === 'zeevou_api' ? 'zeevou' : 'smoobu'
+}
+
+// The scenario's declared price source — the only thing allowed to trigger
+// real PMS API calls. SiteMinder is a channel manager, never a source.
+function priceSource(property: PmsPropertyRef | null | undefined) {
+  return PRICING_RULES[getScenario(property)].priceSource
 }
 
 // Narrows the loosely-typed Payload json field to our meta shape.
@@ -47,8 +62,13 @@ export async function getRates(
   startDate: string,
   endDate: string,
 ): Promise<PmsRatesMap> {
+  const source = priceSource(property)
+  // No PMS price source -> nothing to fetch. 'manual' and 'display_only'
+  // return an empty map so callers fall back to the DB rate or report the
+  // stay as unpriced; 'siteminder' is a channel manager, never a source.
+  if (source !== 'smoobu_api' && source !== 'zeevou_api') return {}
   const id = pmsId(property)
-  if (resolvePms(property) === 'zeevou') {
+  if (source === 'zeevou_api') {
     const zeevou = await import('@/services/pms/zeevou')
     return zeevou.getRates(id, startDate, endDate, pmsMetaOf(property).ratePlanId ?? null)
   }
@@ -89,8 +109,14 @@ export async function setRates(
   property: PmsPropertyRef,
   input: SetRatesInput,
 ): Promise<unknown> {
+  const source = priceSource(property)
+  if (source !== 'smoobu_api' && source !== 'zeevou_api') {
+    throw new Error(
+      `setRates: pricing scenario '${getScenario(property)}' has no PMS rate target`,
+    )
+  }
   const id = pmsId(property)
-  if (resolvePms(property) === 'zeevou') {
+  if (source === 'zeevou_api') {
     const zeevou = await import('@/services/pms/zeevou')
     const items = eachDay(input.startDate, input.endDate).map((date) => ({
       date,
@@ -153,8 +179,10 @@ export async function getReservations(
   startDate: string,
   endDate: string,
 ): Promise<PmsBooking[]> {
+  const source = priceSource(property)
+  if (source !== 'smoobu_api' && source !== 'zeevou_api') return []
   const id = pmsId(property)
-  if (resolvePms(property) === 'zeevou') {
+  if (source === 'zeevou_api') {
     const zeevou = await import('@/services/pms/zeevou')
     const rows = await zeevou.getReservations(id, startDate, endDate)
     return rows.map((b) => ({
@@ -205,8 +233,14 @@ export async function createBooking(
   property: PmsPropertyRef,
   input: CreateBookingInput,
 ): Promise<number> {
+  const source = priceSource(property)
+  if (source !== 'smoobu_api' && source !== 'zeevou_api') {
+    throw new Error(
+      `createBooking: pricing scenario '${getScenario(property)}' has no PMS booking target`,
+    )
+  }
   const id = pmsId(property)
-  if (resolvePms(property) === 'zeevou') {
+  if (source === 'zeevou_api') {
     const zeevou = await import('@/services/pms/zeevou')
     const created = await zeevou.createBooking({
       propertyId: id,

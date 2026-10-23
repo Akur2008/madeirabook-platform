@@ -100,6 +100,7 @@ async function main() {
     brand: 'madeiraoasis' as const,
     status: 'published' as const,
     hotelType: 'hotel' as const,
+    pricingScenario: 'display_only' as const,
     category: '5★ Design Hotel — Funchal Old Town',
     geoCoordinates: { lat: 32.6474, lng: -16.909 },
     address: {

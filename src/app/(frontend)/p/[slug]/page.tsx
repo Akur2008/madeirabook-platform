@@ -10,6 +10,7 @@ import type { Amenity, HouseRule, Media } from '@/payload-types'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
 import WatchVideoButton from '@/components/WatchVideoButton'
 import { isVideoMedia } from '@/lib/media'
+import { isBookable } from '@/lib/pricing-rules'
 
 import BookingDrawer from '../../components/BookingDrawer'
 import Header from '../../components/Header'
@@ -159,9 +160,17 @@ export default async function PropertyPage({
   const reviewCount =
     typeof pmsMeta?.reviewCount === 'number' ? pmsMeta.reviewCount : null
 
+  // The pricing manifest decides whether this stay sells: display_only
+  // (e.g. Orquídea) shows no price and a "Contact us via Email" CTA instead
+  // of the booking flow.
+  const bookable = isBookable(p)
+  const contactMailto = `mailto:hello@madeiraoasis.com?subject=${encodeURIComponent(
+    `Availability inquiry — ${p.title}`,
+  )}`
+
   const specs = [
-    p.pricePerNight ? `From €${p.pricePerNight} / night` : null,
-    p.cleaningFee ? `Cleaning fee €${p.cleaningFee}` : null,
+    bookable && p.pricePerNight ? `From €${p.pricePerNight} / night` : null,
+    bookable && p.cleaningFee ? `Cleaning fee €${p.cleaningFee}` : null,
     p.sizeM2 ? `${p.sizeM2} m²` : null,
     p.bedrooms ? `${p.bedrooms} bedrooms` : null,
     p.bathrooms ? `${p.bathrooms} bathrooms` : null,
@@ -177,9 +186,10 @@ export default async function PropertyPage({
     description: p.description || p.shortDescription || '',
     image: images.map((img) => img.url),
     identifier: p.slug,
-    ...(p.pricePerNight && {
-      priceRange: `From €${p.pricePerNight} per night`,
-    }),
+    ...(bookable &&
+      p.pricePerNight && {
+        priceRange: `From €${p.pricePerNight} per night`,
+      }),
     ...(p.sizeM2 && {
       floorSize: {
         '@type': 'QuantitativeValue',
@@ -227,15 +237,16 @@ export default async function PropertyPage({
           reviewCount,
         },
       }),
-    ...(p.pricePerNight && {
-      offers: {
-        '@type': 'Offer',
-        price: p.pricePerNight,
-        priceCurrency: 'EUR',
-        availability: 'https://schema.org/InStock',
-        url: `https://www.madeirabook.com/p/${p.slug}`,
-      },
-    }),
+    ...(bookable &&
+      p.pricePerNight && {
+        offers: {
+          '@type': 'Offer',
+          price: p.pricePerNight,
+          priceCurrency: 'EUR',
+          availability: 'https://schema.org/InStock',
+          url: `https://www.madeirabook.com/p/${p.slug}`,
+        },
+      }),
   }
 
   return (
@@ -377,22 +388,34 @@ export default async function PropertyPage({
             <WatchVideoButton
               videoUrl={video.url}
               title={p.title}
-              cta={{ label: 'Book this stay', href: '#book' }}
+              cta={{
+                label: bookable ? 'Book this stay' : 'Contact us',
+                href: '#book',
+              }}
               theme="dark"
             />
           )}
-          <BookingDrawer
-            propertySlug={p.slug}
-            propertyTitle={p.title}
-            trigger={
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
-              >
-                Book this stay →
-              </button>
-            }
-          />
+          {bookable ? (
+            <BookingDrawer
+              propertySlug={p.slug}
+              propertyTitle={p.title}
+              trigger={
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+                >
+                  Book this stay →
+                </button>
+              }
+            />
+          ) : (
+            <a
+              href={contactMailto}
+              className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+            >
+              Contact us via Email →
+            </a>
+          )}
         </div>
       </div>
 
