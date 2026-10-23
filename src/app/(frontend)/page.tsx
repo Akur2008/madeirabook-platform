@@ -6,6 +6,8 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
+import HotelStories from '@/components/HotelStories'
+import { HOTEL_STORIES } from '@/lib/hotel-stories'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import SubscribeForm from '@/components/SubscribeForm'
 import AcquisitionSection from './components/AcquisitionSection'
@@ -426,6 +428,10 @@ export default async function HomePage({
           </div>
         )}
       </section>
+
+      {/* 2.75. Hotel Stories — phone-frame posters; video only loads in the
+          full-screen sheet on tap */}
+      <HotelStories stories={HOTEL_STORIES} theme="dark" />
 
       {/* 3. Weather widget (meteoblue) */}
       <section id="weather" className="px-4 py-16 md:py-20">

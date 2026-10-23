@@ -3,6 +3,8 @@ import { getPayload, type Where } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
+import HotelStories from '@/components/HotelStories'
+import { HOTEL_STORIES } from '@/lib/hotel-stories'
 import type {
   OasisHotelPin,
   OasisPoiPin,
@@ -155,15 +157,20 @@ export default async function OasisPage({
   })
 
   return (
-    <div className="h-dvh overflow-hidden bg-[#171310]">
-      <InteractiveHero
-        hotels={hotels}
-        beaches={beaches}
-        restaurants={restaurants}
-        initialLat={hasCenter ? parsedLat : undefined}
-        initialLng={hasCenter ? parsedLng : undefined}
-        initialZoom={zoom != null && Number.isFinite(parsedZoom) ? parsedZoom : undefined}
-      />
+    <div className="bg-[#171310]">
+      <div className="h-dvh overflow-hidden">
+        <InteractiveHero
+          hotels={hotels}
+          beaches={beaches}
+          restaurants={restaurants}
+          initialLat={hasCenter ? parsedLat : undefined}
+          initialLng={hasCenter ? parsedLng : undefined}
+          initialZoom={zoom != null && Number.isFinite(parsedZoom) ? parsedZoom : undefined}
+        />
+      </div>
+      {/* Hotel Stories — phone-frame posters under the full-screen hero;
+          the mp4 only loads inside the sheet on tap */}
+      <HotelStories stories={HOTEL_STORIES} theme="oasis" />
     </div>
   )
 }

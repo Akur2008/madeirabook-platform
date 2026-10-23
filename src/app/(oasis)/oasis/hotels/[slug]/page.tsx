@@ -7,20 +7,14 @@ import React from 'react'
 import config from '@/payload.config'
 import type { Amenity, Media } from '@/payload-types'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+import WatchVideoButton from '@/components/WatchVideoButton'
+import { isVideoMedia } from '@/lib/media'
 import MutedAutoplayVideo from '../../../../(frontend)/components/MutedAutoplayVideo'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import OasisInquiryForm from '../../../../(frontend)/components/OasisInquiryForm'
 import OasisLink from '../../../../(frontend)/components/OasisLink'
 
 export const revalidate = 60
-
-// Media rows are URL references — a video is marked by its mimeType, with the
-// file extension as a fallback for rows where mimeType was never filled in.
-const isVideoMedia = (img: Media) =>
-  Boolean(
-    img.mimeType?.startsWith('video/') ||
-      /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(img.url),
-  )
 
 const escapeHtml = (s: string) =>
   s
@@ -211,20 +205,30 @@ export default async function OasisHotelPage({
               {locationName}, Madeira
             </p>
           )}
-          {geo?.lat != null && geo?.lng != null && (
-            <div className="mt-5">
-              <GetDirectionsSheet
-                lat={geo.lat}
-                lng={geo.lng}
-                name={p.title}
-                address={
-                  streetAddress ||
-                  (locationName ? `${locationName}, Madeira` : null)
-                }
-                theme="gold"
-              />
+          {(geo?.lat != null && geo?.lng != null) || video?.url ? (
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              {geo?.lat != null && geo?.lng != null && (
+                <GetDirectionsSheet
+                  lat={geo.lat}
+                  lng={geo.lng}
+                  name={p.title}
+                  address={
+                    streetAddress ||
+                    (locationName ? `${locationName}, Madeira` : null)
+                  }
+                  theme="gold"
+                />
+              )}
+              {video?.url && (
+                <WatchVideoButton
+                  videoUrl={video.url}
+                  title={p.title}
+                  cta={{ label: 'Request a stay', href: '#inquiry' }}
+                  theme="hero"
+                />
+              )}
             </div>
-          )}
+          ) : null}
         </div>
       </section>
 

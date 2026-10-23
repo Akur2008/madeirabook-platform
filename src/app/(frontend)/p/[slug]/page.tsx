@@ -8,6 +8,8 @@ import React from 'react'
 import config from '@/payload.config'
 import type { Amenity, HouseRule, Media } from '@/payload-types'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+import WatchVideoButton from '@/components/WatchVideoButton'
+import { isVideoMedia } from '@/lib/media'
 
 import BookingDrawer from '../../components/BookingDrawer'
 import Header from '../../components/Header'
@@ -92,9 +94,11 @@ export default async function PropertyPage({
     limit: 50,
   })
 
-  const images = (p.media ?? [])
+  const mediaItems = (p.media ?? [])
     .map((m) => m.image)
     .filter((img): img is Media => typeof img === 'object' && img !== null)
+  const video = mediaItems.find(isVideoMedia)
+  const images = mediaItems.filter((img) => !isVideoMedia(img))
 
   const amenities = (p.amenities ?? []).filter(
     (a): a is Amenity => typeof a === 'object' && a !== null,
@@ -348,13 +352,21 @@ export default async function PropertyPage({
             </section>
           )}
 
-        <div className="mt-14 flex flex-wrap items-center gap-4">
+        <div id="book" className="mt-14 flex scroll-mt-24 flex-wrap items-center gap-4">
           <Link
             href="/"
             className="inline-flex items-center justify-center rounded-lg border border-white/25 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
           >
             ← Back to all stays
           </Link>
+          {video?.url && (
+            <WatchVideoButton
+              videoUrl={video.url}
+              title={p.title}
+              cta={{ label: 'Book this stay', href: '#book' }}
+              theme="dark"
+            />
+          )}
           <BookingDrawer
             propertySlug={p.slug}
             propertyTitle={p.title}
