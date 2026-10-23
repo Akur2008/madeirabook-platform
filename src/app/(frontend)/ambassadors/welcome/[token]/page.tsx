@@ -10,6 +10,7 @@ import { hasSignedAmbassadorTerms } from '@/lib/agreements'
 import AcceptInvite from './AcceptInvite'
 import CopyLinkButton from './CopyLinkButton'
 import EditPicks from './EditPicks'
+import AddPinForm from '../../add-pin/AddPinForm'
 import SetupPayouts from './SetupPayouts'
 
 export const metadata: Metadata = {
@@ -353,16 +354,17 @@ export default async function WelcomePage(props: {
           initialBeachIds={spotIdsOf(referral.selectedBeaches)}
           initialRestaurantIds={spotIdsOf(referral.selectedRestaurants)}
         />
-        <div>
-          <a
-            href={`/ambassadors/add-pin?token=${token}`}
-            className="block w-full rounded-md border border-[#d4af37]/50 bg-[#d4af37]/10 px-4 py-4 text-center text-sm font-semibold text-[#d4af37] transition-colors hover:bg-[#d4af37]/20"
-          >
-            ➕ Add your own spot
-          </a>
-          <p className="mt-2 text-center text-xs text-white/40">
-            Share a hidden gem — it will appear on your map after a quick review.
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/50">
+            Add your own spot
           </p>
+          <p className="mt-1.5 text-xs text-white/40">
+            Share a hidden gem — it will appear on your map after a quick
+            review.
+          </p>
+          <div className="mt-4">
+            <AddPinForm token={token} />
+          </div>
         </div>
       </div>
 

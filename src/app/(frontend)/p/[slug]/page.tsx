@@ -123,6 +123,31 @@ export default async function PropertyPage({
     .filter(Boolean)
     .join(', ')
 
+  // Google flags VacationRental without containsPlace — one Room per active
+  // unit type; a generic room as fallback when no units are configured yet.
+  const rooms =
+    unitTypes.length > 0
+      ? unitTypes.map((ut) => ({
+          '@type': 'Room',
+          name: ut.name,
+          ...(ut.capacity && {
+            occupancy: {
+              '@type': 'QuantitativeValue',
+              value: Number(ut.capacity),
+            },
+          }),
+        }))
+      : [
+          {
+            '@type': 'Room',
+            name: p.bedrooms ? `${p.bedrooms} Bedroom` : 'Studio',
+            occupancy: {
+              '@type': 'QuantitativeValue',
+              value: p.maxGuests ?? 2,
+            },
+          },
+        ]
+
   // aggregateRating is emitted only when the PMS sync has carried a real
   // rating + review count over — Google rejects self-serving stubs.
   const pmsMeta =
@@ -193,18 +218,7 @@ export default async function PropertyPage({
         value: true,
       })),
     }),
-    ...(unitTypes.length > 0 && {
-      containsPlace: unitTypes.map((ut) => ({
-        '@type': 'Room',
-        name: ut.name,
-        ...(ut.capacity && {
-          occupancy: {
-            '@type': 'QuantitativeValue',
-            maxValue: ut.capacity,
-          },
-        }),
-      })),
-    }),
+    containsPlace: rooms,
     ...(ratingValue != null &&
       reviewCount != null && {
         aggregateRating: {

@@ -434,7 +434,7 @@ export default function ExploreMap({
           ? `<video src="${escHtml(p.videoUrl)}" controls playsinline style="width:100%;border-radius:8px;margin-top:6px;"></video>`
           : p.photoUrl
             ? `<img src="${escHtml(p.photoUrl)}" alt="" loading="lazy" decoding="async" style="width:100%;border-radius:8px;margin-top:6px;" />`
-            : ''
+            : `<div style="width:100%;height:80px;margin-top:6px;border-radius:8px;background:linear-gradient(135deg,#12324a,#0a1420);display:flex;align-items:center;justify-content:center;font-size:28px;">📍</div>`
         marker.bindPopup(
           `<div style="max-width:220px;">` +
             `<strong>${escHtml(p.title)}</strong>` +
