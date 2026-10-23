@@ -159,6 +159,7 @@ export async function GET(req: NextRequest) {
     {
       city: cityName,
       country,
+      fromIata: city.iata,
       cheapestPrice: cheapest?.price ?? FALLBACK_PRICE_EUR,
       cheapestDate: cheapest?.date ?? toISODate(addDays(new Date(), 7)),
       currency: 'EUR',

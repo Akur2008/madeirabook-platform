@@ -383,7 +383,10 @@ export default async function HomePage({
       </section>
 
       {/* 2.5. Stays grid — published properties */}
-      <section className="mx-auto max-w-6xl px-6 py-20 md:py-24">
+      <section
+        id="stays"
+        className="mx-auto max-w-6xl scroll-mt-24 px-6 py-20 md:py-24"
+      >
         <h2
           className="mb-12 text-center text-3xl font-light text-white/90 md:text-4xl"
           style={SERIF}

@@ -12,6 +12,11 @@ import {
   isDefaultAmbientUrl,
 } from '@/audio/defaultAmbient'
 import {
+  readCocoonEnabled,
+  serverCocoonEnabled,
+  subscribeCocoonEnabled,
+} from '@/audio/cocoonEnabled'
+import {
   readSoundMuted,
   serverSoundMuted,
   subscribeSoundMuted,
@@ -39,6 +44,13 @@ export default function GlobalAmbient() {
     readSoundMuted,
     serverSoundMuted,
   )
+  // Header "3D SOUND COCOON" toggle — off means the default scene stays
+  // silent even when the master mute is off.
+  const cocoonOn = useSyncExternalStore(
+    subscribeCocoonEnabled,
+    readCocoonEnabled,
+    serverCocoonEnabled,
+  )
   // True while a scene switch (play/crossfade) is in flight — the async
   // buffer load means several state emissions can fire before the new
   // scene's url becomes visible; the guard prevents re-triggering.
@@ -61,7 +73,7 @@ export default function GlobalAmbient() {
     // Pages like /sluice-test drive the ambient channel themselves.
     if (isPageDrivenAmbient(pathname)) return
 
-    if (muted) {
+    if (muted || !cocoonOn) {
       if (playing) engine.stopAmbient(ENGINE_STOP_MS)
       return
     }
@@ -90,7 +102,7 @@ export default function GlobalAmbient() {
         })
     }
     // Context not running yet: the gesture listeners below start it.
-  }, [engine, pathname, muted, playing, url, ctxRunning])
+  }, [engine, pathname, muted, cocoonOn, playing, url, ctxRunning])
 
   // First-gesture autostart + resume after reload (the armed flag survives
   // reloads; the AudioContext does not). Any click/tap/keypress/wheel that
@@ -98,7 +110,7 @@ export default function GlobalAmbient() {
   // skipped — their own code starts the sound.
   useEffect(() => {
     const onGesture = (e: Event) => {
-      if (muted) return
+      if (muted || !cocoonOn) return
       const host = currentHost()
       if (
         isExternallyManagedAmbient(pathname, host) ||
@@ -127,7 +139,7 @@ export default function GlobalAmbient() {
       window.removeEventListener('keydown', onGesture)
       window.removeEventListener('wheel', onGesture)
     }
-  }, [engine, muted, pathname])
+  }, [engine, muted, cocoonOn, pathname])
 
   return null
 }

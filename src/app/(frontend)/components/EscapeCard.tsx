@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -9,10 +10,13 @@ const ESCAPE_CARD_URL = '/api/escape-card'
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
 const FALLBACK_CITY = 'Lisbon'
+const FALLBACK_IATA = 'LIS'
+const MADEIRA_IATA = 'FNC'
 
 type EscapeCardData = {
   city?: string
   country?: string
+  fromIata?: string
   cheapestPrice?: number
   cheapestDate?: string
   currency?: string
@@ -66,6 +70,7 @@ export default function EscapeCard() {
   }, [])
 
   const city = escapeCard?.city || FALLBACK_CITY
+  const fromIata = escapeCard?.fromIata || FALLBACK_IATA
   const hasPrice = typeof escapeCard?.cheapestPrice === 'number'
   const weekendLabel = weekend
     ? `${weekend.arrival.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${weekend.departure.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
@@ -77,64 +82,84 @@ export default function EscapeCard() {
   }
 
   return (
-    <>
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={goToBook}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            goToBook()
-          }
-        }}
-        className="w-full max-w-md cursor-pointer rounded-2xl border border-white/15 p-6 text-left backdrop-blur-xl transition-colors hover:bg-white/5 md:p-8"
-        style={{ background: 'rgba(10, 20, 32, 0.75)' }}
+    <div
+      className="w-full max-w-md rounded-2xl border border-white/15 p-5 text-left backdrop-blur-xl md:p-6"
+      style={{ background: 'rgba(10, 20, 32, 0.75)' }}
+    >
+      <Link
+        href="/flights"
+        className="block w-full rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-[#d4af37] transition-colors hover:bg-[#d4af37]/20"
       >
-        <p className="mb-0 text-2xl font-light leading-tight text-white/95 md:text-3xl" style={SERIF}>
-          Escape from {city}
-        </p>
-        <p className="mb-0 mt-2 text-sm text-white/60">
-          Next weekend{weekendLabel ? ` · ${weekendLabel}` : ''}
-        </p>
+        ✈ Flight from {city}
+      </Link>
 
+      <div className="mt-5 flex items-center justify-between gap-3">
+        <div className="flex flex-col">
+          <span className="text-2xl font-light text-white/95" style={SERIF}>
+            {fromIata}
+          </span>
+          <span className="text-[11px] uppercase tracking-widest text-white/45">
+            {city}
+          </span>
+        </div>
+        <div className="flex flex-1 items-center gap-2 px-2" aria-hidden>
+          <span className="h-px flex-1 bg-white/20" />
+          <span className="text-white/60">✈</span>
+          <span className="h-px flex-1 bg-white/20" />
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-2xl font-light text-white/95" style={SERIF}>
+            {MADEIRA_IATA}
+          </span>
+          <span className="text-[11px] uppercase tracking-widest text-white/45">
+            Madeira
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-1.5 text-sm text-white/70">
+        {weekendLabel && (
+          <p>
+            Next weekend · <span className="text-white/90">{weekendLabel}</span>
+          </p>
+        )}
         {hasPrice && (
-          <p className="mt-4 text-lg text-white/90">
-            Cheapest:{' '}
+          <p>
             {escapeCard!.fallback === true || !escapeCard!.cheapestDate ? (
               <>
-                <span className="font-medium">€{escapeCard!.cheapestPrice}</span> (next weekend)
+                Cheapest <span className="font-medium text-white/95">€{escapeCard!.cheapestPrice}</span>{' '}
+                <span className="text-white/50">(next weekend)</span>
               </>
             ) : (
               <>
-                <span className="font-medium">{formatDate(escapeCard!.cheapestDate!)}</span>
+                <span className="text-white/90">{formatDate(escapeCard!.cheapestDate!)}</span>
                 {' — '}
-                <span className="font-medium">€{escapeCard!.cheapestPrice}</span>
+                <span className="font-medium text-white/95">€{escapeCard!.cheapestPrice}</span>
               </>
             )}
-          </p>
-        )}
-        {hasPrice && (
-          <p className="text-xs text-white/60">
-            🔥 Prices rise closer to Friday
+            <span className="ml-2 text-xs text-white/50">🔥 rises by Friday</span>
           </p>
         )}
         {typeof escapeCard?.toTemp === 'number' && (
-          <p className="text-sm text-white/70 mt-2">
+          <p className="text-white/60">
             {typeof escapeCard.fromTemp === 'number' && (
               <>
                 {weatherIcon(escapeCard.fromWeatherCode)} {city} {escapeCard.fromTemp}°C
-                <span className="mx-2">➔</span>
+                <span className="mx-2">→</span>
               </>
             )}
             {weatherIcon(escapeCard.toWeatherCode)} Madeira {escapeCard.toTemp}°C
           </p>
         )}
-
-        <span className="mt-6 block w-full rounded-full border border-white/30 bg-white/10 py-3 text-center text-sm uppercase tracking-widest text-white transition-colors group-hover:bg-white/20">
-          Find your dates →
-        </span>
       </div>
-    </>
+
+      <button
+        type="button"
+        onClick={goToBook}
+        className="mt-6 block w-full rounded-full bg-[#d4af37] py-3.5 text-center text-sm font-bold uppercase tracking-[0.22em] text-[#0a1420] transition-colors hover:bg-[#e4c04a]"
+      >
+        Book Sanctuary →
+      </button>
+    </div>
   )
 }

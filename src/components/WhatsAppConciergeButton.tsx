@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 
-const WA_BASE = 'https://wa.me/79626854685'
+export const WA_BASE = 'https://wa.me/79626854685'
 // Madeira Oasis concierge line.
 export const OASIS_WA_BASE = 'https://wa.me/351919304028'
 const REF_COOKIE = 'madeirabook_ref'
@@ -22,7 +22,7 @@ const styles = `
 }
 `
 
-function readRefCookie(): string | null {
+export function readRefCookie(): string | null {
   const match = document.cookie.match(
     new RegExp(`(?:^|; )${REF_COOKIE}=([^;]*)`),
   )
@@ -36,7 +36,7 @@ function prettifySlug(slug: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-function messageForPath(pathname: string): string {
+export function messageForPath(pathname: string): string {
   const segments = pathname.split('/').filter(Boolean)
   const [section, slug] = segments
 

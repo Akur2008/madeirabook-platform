@@ -189,7 +189,9 @@ export default function AiConciergeWidget({
         <div
           role="dialog"
           aria-label="Madeirabook concierge chat"
-          className="fixed inset-x-3 bottom-[13.5rem] z-[2100] flex h-[26rem] max-h-[60vh] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0e1c2b]/95 shadow-2xl backdrop-blur-md sm:inset-x-auto sm:right-6 sm:w-[380px]"
+          className={`fixed inset-x-3 z-[2100] flex h-[26rem] max-h-[60vh] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0e1c2b]/95 shadow-2xl backdrop-blur-md sm:inset-x-auto sm:right-6 sm:w-[380px] ${
+            hideLauncherButton ? 'bottom-24' : 'bottom-[13.5rem]'
+          }`}
         >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>

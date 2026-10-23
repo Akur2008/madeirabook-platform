@@ -56,6 +56,13 @@ const nextConfig: NextConfig = {
         destination: '/legal/privacy',
         permanent: true,
       },
+      // "Find Your Sanctuary" in the burger drawer lands on the homepage
+      // stays grid. 302 — a dedicated /stays page may replace it later.
+      {
+        source: '/stays',
+        destination: '/#stays',
+        permanent: false,
+      },
       // Short links for Instagram bio — wa.me URLs get mangled there.
       // 302 so the concierge number can be swapped later without stale caches.
       {

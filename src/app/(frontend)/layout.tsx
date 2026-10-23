@@ -5,8 +5,8 @@ import './styles.css'
 import Footer from './components/Footer'
 import { AudioEngineProvider } from '@/audio/AudioEngineProvider'
 import GlobalAmbient from '@/components/GlobalAmbient'
-import SoundButton from '@/components/SoundButton'
-import WhatsAppConciergeButton from '@/components/WhatsAppConciergeButton'
+import BottomActionBar from '@/components/BottomActionBar'
+import WhaleBreathModal from '@/components/WhaleBreathModal'
 import AiConciergeWidget from '@/components/AiConciergeWidget'
 
 export const metadata: Metadata = {
@@ -60,9 +60,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           <GlobalAmbient />
           <main>{children}</main>
           <Footer />
-          <WhatsAppConciergeButton />
-          <AiConciergeWidget />
-          <SoundButton />
+          <AiConciergeWidget hideLauncherButton />
+          <BottomActionBar />
+          <WhaleBreathModal />
         </AudioEngineProvider>
         <Analytics />
       </body>
