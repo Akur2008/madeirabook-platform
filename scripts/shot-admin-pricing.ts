@@ -31,7 +31,12 @@ const run = async () => {
   }
   const inputs = await page
     .locator('input')
-    .evaluateAll((els) => els.map((e) => `${e.type} id="${e.id}" name="${e.name}"`))
+    .evaluateAll((els) =>
+      els.map((e) => {
+        const i = e as HTMLInputElement
+        return `${i.type} id="${i.id}" name="${i.name}"`
+      }),
+    )
   console.log('[login] inputs:', inputs.join(' | '))
 
   const emailInput = page.locator('input[type="email"], input[name="email"], #field-email').first()
