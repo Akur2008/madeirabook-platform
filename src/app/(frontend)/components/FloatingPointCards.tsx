@@ -68,7 +68,7 @@ export default function FloatingPointCards({
           data-teaser={t.key}
           className={`absolute z-[1001] flex ${CORNER_SLOTS[i]}`}
         >
-          <div className="relative flex w-40 items-center rounded-xl border border-white/15 bg-[#0a1420]/90 shadow-lg shadow-black/30 backdrop-blur sm:w-44">
+          <div className="relative flex w-40 items-center rounded-xl border border-slate-200 bg-white/95 shadow-lg shadow-black/15 backdrop-blur sm:w-44">
             <button
               type="button"
               onClick={() => onSelect(t)}
@@ -85,18 +85,18 @@ export default function FloatingPointCards({
                   className="h-10 w-10 shrink-0 rounded-lg object-cover"
                 />
               ) : (
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-base">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-base">
                   {TYPE_EMOJI[t.type]}
                 </span>
               )}
               <span className="min-w-0">
                 <span
-                  className="block truncate text-sm leading-tight text-white/90"
+                  className="block truncate text-sm leading-tight text-slate-900"
                   style={SERIF}
                 >
                   {t.name}
                 </span>
-                <span className="mt-1 inline-block rounded-full border border-[#d4af37]/60 px-2 py-px text-[10px] font-semibold uppercase tracking-wider text-[#d4af37]">
+                <span className="mt-1 inline-block rounded-full bg-slate-800 px-2.5 py-0.5 text-[10px] font-semibold text-white">
                   View
                 </span>
               </span>
@@ -105,7 +105,7 @@ export default function FloatingPointCards({
               type="button"
               aria-label={`Hide ${t.name} card`}
               onClick={() => onDismiss(t.key)}
-              className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] leading-none text-white/50 transition-colors hover:bg-white/20 hover:text-white"
+              className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[10px] leading-none text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700"
             >
               ✕
             </button>

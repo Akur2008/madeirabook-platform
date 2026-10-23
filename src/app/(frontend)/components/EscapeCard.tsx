@@ -90,7 +90,7 @@ export default function EscapeCard() {
         href="/flights"
         className="block w-full rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-[#d4af37] transition-colors hover:bg-[#d4af37]/20"
       >
-        ✈ Flight from {city}
+        ✈️ Flights from {city}
       </Link>
 
       <div className="mt-5 flex items-center justify-between gap-3">
@@ -156,7 +156,7 @@ export default function EscapeCard() {
       <button
         type="button"
         onClick={goToBook}
-        className="mt-6 block w-full rounded-full bg-[#d4af37] py-3.5 text-center text-sm font-bold uppercase tracking-[0.22em] text-[#0a1420] transition-colors hover:bg-[#e4c04a]"
+        className="mt-6 block w-full rounded-full bg-[#d4af37] py-3.5 text-center text-sm font-bold tracking-[0.22em] text-[#0a1420] transition-colors hover:bg-[#e4c04a]"
       >
         Book Sanctuary →
       </button>

@@ -537,7 +537,7 @@ export default function ExploreMap({
           </div>
         </div>
       )}
-      <div className="absolute left-1/2 top-3 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white/15 bg-[#0a1420]/90 p-1 backdrop-blur">
+      <div className="absolute left-1/2 top-3 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-md backdrop-blur">
         {FILTERS.filter(
           (f) =>
             f.key === 'all' ||
@@ -553,8 +553,8 @@ export default function ExploreMap({
             onClick={() => setFilter(f.key)}
             className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition-colors sm:px-4 sm:text-sm ${
               filter === f.key
-                ? 'bg-[#d4af37] text-[#0a1420]'
-                : 'text-white/70 hover:text-white'
+                ? 'bg-slate-200 text-slate-900'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             {f.label}
@@ -563,13 +563,13 @@ export default function ExploreMap({
       </div>
       {/* Density toggle — featured curation by default; sits above the
           escape CTA so it never collides with the ambassador card. */}
-      <div className="absolute bottom-16 left-1/2 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white/15 bg-[#0a1420]/90 p-1 backdrop-blur">
+      <div className="absolute bottom-16 left-1/2 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-md backdrop-blur">
         <button
           type="button"
           aria-pressed={!showAll}
           onClick={() => setShowAll(false)}
           className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            !showAll ? 'bg-[#d4af37] text-[#0a1420]' : 'text-white/60 hover:text-white'
+            !showAll ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Featured only
@@ -579,7 +579,7 @@ export default function ExploreMap({
           aria-pressed={showAll}
           onClick={() => setShowAll(true)}
           className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            showAll ? 'bg-[#d4af37] text-[#0a1420]' : 'text-white/60 hover:text-white'
+            showAll ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Show all points
@@ -594,7 +594,7 @@ export default function ExploreMap({
             refCode ? `/book?ref=${encodeURIComponent(refCode)}` : '/book',
           )
         }
-        className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 whitespace-nowrap rounded-full border border-emerald-500/60 bg-[#0a1420]/90 px-5 py-2.5 text-sm font-semibold text-white shadow-lg backdrop-blur transition-colors hover:border-emerald-400 hover:bg-emerald-600"
+        className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-lg backdrop-blur transition-colors hover:border-slate-400 hover:bg-white"
       >
         Escape from {escapeCity} →
       </button>

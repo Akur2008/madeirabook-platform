@@ -327,11 +327,8 @@ export default async function HomePage({
             className="max-w-4xl text-4xl font-light leading-tight text-white/95 sm:text-5xl md:text-6xl"
             style={SERIF}
           >
-            Madeira remembers how to be quiet.
+            Find your calm on the edge of the Atlantic.
           </h1>
-          <p className="mt-5 text-base text-white/70 md:text-lg">
-            A two-minute escape from the city noise.
-          </p>
           <div id="search" className="scroll-mt-24" />
           <div className="mt-8 flex w-full justify-center">
             <EscapeCard />
