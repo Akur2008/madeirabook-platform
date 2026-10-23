@@ -8,7 +8,7 @@ const PHOTO_MAX_BYTES = 5 * 1024 * 1024
 const VIDEO_MAX_BYTES = 30 * 1024 * 1024
 
 const inputClass =
-  'w-full rounded-md border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-[#d4af37]/60'
+  'w-full rounded-md border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-[#10b981]/60'
 
 // Extracts lat/lng from full Google Maps URLs: "/@32.66,-16.92,17z",
 // "!3d32.66!4d-16.92" embeds, "?q=|query=|ll=32.66,-16.92". Short links
@@ -121,8 +121,8 @@ export default function AddPinForm({ token }: { token: string }) {
 
   if (status === 'done') {
     return (
-      <div className="w-full rounded-lg border border-[#d4af37]/30 bg-[#d4af37]/10 p-6 text-center">
-        <p className="text-lg font-semibold text-[#d4af37]">Spot received.</p>
+      <div className="w-full rounded-lg border border-[#10b981]/30 bg-[#10b981]/10 p-6 text-center">
+        <p className="text-lg font-semibold text-[#10b981]">Spot received.</p>
         <p className="mt-2 text-sm text-white/60">
           Your spot is pending review. We&apos;ll approve within 24h.
         </p>
@@ -268,7 +268,7 @@ export default function AddPinForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="w-full rounded-md bg-[#d4af37] px-4 py-4 text-sm font-semibold text-[#0a1420] transition-colors hover:bg-[#e5c04b] disabled:opacity-50"
+        className="w-full rounded-md bg-[#10b981] px-4 py-4 text-sm font-semibold text-[#0a1420] transition-colors hover:bg-[#e5c04b] disabled:opacity-50"
       >
         {status === 'loading' ? 'Sending…' : 'Submit for review →'}
       </button>

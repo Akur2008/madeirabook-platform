@@ -124,7 +124,7 @@ export const Referrals: CollectionConfig = {
     {
       name: 'accentColor',
       type: 'text',
-      defaultValue: '#d4af37',
+      defaultValue: '#10b981',
       admin: {
         description: 'Accent color for the creator map page.',
       },

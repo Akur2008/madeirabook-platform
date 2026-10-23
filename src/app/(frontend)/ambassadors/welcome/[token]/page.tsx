@@ -192,7 +192,7 @@ export default async function WelcomePage(props: {
       <div className="mt-3 space-y-1.5 text-sm text-white/80">
         <div className="flex items-center justify-between">
           <span>Current balance</span>
-          <span className="font-semibold text-[#d4af37]">
+          <span className="font-semibold text-[#10b981]">
             €{pendingBalanceEur}
           </span>
         </div>
@@ -291,7 +291,7 @@ export default async function WelcomePage(props: {
   return (
     <Shell>
       {referral.oasisAccess && (
-        <p className="mb-6 rounded-full border border-[#d4af37]/50 bg-[#d4af37]/10 px-4 py-2 text-center text-xs font-semibold uppercase tracking-widest text-[#d4af37]">
+        <p className="mb-6 rounded-full border border-[#10b981]/50 bg-[#10b981]/10 px-4 py-2 text-center text-xs font-semibold uppercase tracking-widest text-[#10b981]">
           🌟 Oasis Access — Premium Collection
         </p>
       )}
@@ -308,7 +308,7 @@ export default async function WelcomePage(props: {
             key={perk.title}
             className="flex items-start gap-4 rounded-lg border border-white/10 bg-white/5 p-4"
           >
-            <span className="mt-0.5 text-[#d4af37]">{perk.icon}</span>
+            <span className="mt-0.5 text-[#10b981]">{perk.icon}</span>
             <div>
               <p className="text-sm font-semibold">{perk.title}</p>
               <p className="mt-0.5 text-sm text-white/60">{perk.text}</p>
@@ -330,7 +330,7 @@ export default async function WelcomePage(props: {
         <p className="mt-4 text-sm text-white/60">
           Earn 2% from every booking made through your map.{' '}
           Discount code:{' '}
-          <span className="font-mono font-semibold text-[#d4af37]">
+          <span className="font-mono font-semibold text-[#10b981]">
             {code.toUpperCase()}
           </span>
         </p>
@@ -353,7 +353,7 @@ export default async function WelcomePage(props: {
                   href={`/beaches/${b.slug}`}
                   target="_blank"
                   rel="noopener"
-                  className="transition-colors hover:text-[#d4af37]"
+                  className="transition-colors hover:text-[#10b981]"
                 >
                   🏖️ {b.name}
                 </a>
@@ -365,7 +365,7 @@ export default async function WelcomePage(props: {
                   href={`/restaurants/${r.slug}`}
                   target="_blank"
                   rel="noopener"
-                  className="transition-colors hover:text-[#d4af37]"
+                  className="transition-colors hover:text-[#10b981]"
                 >
                   🍽️ {r.name}
                 </a>
@@ -405,7 +405,7 @@ export default async function WelcomePage(props: {
           {NEXT_STEPS.map((step, i) => (
             <li key={step} className="flex items-start gap-3 text-sm text-white/80">
               <span
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#d4af37]/50 text-xs text-[#d4af37]"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#10b981]/50 text-xs text-[#10b981]"
               >
                 {i + 1}
               </span>

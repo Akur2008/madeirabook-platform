@@ -63,7 +63,7 @@ export default function VideoBottomSheet({ spot, onClose, liveSlugs }: VideoBott
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
 
               <div className="absolute inset-x-0 bottom-0 px-6 pb-8 pt-16">
-                <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#d4af37]">
+                <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#10b981]">
                   Madeira Oasis
                 </p>
                 <h2 className="font-serif mt-2 text-3xl leading-tight text-white">
@@ -82,7 +82,7 @@ export default function VideoBottomSheet({ spot, onClose, liveSlugs }: VideoBott
                           `Inquiry about ${spot.title}`,
                         )}`
                   }
-                  className="mt-6 block w-full rounded-full border border-[#d4af37] bg-[#d4af37] py-3.5 text-center text-sm font-semibold uppercase tracking-[0.15em] text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#d4af37]"
+                  className="mt-6 block w-full rounded-full border border-[#10b981] bg-[#10b981] py-3.5 text-center text-sm font-semibold uppercase tracking-[0.15em] text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#10b981]"
                 >
                   {live ? `Discover ${spot.title}` : 'Request a stay'}
                 </a>

@@ -9,7 +9,7 @@ interface OasisInquiryFormProps {
 type FormState = 'idle' | 'sending' | 'sent' | 'error'
 
 const inputClass =
-  'w-full rounded-lg border border-[#1c1a16]/15 bg-white px-4 py-3 text-sm text-[#1c1a16] outline-none transition-colors placeholder:text-[#1c1a16]/35 focus:border-[#d4af37]'
+  'w-full rounded-lg border border-[#1c1a16]/15 bg-white px-4 py-3 text-sm text-[#1c1a16] outline-none transition-colors placeholder:text-[#1c1a16]/35 focus:border-[#10b981]'
 
 export default function OasisInquiryForm({
   hotelTitle,
@@ -44,7 +44,7 @@ export default function OasisInquiryForm({
 
   if (state === 'sent') {
     return (
-      <div className="rounded-2xl border border-[#d4af37]/40 bg-white p-8 text-center">
+      <div className="rounded-2xl border border-[#10b981]/40 bg-white p-8 text-center">
         <p className="font-serif text-2xl text-[#1c1a16]">Request received</p>
         <p className="mt-3 text-sm text-[#1c1a16]/60">
           The Madeira Oasis concierge will reply about {hotelTitle} within one
@@ -98,7 +98,7 @@ export default function OasisInquiryForm({
       <button
         type="submit"
         disabled={state === 'sending'}
-        className="mt-6 w-full rounded-full bg-[#d4af37] px-6 py-3 text-sm font-semibold tracking-wide text-[#1c1a16] transition-colors hover:bg-[#c29c2e] disabled:opacity-60"
+        className="mt-6 w-full rounded-full bg-[#10b981] px-6 py-3 text-sm font-semibold tracking-wide text-[#1c1a16] transition-colors hover:bg-[#c29c2e] disabled:opacity-60"
       >
         {state === 'sending' ? 'Sending…' : 'Send inquiry'}
       </button>

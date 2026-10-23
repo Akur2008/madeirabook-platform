@@ -138,6 +138,9 @@ interface ExploreMapProps {
   activeFilter?: MapFilter
   ambassador?: AmbassadorBranding | null
   refCode?: string | null
+  // Embedded maps (homepage) hide the bottom escape CTA — the page above
+  // already carries the same action.
+  hideEscapeCta?: boolean
 }
 
 const escHtml = (s: string) =>
@@ -159,6 +162,7 @@ export default function ExploreMap({
   activeFilter = 'all',
   ambassador = null,
   refCode = null,
+  hideEscapeCta = false,
 }: ExploreMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Leaflet.Map | null>(null)
@@ -339,7 +343,7 @@ export default function ExploreMap({
         const base = oasisBase(window.location.hostname)
         const oasisIcon = L.divIcon({
           className: 'explore-pin',
-          html: `<div style="width:34px;height:34px;border-radius:9999px;background:linear-gradient(135deg,#f5d76e,#b8952e);border:2px solid #1c1a16;box-shadow:0 2px 10px rgba(184,149,46,0.65);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;cursor:pointer;color:#1c1a16;">★</div>`,
+          html: `<div style="width:34px;height:34px;border-radius:9999px;background:linear-gradient(135deg,#34d399,#059669);border:2px solid #0a1420;box-shadow:0 2px 10px rgba(5,150,105,0.65);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;cursor:pointer;color:#0a1420;">★</div>`,
           iconSize: [34, 34],
           iconAnchor: [17, 17],
         })
@@ -384,7 +388,7 @@ export default function ExploreMap({
       })
     }
     if (filter === 'all' || filter === 'food') {
-      const icon = pin('#d4af37', '🍽️')
+      const icon = pin('#10b981', '🍽️')
       shownRestaurants.forEach((r) => {
         addPin(r.lat, r.lng, icon, r.name, `/restaurants/${r.slug}`)
         teaserPoints.push({
@@ -435,7 +439,7 @@ export default function ExploreMap({
     // Ambassador's own approved spots — gold star pins opening a popup
     // (title, media, "Added by …") instead of navigating away.
     if (filter === 'all') {
-      const icon = pin('#d4af37', '⭐')
+      const icon = pin('#10b981', '⭐')
       ambassadorPins.forEach((p) => {
         const marker = L.marker([p.lat, p.lng], { icon, title: p.title })
         const media = p.videoUrl
@@ -459,14 +463,16 @@ export default function ExploreMap({
     }
 
     // Auto-open a few corner teaser cards once the initial map settles so
-    // the map reads as alive, not just pins. The ref flips when the timer
-    // fires, so a StrictMode remount or an early filter change just
+    // the map reads as alive, not just pins. Only cards with a real photo
+    // open — placeholder icons never auto-open. The ref flips when the
+    // timer fires, so a StrictMode remount or an early filter change just
     // re-arms the teasers.
     let autoOpenTimer: ReturnType<typeof setTimeout> | undefined
-    if (!autoOpenedRef.current && teaserPoints.length) {
+    const photoTeasers = teaserPoints.filter((t) => Boolean(t.photoUrl))
+    if (!autoOpenedRef.current && photoTeasers.length) {
       autoOpenTimer = setTimeout(() => {
         autoOpenedRef.current = true
-        setTeasers(pickTeasers(teaserPoints))
+        setTeasers(pickTeasers(photoTeasers))
       }, 600)
     }
 
@@ -501,7 +507,7 @@ export default function ExploreMap({
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" onClick={onMapClick} />
       {ambassador && (
-        <div className="absolute left-3 top-14 z-[1001] flex items-center gap-3 rounded-2xl border border-white/15 bg-[#0a1420]/90 px-3 py-2 backdrop-blur sm:top-3">
+        <div className="absolute left-3 top-14 z-[1001] flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-md backdrop-blur sm:top-3">
           {ambassador.avatarUrl ? (
             // avatarUrl comes from CMS — arbitrary host, plain <img>
             // eslint-disable-next-line @next/next/no-img-element
@@ -511,25 +517,25 @@ export default function ExploreMap({
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-lg">
               🧭
             </div>
           )}
           <div className="flex flex-col">
-            <span className="text-sm font-semibold leading-tight text-white">
+            <span className="text-sm font-semibold leading-tight text-slate-900">
               {ambassador.displayName}
             </span>
             <div className="mt-0.5 flex items-center gap-2 text-[10px] leading-tight">
               <a
                 href="https://www.madeirabook.com"
-                className="text-white/45 transition-colors hover:text-white/70"
+                className="text-slate-500 transition-colors hover:text-slate-700"
               >
                 Powered by Madeirabook
               </a>
               <button
                 type="button"
                 onClick={resetBranding}
-                className="font-semibold text-[#d4af37] transition-colors hover:text-white"
+                className="font-semibold text-emerald-600 transition-colors hover:text-emerald-500"
               >
                 See all Madeira →
               </button>
@@ -537,7 +543,7 @@ export default function ExploreMap({
           </div>
         </div>
       )}
-      <div className="absolute left-1/2 top-3 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-md backdrop-blur">
+      <div className="absolute left-1/2 top-3 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
         {FILTERS.filter(
           (f) =>
             f.key === 'all' ||
@@ -553,7 +559,7 @@ export default function ExploreMap({
             onClick={() => setFilter(f.key)}
             className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition-colors sm:px-4 sm:text-sm ${
               filter === f.key
-                ? 'bg-slate-200 text-slate-900'
+                ? 'bg-emerald-100 text-emerald-900'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -563,13 +569,13 @@ export default function ExploreMap({
       </div>
       {/* Density toggle — featured curation by default; sits above the
           escape CTA so it never collides with the ambassador card. */}
-      <div className="absolute bottom-16 left-1/2 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-md backdrop-blur">
+      <div className="absolute bottom-16 left-1/2 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
         <button
           type="button"
           aria-pressed={!showAll}
           onClick={() => setShowAll(false)}
           className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            !showAll ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:text-slate-900'
+            !showAll ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Featured only
@@ -579,7 +585,7 @@ export default function ExploreMap({
           aria-pressed={showAll}
           onClick={() => setShowAll(true)}
           className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            showAll ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:text-slate-900'
+            showAll ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Show all points
@@ -587,17 +593,19 @@ export default function ExploreMap({
       </div>
       {/* Bottom-center keeps clear of the fixed WhatsApp/Sound buttons on the
           right edge and Leaflet's attribution corner */}
-      <button
-        type="button"
-        onClick={() =>
-          router.push(
-            refCode ? `/book?ref=${encodeURIComponent(refCode)}` : '/book',
-          )
-        }
-        className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-lg backdrop-blur transition-colors hover:border-slate-400 hover:bg-white"
-      >
-        Escape from {escapeCity} →
-      </button>
+      {!hideEscapeCta && (
+        <button
+          type="button"
+          onClick={() =>
+            router.push(
+              refCode ? `/book?ref=${encodeURIComponent(refCode)}` : '/book',
+            )
+          }
+          className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 whitespace-nowrap rounded-full border border-white bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-lg backdrop-blur transition-colors hover:bg-emerald-50"
+        >
+          Escape from {escapeCity} →
+        </button>
+      )}
       <FloatingPointCards
         teasers={teasers}
         onSelect={openTeaser}

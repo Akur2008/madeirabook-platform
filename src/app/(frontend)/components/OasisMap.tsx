@@ -65,7 +65,7 @@ const LAYER_DEFS: Array<{
   color: string
   emoji: string
 }> = [
-  { key: 'hotels', label: 'Hotels', color: '#d4af37', emoji: '' },
+  { key: 'hotels', label: 'Hotels', color: '#10b981', emoji: '' },
   { key: 'beaches', label: 'Beaches', color: '#3b82f6', emoji: '🏖' },
   { key: 'restaurants', label: 'Restaurants', color: '#b0562f', emoji: '🍽' },
 ]
@@ -188,7 +188,7 @@ export default function OasisMap({
 
     const icon = L.divIcon({
       className: 'oasis-pin',
-      html: `<div style="width:26px;height:26px;border-radius:9999px;background:#d4af37;border:2px solid #1c1a16;box-shadow:0 2px 10px rgba(28,26,22,0.35);display:flex;align-items:center;justify-content:center;cursor:pointer;"><div style="width:8px;height:8px;border-radius:9999px;background:#1c1a16;"></div></div>`,
+      html: `<div style="width:26px;height:26px;border-radius:9999px;background:#10b981;border:2px solid #1c1a16;box-shadow:0 2px 10px rgba(28,26,22,0.35);display:flex;align-items:center;justify-content:center;cursor:pointer;"><div style="width:8px;height:8px;border-radius:9999px;background:#1c1a16;"></div></div>`,
       iconSize: [26, 26],
       iconAnchor: [13, 13],
     })
@@ -248,11 +248,11 @@ export default function OasisMap({
           <div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:#1c1a16;line-height:1.3;">${escapeHtml(poi.name)}</div>
           ${
             poi.subtitle
-              ? `<div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#b8952e;margin-top:3px;">${escapeHtml(poi.subtitle)}</div>`
+              ? `<div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#059669;margin-top:3px;">${escapeHtml(poi.subtitle)}</div>`
               : ''
           }
-          <a href="${href}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #d4af37;padding-bottom:1px;">View details →</a>
-          <button type="button" class="js-get-directions" data-lat="${poi.lat}" data-lng="${poi.lng}" data-name="${escapeHtml(poi.name)}" style="display:inline-block;margin-top:10px;margin-left:10px;font-size:12px;font-weight:600;color:#8a7020;background:none;border:none;border-bottom:1px solid #d4af37;padding:0 0 1px;cursor:pointer;">Get Directions →</button>
+          <a href="${href}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#1c1a16;text-decoration:none;border-bottom:1px solid #10b981;padding-bottom:1px;">View details →</a>
+          <button type="button" class="js-get-directions" data-lat="${poi.lat}" data-lng="${poi.lng}" data-name="${escapeHtml(poi.name)}" style="display:inline-block;margin-top:10px;margin-left:10px;font-size:12px;font-weight:600;color:#047857;background:none;border:none;border-bottom:1px solid #10b981;padding:0 0 1px;cursor:pointer;">Get Directions →</button>
         </div>`
         marker.bindPopup(popupHtml, { maxWidth: 240, closeButton: false })
         marker.addTo(layer)
@@ -260,31 +260,19 @@ export default function OasisMap({
     })
 
     // Auto-open the first pin's card once the initial map settles — a map
-    // with one or two pins looks empty otherwise. Deep links (?lat&lng)
-    // skip it. The ref flips when the timer fires, so a StrictMode remount
-    // or an early layer toggle just re-arms the open.
+    // with one or two pins looks empty otherwise. Only a card with a real
+    // photo opens — placeholder icons never pop on their own. Deep links
+    // (?lat&lng) skip it. The ref flips when the timer fires, so a
+    // StrictMode remount or an early layer toggle just re-arms the open.
     let autoOpenTimer: ReturnType<typeof setTimeout> | undefined
     if (!autoOpenedRef.current && initialLat == null && initialLng == null) {
-      const firstHotel = layers.hotels ? visible[0] : undefined
-      const firstPoi =
-        (layers.beaches ? beaches[0] : undefined) ??
-        (layers.restaurants ? restaurants[0] : undefined)
-      if (firstHotel ?? firstPoi) {
+      const firstHotel = layers.hotels
+        ? visible.find((h) => Boolean(h.photoUrl ?? h.coverImage))
+        : undefined
+      if (firstHotel) {
         autoOpenTimer = setTimeout(() => {
           autoOpenedRef.current = true
-          if (firstHotel) {
-            openHotelSheet(firstHotel)
-          } else if (firstPoi) {
-            setPreview({
-              type: firstPoi.kind,
-              slug: firstPoi.slug,
-              name: firstPoi.name,
-              lat: firstPoi.lat,
-              lng: firstPoi.lng,
-              shortDescription: firstPoi.subtitle ?? null,
-            })
-            setSheetOpen(true)
-          }
+          openHotelSheet(firstHotel)
         }, 600)
       }
     }
@@ -318,7 +306,7 @@ export default function OasisMap({
           height="16"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#b8952e"
+          stroke="#059669"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -360,7 +348,7 @@ export default function OasisMap({
             }
             className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
               layers[l.key]
-                ? 'bg-[#d4af37] text-[#1c1a16]'
+                ? 'bg-[#10b981] text-[#1c1a16]'
                 : 'text-[#1c1a16]/45 hover:text-[#1c1a16]/80'
             }`}
           >

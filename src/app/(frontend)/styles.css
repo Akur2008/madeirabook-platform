@@ -169,8 +169,8 @@ svg {
    Variables live on .rdp-root; the double-class selector is needed to beat
    the library defaults regardless of stylesheet order. */
 .madeirabook-calendar.rdp-root {
-  --rdp-accent-color: #d4af37;
-  --rdp-accent-background-color: rgba(212, 175, 55, 0.18);
+  --rdp-accent-color: #10b981;
+  --rdp-accent-background-color: rgba(16, 185, 129, 0.18);
 
   --rdp-day-height: 40px;
   --rdp-day-width: 40px;
@@ -178,12 +178,12 @@ svg {
   --rdp-day_button-width: 38px;
   --rdp-day_button-border-radius: 9999px;
 
-  --rdp-selected-border: 2px solid rgba(212, 175, 55, 0.6);
+  --rdp-selected-border: 2px solid rgba(16, 185, 129, 0.6);
   --rdp-disabled-opacity: 0.3;
   --rdp-outside-opacity: 0.3;
-  --rdp-today-color: #d4af37;
+  --rdp-today-color: #10b981;
 
-  --rdp-range_middle-background-color: rgba(212, 175, 55, 0.15);
+  --rdp-range_middle-background-color: rgba(16, 185, 129, 0.15);
   --rdp-range_middle-color: rgba(255, 255, 255, 0.95);
   --rdp-range_start-color: #0a1420;
   --rdp-range_end-color: #0a1420;

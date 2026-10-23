@@ -6,15 +6,18 @@ import React, { useState } from 'react'
 import CocoonToggle from '@/components/CocoonToggle'
 import MenuDrawer from '@/components/MenuDrawer'
 
+import BookingSearchSheet from './BookingSearchSheet'
+
 const SERIF = { fontFamily: 'Playfair Display, Cormorant Garamond, serif' } as const
 
 // Smart header: Playfair logo left, the 3D-sound-cocoon toggle in the
-// center, Book Stay + burger on the right. The burger opens the icon
+// center, Book Stay + burger on the right. Book Stay opens the search
+// BottomSheet in place — no navigation. The burger opens the icon
 // drawer — there is no inline nav anymore. On phones the toggle drops to
 // its own centered row so all three zones stay readable.
 export default function Header({ refCode }: { refCode?: string | null }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const bookHref = refCode ? `/book?ref=${encodeURIComponent(refCode)}` : '/book'
+  const [bookOpen, setBookOpen] = useState(false)
 
   return (
     <>
@@ -31,12 +34,13 @@ export default function Header({ refCode }: { refCode?: string | null }) {
             <CocoonToggle />
           </div>
           <div className="flex items-center gap-2 justify-self-end sm:gap-3">
-            <Link
-              href={bookHref}
+            <button
+              type="button"
+              onClick={() => setBookOpen(true)}
               className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-white/30 bg-[#0a1420]/70 px-3 py-2 text-xs font-semibold text-white backdrop-blur transition-colors hover:bg-white/10 sm:px-5 sm:py-2.5 sm:text-sm"
             >
               Book Stay
-            </Link>
+            </button>
             <button
               type="button"
               aria-label="Open menu"
@@ -67,6 +71,11 @@ export default function Header({ refCode }: { refCode?: string | null }) {
       <MenuDrawer
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
+        refCode={refCode}
+      />
+      <BookingSearchSheet
+        open={bookOpen}
+        onClose={() => setBookOpen(false)}
         refCode={refCode}
       />
     </>

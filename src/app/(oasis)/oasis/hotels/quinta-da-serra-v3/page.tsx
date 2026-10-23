@@ -63,7 +63,7 @@ export default function QuintaDaSerraV3Page() {
       className="min-h-dvh bg-[#fdfbf7] text-[#1a1a1a]"
     >
       {/* A/B test marker — visible only on the v3 variant */}
-      <div className="fixed left-4 top-20 z-50 rounded-full bg-[#1a1a1a] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#d4af37] shadow-lg">
+      <div className="fixed left-4 top-20 z-50 rounded-full bg-[#1a1a1a] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#10b981] shadow-lg">
         V3 Preview
       </div>
 
@@ -79,7 +79,7 @@ export default function QuintaDaSerraV3Page() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/80 via-[#1a1a1a]/30 to-[#1a1a1a]/10" />
         <div className="relative mx-auto w-full max-w-5xl px-6 pb-16 md:pb-24">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4af37]">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#10b981]">
             820m Altitude • Bio Hotel 5★
           </p>
           <h1 className="font-serif mt-5 max-w-3xl text-4xl font-medium leading-[1.1] text-white md:text-6xl">
@@ -91,13 +91,13 @@ export default function QuintaDaSerraV3Page() {
           <div className="mt-9 flex flex-wrap items-center gap-4">
             <ConciergeAskButton
               message="I'm interested in a stay at Quinta da Serra — what can you tell me about it?"
-              className="cursor-pointer rounded-full bg-[#d4af37] px-7 py-3.5 text-sm font-semibold tracking-wide text-[#1a1a1a] transition-colors hover:bg-[#c29c2e]"
+              className="cursor-pointer rounded-full bg-[#10b981] px-7 py-3.5 text-sm font-semibold tracking-wide text-[#1a1a1a] transition-colors hover:bg-[#c29c2e]"
             >
               Inquire via AI Concierge
             </ConciergeAskButton>
             <a
               href={CONTACT_MAILTO}
-              className="rounded-full border border-white/50 px-7 py-3.5 text-sm font-semibold tracking-wide text-white transition-colors hover:border-[#d4af37] hover:text-[#d4af37]"
+              className="rounded-full border border-white/50 px-7 py-3.5 text-sm font-semibold tracking-wide text-white transition-colors hover:border-[#10b981] hover:text-[#10b981]"
             >
               Contact via Email
             </a>
@@ -126,7 +126,7 @@ export default function QuintaDaSerraV3Page() {
           </figure>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8a7020]">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#047857]">
               The Estate — Jardim da Serra, 820m
             </p>
             <h2 className="font-serif mt-4 text-3xl font-medium leading-tight md:text-5xl">
@@ -153,7 +153,7 @@ export default function QuintaDaSerraV3Page() {
               roughly 64 metres — the tallest tree recorded on Madeira — a living
               monument whose shade has gathered two centuries of silence.
             </p>
-            <p className="font-serif mt-8 border-l-2 border-[#d4af37] pl-6 text-xl italic leading-relaxed text-[#1b3b2b]">
+            <p className="font-serif mt-8 border-l-2 border-[#10b981] pl-6 text-xl italic leading-relaxed text-[#1b3b2b]">
               Local memory holds that Napoleon Bonaparte, bound for exile on
               Saint Helena, received the consul aboard his ship — and that the
               old consul alone kept addressing him as &ldquo;Your
@@ -186,7 +186,7 @@ export default function QuintaDaSerraV3Page() {
       {/* Key pillars — deep forest green band */}
       <section className="bg-[#1b3b2b] text-[#fdfbf7]">
         <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d4af37]">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#10b981]">
             Three Pillars of the Stay
           </p>
           <div className="mt-12 grid gap-12 md:grid-cols-3 md:gap-10">
@@ -209,9 +209,9 @@ export default function QuintaDaSerraV3Page() {
             ].map((pillar) => (
               <div
                 key={pillar.n}
-                className="border-t border-[#d4af37]/40 pt-6"
+                className="border-t border-[#10b981]/40 pt-6"
               >
-                <p className="text-sm tracking-[0.3em] text-[#d4af37]">
+                <p className="text-sm tracking-[0.3em] text-[#10b981]">
                   {pillar.n}
                 </p>
                 <h3 className="font-serif mt-4 text-2xl font-medium">
@@ -228,7 +228,7 @@ export default function QuintaDaSerraV3Page() {
 
       {/* Gallery — editorial masonry */}
       <section className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8a7020]">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#047857]">
           Atmosphere
         </p>
         <h2 className="font-serif mt-4 text-3xl font-medium md:text-4xl">
@@ -265,7 +265,7 @@ export default function QuintaDaSerraV3Page() {
         className="border-t border-[#1a1a1a]/10 bg-white/60"
       >
         <div className="mx-auto max-w-3xl px-6 py-20 text-center md:py-24">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8a7020]">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#047857]">
             Madeira Oasis Concierge
           </p>
           <h2 className="font-serif mt-4 text-3xl font-medium md:text-4xl">
@@ -294,7 +294,7 @@ export default function QuintaDaSerraV3Page() {
         <div className="mx-auto max-w-3xl px-6 py-8 text-center">
           <OasisLink
             href="/hotels/quinta-da-serra"
-            className="text-sm font-medium text-[#8a7020] transition-colors hover:text-[#1a1a1a]"
+            className="text-sm font-medium text-[#047857] transition-colors hover:text-[#1a1a1a]"
           >
             ← Back to V1
           </OasisLink>

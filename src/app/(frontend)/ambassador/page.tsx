@@ -125,7 +125,7 @@ export default async function AmbassadorPage() {
           >
             Madeirabook
           </Link>
-          <span className="text-xs uppercase tracking-wider text-[#d4af37]/80">
+          <span className="text-xs uppercase tracking-wider text-[#10b981]/80">
             For Creators
           </span>
         </div>
@@ -140,7 +140,7 @@ export default async function AmbassadorPage() {
           backgroundSize: '28px 28px',
         }}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.12),transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.12),transparent_60%)]" />
         <div className="relative mx-auto max-w-3xl text-center">
           <h1
             className="text-4xl font-light leading-tight text-white sm:text-5xl md:text-6xl"
@@ -166,7 +166,7 @@ export default async function AmbassadorPage() {
             restaurants={mapRestaurants}
             ambassador={{
               displayName: "@yourhandle's Madeira",
-              accentColor: '#d4af37',
+              accentColor: '#10b981',
             }}
           />
         </div>
@@ -186,7 +186,7 @@ export default async function AmbassadorPage() {
               key={s.n}
               className="rounded-2xl border border-white/10 bg-white/[0.02] p-7"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d4af37]/40 text-lg font-semibold text-[#d4af37]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#10b981]/40 text-lg font-semibold text-[#10b981]">
                 {s.n}
               </div>
               <h3 className="mt-4 text-xl text-white" style={SERIF}>

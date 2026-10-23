@@ -9,6 +9,7 @@ import config from '@/payload.config'
 import HotelStories from '@/components/HotelStories'
 import { HOTEL_STORIES } from '@/lib/hotel-stories'
 import { isBookable } from '@/lib/pricing-rules'
+import { OfflineNavInfoPill } from '@/components/OfflineNavButton'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import SubscribeForm from '@/components/SubscribeForm'
 import AcquisitionSection from './components/AcquisitionSection'
@@ -363,19 +364,12 @@ export default async function HomePage({
             trails={mapTrails}
             viewpoints={mapViewpoints}
             ambassador={ambassador}
+            hideEscapeCta
           />
         </div>
-        {/* Offline navigation — Organic Maps deep link lives on every pin sheet */}
+        {/* Offline navigation — opens the Organic Maps instructions modal */}
         <div className="mt-6 flex justify-center">
-          <div className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 px-5 py-2.5 text-sm">
-            <span aria-hidden>🧭</span>
-            <span className="font-semibold uppercase tracking-widest text-[#d4af37]">
-              Offline Navigation
-            </span>
-            <span className="text-white/60">
-              Download once. Navigate anywhere.
-            </span>
-          </div>
+          <OfflineNavInfoPill />
         </div>
       </section>
 

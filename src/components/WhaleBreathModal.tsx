@@ -143,7 +143,7 @@ export default function WhaleBreathModal() {
         role="dialog"
         aria-modal="true"
         aria-label="Whale Breath soundscape"
-        className="absolute inset-x-4 top-1/2 mx-auto flex max-w-sm flex-col items-center rounded-3xl border border-[#d4af37]/30 bg-[#0a1420]/95 px-8 pb-10 pt-8 text-center shadow-2xl"
+        className="absolute inset-x-4 top-1/2 mx-auto flex max-w-sm flex-col items-center rounded-3xl border border-[#10b981]/30 bg-[#0a1420]/95 px-8 pb-10 pt-8 text-center shadow-2xl"
         style={{
           opacity: open ? 1 : 0,
           transform: `translateY(-50%) scale(${open ? 1 : 0.95})`,
@@ -162,7 +162,7 @@ export default function WhaleBreathModal() {
         <span className="text-4xl" aria-hidden>
           🐋
         </span>
-        <p className="mt-3 text-2xl text-[#d4af37]" style={SERIF}>
+        <p className="mt-3 text-2xl text-[#10b981]" style={SERIF}>
           Whale Breath
         </p>
         <p className="mt-1 text-xs uppercase tracking-[0.25em] text-white/40">

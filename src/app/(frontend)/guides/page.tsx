@@ -91,7 +91,7 @@ export default async function GuidesPage() {
                   )}
                   <div className="p-5">
                     {g.category && (
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-[#d4af37]">
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-[#10b981]">
                         {g.category}
                       </p>
                     )}

@@ -160,7 +160,7 @@ export default function PointPreviewSheet({
 
               <p className="mb-0 mt-5 text-center text-xs uppercase tracking-widest text-white/40">
                 {point.type === 'community' ? (
-                  <span className="rounded-full border border-[#d4af37]/50 bg-[#d4af37]/10 px-3 py-1 text-[#d4af37]">
+                  <span className="rounded-full border border-[#10b981]/50 bg-[#10b981]/10 px-3 py-1 text-[#34d399]">
                     {TYPE_LABEL[point.type]}
                   </span>
                 ) : (
@@ -174,7 +174,7 @@ export default function PointPreviewSheet({
                 {point.name}
               </h2>
               {point.meta && !point.bookable && (
-                <p className="mb-0 mt-2 text-center text-sm text-[#d4af37]">
+                <p className="mb-0 mt-2 text-center text-sm text-[#34d399]">
                   {point.meta}
                 </p>
               )}
@@ -197,7 +197,7 @@ export default function PointPreviewSheet({
                   lat={point.lat}
                   lng={point.lng}
                   name={point.name}
-                  className="w-full whitespace-nowrap rounded-full border border-[#d4af37] bg-[#d4af37] py-3 text-xs font-semibold uppercase tracking-widest text-[#0a1420] transition-colors hover:bg-[#c9a227]"
+                  className="w-full whitespace-nowrap rounded-full border border-[#10b981] bg-[#10b981] py-3 text-xs font-semibold uppercase tracking-widest text-[#0a1420] transition-colors hover:bg-[#059669]"
                 />
                 {point.href !== null && (
                   <a

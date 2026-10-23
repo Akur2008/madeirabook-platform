@@ -96,7 +96,7 @@ export default function FloatingPointCards({
                 >
                   {t.name}
                 </span>
-                <span className="mt-1 inline-block rounded-full bg-slate-800 px-2.5 py-0.5 text-[10px] font-semibold text-white">
+                <span className="mt-1 inline-block rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700">
                   View
                 </span>
               </span>

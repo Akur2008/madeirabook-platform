@@ -50,7 +50,7 @@ export default function PinLocationPicker({
         const { lat, lng } = e.latlng
         const icon = L.divIcon({
           className: 'pin-picker-marker',
-          html: '<div style="width:26px;height:26px;border-radius:9999px;background:#d4af37;border:2px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:13px;line-height:1;">⭐</div>',
+          html: '<div style="width:26px;height:26px;border-radius:9999px;background:#10b981;border:2px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:13px;line-height:1;">⭐</div>',
           iconSize: [26, 26],
           iconAnchor: [13, 13],
         })

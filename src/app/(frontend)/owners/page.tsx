@@ -64,7 +64,7 @@ export default function OwnersPage() {
             >
               Owner sign in →
             </Link>
-            <span className="hidden text-xs uppercase tracking-wider text-[#d4af37]/80 sm:inline">
+            <span className="hidden text-xs uppercase tracking-wider text-[#10b981]/80 sm:inline">
               For Owners
             </span>
           </div>
@@ -80,7 +80,7 @@ export default function OwnersPage() {
           backgroundSize: '28px 28px',
         }}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.12),transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.12),transparent_60%)]" />
         <div className="relative mx-auto max-w-3xl text-center">
           <h1
             className="text-4xl font-light leading-tight text-white sm:text-5xl md:text-6xl"
@@ -99,7 +99,7 @@ export default function OwnersPage() {
         <ul className="space-y-5">
           {FEATURES.map((f) => (
             <li key={f.title} className="flex gap-4">
-              <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#d4af37]/40 text-xs text-[#d4af37]">
+              <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#10b981]/40 text-xs text-[#10b981]">
                 ✓
               </span>
               <div>

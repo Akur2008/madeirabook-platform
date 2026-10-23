@@ -9,9 +9,9 @@ export default function AcquisitionSection() {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <Link
           href="/owners"
-          className="block rounded-2xl border border-white/10 bg-white/[0.02] p-8 transition-colors hover:border-[#d4af37]/50"
+          className="block rounded-2xl border border-white/10 bg-white/[0.02] p-8 transition-colors hover:border-[#10b981]/50"
         >
-          <p className="text-xs uppercase tracking-wider text-[#d4af37]/80">
+          <p className="text-xs uppercase tracking-wider text-[#10b981]/80">
             Madeira Property Management
           </p>
           <h3 className="mt-3 text-2xl" style={SERIF}>
@@ -21,7 +21,7 @@ export default function AcquisitionSection() {
             88% of income goes directly to your account via Stripe Connect
             Express. Transparent analytics, no routine, personal care.
           </p>
-          <span className="mt-6 inline-block text-sm font-medium text-[#d4af37]">
+          <span className="mt-6 inline-block text-sm font-medium text-[#10b981]">
             Owner Login / PMS →
           </span>
         </Link>

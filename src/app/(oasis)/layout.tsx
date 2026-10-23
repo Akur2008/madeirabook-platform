@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#D4AF37',
+  themeColor: '#10b981',
 }
 
 export default function OasisLayout(props: { children: React.ReactNode }) {
@@ -71,11 +71,11 @@ export default function OasisLayout(props: { children: React.ReactNode }) {
               href="/"
               className="font-serif text-xl font-semibold tracking-tight text-[#1c1a16]"
             >
-              Madeira <span className="text-[#b8952e]">Oasis</span>
+              Madeira <span className="text-[#059669]">Oasis</span>
             </OasisLink>
             <a
               href="mailto:hello@madeiraoasis.com?subject=Stay%20request%20%E2%80%94%20Madeira%20Oasis"
-              className="inline-flex items-center justify-center rounded-full border border-[#d4af37] bg-[#d4af37] px-4 py-2 text-xs font-semibold tracking-wide text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#8a7020] sm:px-6 sm:py-2.5 sm:text-sm"
+              className="inline-flex items-center justify-center rounded-full border border-[#10b981] bg-[#10b981] px-4 py-2 text-xs font-semibold tracking-wide text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#047857] sm:px-6 sm:py-2.5 sm:text-sm"
             >
               Request a Stay
             </a>

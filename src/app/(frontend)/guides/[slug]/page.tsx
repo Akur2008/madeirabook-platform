@@ -47,7 +47,7 @@ const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   link: ({ node, nodesToJSX }) => (
     <a
       href={node.fields?.url ?? '#'}
-      className="text-[#d4af37] underline decoration-white/30 underline-offset-2 transition-colors hover:text-white"
+      className="text-[#10b981] underline decoration-white/30 underline-offset-2 transition-colors hover:text-white"
     >
       {nodesToJSX({ nodes: node.children })}
     </a>
@@ -153,7 +153,7 @@ export default async function GuidePage({
         {/* Hero */}
         <header className="mt-8">
           {guide.category && (
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#d4af37]">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#10b981]">
               {guide.category}
             </p>
           )}
@@ -185,7 +185,7 @@ export default async function GuidePage({
 
         {/* Content */}
         {guide.content && (
-          <article className="mt-10 max-w-3xl space-y-4 [&_li]:text-white/75 [&_ol]:ml-6 [&_ol]:list-decimal [&_ul]:ml-6 [&_ul]:list-disc [&_blockquote]:border-l-2 [&_blockquote]:border-[#d4af37]/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-white/70">
+          <article className="mt-10 max-w-3xl space-y-4 [&_li]:text-white/75 [&_ol]:ml-6 [&_ol]:list-decimal [&_ul]:ml-6 [&_ul]:list-disc [&_blockquote]:border-l-2 [&_blockquote]:border-[#10b981]/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-white/70">
             <RichText data={guide.content} converters={jsxConverters} />
           </article>
         )}

@@ -37,12 +37,24 @@ export default function BookPage() {
 
       <Header />
 
-      <div className="mx-auto w-full max-w-md px-6 pb-20">
+      <div className="relative mx-auto w-full max-w-md px-6 pb-20">
         <Link
           href="/"
-          className="mt-6 inline-flex items-center text-sm font-medium text-white/50 transition-colors hover:text-white/90"
+          aria-label="Close"
+          className="absolute right-6 top-6 flex h-9 w-9 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white/90"
         >
-          ← Back to home
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
         </Link>
 
         <h1

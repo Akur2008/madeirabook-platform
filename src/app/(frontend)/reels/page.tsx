@@ -23,7 +23,7 @@ export default function ReelsPage() {
         </div>
         <p className="mt-4 text-center text-sm text-white/50">
           Final cut pending — drop the video at{' '}
-          <code className="text-[#d4af37]">public/videos/ambassador-reel.mp4</code>
+          <code className="text-[#10b981]">public/videos/ambassador-reel.mp4</code>
         </p>
       </div>
     </div>

@@ -113,8 +113,8 @@ const PlayIcon = () => (
     aria-hidden
     className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
   >
-    <circle cx="12" cy="12" r="11" fill="rgba(13,10,7,0.45)" stroke="#d4af37" />
-    <path d="M9.5 7.5v9l8-4.5-8-4.5z" fill="#d4af37" />
+    <circle cx="12" cy="12" r="11" fill="rgba(13,10,7,0.45)" stroke="#10b981" />
+    <path d="M9.5 7.5v9l8-4.5-8-4.5z" fill="#10b981" />
   </svg>
 )
 
@@ -124,7 +124,7 @@ const MapIcon = () => (
     height="26"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#d4af37"
+    stroke="#10b981"
     strokeWidth="1.8"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -269,11 +269,11 @@ export default function InteractiveHero({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-[#0d0a07]/85 via-[#0d0a07]/30 to-transparent" />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 px-6 pt-24 text-center md:pt-28">
-        <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-[#d4af37]">
+        <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-[#10b981]">
           A private collection
         </p>
         <h1
-          className="font-serif mt-3 text-4xl leading-tight text-[#d4af37] md:text-6xl"
+          className="font-serif mt-3 text-4xl leading-tight text-[#10b981] md:text-6xl"
           style={{ textShadow: '0 2px 26px rgba(0,0,0,0.6)' }}
         >
           Madeira Oasis
@@ -295,9 +295,9 @@ export default function InteractiveHero({
         >
           <span
             aria-hidden
-            className="oasis-pulse absolute inset-0 rounded-full border border-[#d4af37]/70"
+            className="oasis-pulse absolute inset-0 rounded-full border border-[#10b981]/70"
           />
-          <span className="absolute inset-0 overflow-hidden rounded-full border-2 border-[#d4af37]/80 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105">
+          <span className="absolute inset-0 overflow-hidden rounded-full border-2 border-[#10b981]/80 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={v.thumbnailUrl} alt="" className="h-full w-full object-cover" />
           </span>
@@ -338,9 +338,9 @@ export default function InteractiveHero({
       >
         <span
           aria-hidden
-          className="oasis-pulse absolute inset-0 rounded-full border border-[#d4af37]/70"
+          className="oasis-pulse absolute inset-0 rounded-full border border-[#10b981]/70"
         />
-        <span className="absolute inset-0 flex items-center justify-center rounded-full border-2 border-[#d4af37]/80 bg-[#14100c]/70 shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
+        <span className="absolute inset-0 flex items-center justify-center rounded-full border-2 border-[#10b981]/80 bg-[#14100c]/70 shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
           <MapIcon />
         </span>
         <span className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.16em] text-[#f5efe3]/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.8)] md:mt-2 md:text-[10px]">

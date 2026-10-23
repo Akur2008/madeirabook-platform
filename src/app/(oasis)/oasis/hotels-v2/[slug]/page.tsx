@@ -37,7 +37,7 @@ function renderDescription(text: string) {
       <ul key={key++} className="mt-4 space-y-3">
         {list.map((item, i) => (
           <li key={i} className="flex gap-3 text-[#1c1a16]/75">
-            <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#d4af37]" />
+            <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#10b981]" />
             <span dangerouslySetInnerHTML={{ __html: renderInline(item) }} />
           </li>
         ))}
@@ -176,7 +176,7 @@ export default async function OasisHotelV2Page({
   return (
     <div className="min-h-dvh bg-[#fdfbf7] pt-16 text-[#1c1a16]">
       {/* A/B test marker — visible only on the v2 variant */}
-      <div className="fixed left-4 top-20 z-50 rounded-full bg-[#1c1a16] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#d4af37] shadow-lg">
+      <div className="fixed left-4 top-20 z-50 rounded-full bg-[#1c1a16] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#10b981] shadow-lg">
         V2 Preview
       </div>
       {/* Hero */}
@@ -196,7 +196,7 @@ export default async function OasisHotelV2Page({
         <div className="absolute inset-0 bg-gradient-to-t from-[#1c1a16]/70 via-[#1c1a16]/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 mx-auto max-w-5xl px-6 pb-12">
           {p.category && (
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d4af37]">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#10b981]">
               {p.category}
             </p>
           )}
@@ -253,7 +253,7 @@ export default async function OasisHotelV2Page({
             <ul className="mt-8 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
               {amenities.map((a) => (
                 <li key={a.id} className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d4af37]/50 text-lg text-[#b8952e]">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#10b981]/50 text-lg text-[#059669]">
                     {a.icon || '◆'}
                   </span>
                   <span className="text-sm text-[#1c1a16]/80">{a.name}</span>
@@ -266,7 +266,7 @@ export default async function OasisHotelV2Page({
 
       {/* Inquiry */}
       <section id="inquiry" className="mx-auto max-w-3xl px-6 py-16 md:py-20">
-        <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#b8952e]">
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#059669]">
           Madeira Oasis Concierge
         </p>
         <h2 className="font-serif mt-3 text-center text-3xl font-medium md:text-4xl">
@@ -282,7 +282,7 @@ export default async function OasisHotelV2Page({
         <div className="mt-6 text-center">
           <a
             href={contactMailto}
-            className="inline-flex items-center justify-center rounded-full border border-[#d4af37] px-6 py-3 text-sm font-semibold tracking-wide text-[#8a7020] transition-colors hover:bg-[#d4af37] hover:text-[#1c1a16]"
+            className="inline-flex items-center justify-center rounded-full border border-[#10b981] px-6 py-3 text-sm font-semibold tracking-wide text-[#047857] transition-colors hover:bg-[#10b981] hover:text-[#1c1a16]"
           >
             Contact via Email
           </a>
@@ -294,7 +294,7 @@ export default async function OasisHotelV2Page({
         <div className="mx-auto max-w-3xl px-6 py-8 text-center">
           <OasisLink
             href={`/hotels/${p.slug}`}
-            className="text-sm font-medium text-[#8a7020] transition-colors hover:text-[#1c1a16]"
+            className="text-sm font-medium text-[#047857] transition-colors hover:text-[#1c1a16]"
           >
             ← Back to original version
           </OasisLink>

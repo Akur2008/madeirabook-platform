@@ -8,7 +8,6 @@ import React from 'react'
 import config from '@/payload.config'
 import type { Amenity, HouseRule, Media } from '@/payload-types'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
-import WatchVideoButton from '@/components/WatchVideoButton'
 import { isVideoMedia } from '@/lib/media'
 import { isBookable } from '@/lib/pricing-rules'
 
@@ -407,17 +406,6 @@ export default async function PropertyPage({
           >
             ← Back to all stays
           </Link>
-          {video?.url && (
-            <WatchVideoButton
-              videoUrl={video.url}
-              title={p.title}
-              cta={{
-                label: bookable ? 'Book this stay' : 'Contact us',
-                href: '#book',
-              }}
-              theme="dark"
-            />
-          )}
           {bookable ? (
             <BookingDrawer
               propertySlug={p.slug}

@@ -72,7 +72,7 @@ export default function HotelVideoSheet({ video, onClose, cta }: HotelVideoSheet
                     suppressHydrationWarning
                     href={cta.href}
                     onClick={onClose}
-                    className="mx-auto mt-6 block w-full max-w-sm rounded-full border border-[#d4af37] bg-[#d4af37] py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#d4af37]"
+                    className="mx-auto mt-6 block w-full max-w-sm rounded-full border border-[#10b981] bg-[#10b981] py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-[#1c1a16] transition-colors hover:bg-transparent hover:text-[#10b981]"
                   >
                     {cta.label}
                   </a>

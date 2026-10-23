@@ -124,10 +124,11 @@ export default function PropertyMap({
     mapRef.current = map
 
     // Auto-open the property card once the map settles — same feel as the
-    // /explore map's pin tap. The ref flips when the timer fires, so a
-    // StrictMode remount just re-arms the open.
+    // /explore map's pin tap. Only opens when the card has a real photo —
+    // a placeholder icon never pops on its own. The ref flips when the
+    // timer fires, so a StrictMode remount just re-arms the open.
     let autoOpenTimer: ReturnType<typeof setTimeout> | undefined
-    if (point && !autoOpenedRef.current) {
+    if (point?.photoUrl && !autoOpenedRef.current) {
       autoOpenTimer = setTimeout(() => {
         autoOpenedRef.current = true
         setSheetOpen(true)

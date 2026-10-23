@@ -128,11 +128,14 @@ export default function BookingSearchSheet({
   onClose,
   initialArrival,
   initialDeparture,
+  refCode,
 }: {
   open: boolean
   onClose: () => void
   initialArrival?: string
   initialDeparture?: string
+  // Ambassador ref — appended to result links so attribution survives.
+  refCode?: string | null
 }) {
   const engine = useAudioEngine()
   const [mounted, setMounted] = useState(false)
@@ -357,7 +360,8 @@ export default function BookingSearchSheet({
                 const href =
                   item.price == null
                     ? contactMailto(item.name)
-                    : `${STAY_BASE_URL}/p/${item.slug}?arrival=${arrival}&departure=${departure}`
+                    : `${STAY_BASE_URL}/p/${item.slug}?arrival=${arrival}&departure=${departure}` +
+                      (refCode ? `&ref=${encodeURIComponent(refCode)}` : '')
                 return (
                   <a
                     key={item.slug}

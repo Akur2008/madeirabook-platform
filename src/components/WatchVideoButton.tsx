@@ -25,7 +25,7 @@ export default function WatchVideoButton({
 
   const btnCls = {
     hero: 'rounded-lg border-white/60 bg-black/30 px-5 py-2.5 text-white backdrop-blur-sm hover:bg-white/20',
-    gold: 'rounded-full border-[#d4af37] px-6 py-3 text-[#8a7020] hover:bg-[#d4af37] hover:text-[#1c1a16]',
+    gold: 'rounded-full border-[#10b981] px-6 py-3 text-[#047857] hover:bg-[#10b981] hover:text-[#1c1a16]',
     dark: 'rounded-lg border-white/25 px-5 py-2.5 text-white hover:bg-white/10',
   }[theme]
 

@@ -143,7 +143,7 @@ export default function DigitalSignature({
           value={signedName}
           onChange={(e) => setSignedName(e.target.value)}
           placeholder="Type your full name to sign"
-          className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/30 outline-none focus:border-[#d4af37]"
+          className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/30 outline-none focus:border-[#10b981]"
         />
 
         <div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ export default function DigitalSignature({
             required
             value={signedDate}
             onChange={(e) => setSignedDate(e.target.value)}
-            className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#d4af37] [color-scheme:dark]"
+            className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#10b981] [color-scheme:dark]"
           />
         </div>
 
@@ -168,7 +168,7 @@ export default function DigitalSignature({
             type="checkbox"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-[#d4af37]"
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[#10b981]"
           />
           I have read and agree to the {doc.title}.
         </label>
@@ -176,7 +176,7 @@ export default function DigitalSignature({
         <button
           type="submit"
           disabled={!canSubmit || state === 'signing'}
-          className="w-full rounded-lg bg-[#d4af37] py-3 font-semibold text-[#0a1420] transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="w-full rounded-lg bg-[#10b981] py-3 font-semibold text-[#0a1420] transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {state === 'signing' ? 'Signing…' : 'Sign & continue →'}
         </button>

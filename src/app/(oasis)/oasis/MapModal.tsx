@@ -57,7 +57,7 @@ export default function MapModal({
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={() => onOpenChange(false)}
       />
-      <div className="absolute inset-0 overflow-hidden bg-[#fdfbf7] md:inset-8 md:rounded-2xl md:border md:border-[#d4af37]/40 md:shadow-2xl">
+      <div className="absolute inset-0 overflow-hidden bg-[#fdfbf7] md:inset-8 md:rounded-2xl md:border md:border-[#10b981]/40 md:shadow-2xl">
         {/* Leaflet is imported lazily inside OasisMap, so the map only
             mounts — and downloads — when the modal is open */}
         <OasisMap
@@ -73,7 +73,7 @@ export default function MapModal({
         type="button"
         onClick={() => onOpenChange(false)}
         aria-label="Close map"
-        className="absolute right-4 top-4 z-[1301] flex h-11 w-11 items-center justify-center rounded-full border border-[#d4af37]/60 bg-[#14100c]/80 text-lg text-[#f5efe3] backdrop-blur transition-colors hover:bg-[#14100c] md:right-12 md:top-12"
+        className="absolute right-4 top-4 z-[1301] flex h-11 w-11 items-center justify-center rounded-full border border-[#10b981]/60 bg-[#14100c]/80 text-lg text-[#f5efe3] backdrop-blur transition-colors hover:bg-[#14100c] md:right-12 md:top-12"
       >
         ✕
       </button>

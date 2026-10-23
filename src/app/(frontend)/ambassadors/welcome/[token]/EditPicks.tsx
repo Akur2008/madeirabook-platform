@@ -32,7 +32,7 @@ function SpotPicker({
               key={o.id}
               className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors ${
                 checked
-                  ? 'bg-[#d4af37]/15 text-white'
+                  ? 'bg-[#10b981]/15 text-white'
                   : disabled
                     ? 'text-white/25'
                     : 'text-white/70 hover:bg-white/5'
@@ -43,7 +43,7 @@ function SpotPicker({
                 checked={checked}
                 disabled={disabled}
                 onChange={() => onToggle(o.id)}
-                className="h-3.5 w-3.5 shrink-0 accent-[#d4af37]"
+                className="h-3.5 w-3.5 shrink-0 accent-[#10b981]"
               />
               {o.name}
             </label>
@@ -179,7 +179,7 @@ export default function EditPicks({
               type="button"
               onClick={handleSave}
               disabled={status === 'loading'}
-              className="mt-5 w-full rounded-md bg-[#d4af37] px-4 py-3 text-sm font-semibold text-[#0a1420] transition-colors hover:bg-[#e5c04b] disabled:opacity-50"
+              className="mt-5 w-full rounded-md bg-[#10b981] px-4 py-3 text-sm font-semibold text-[#0a1420] transition-colors hover:bg-[#e5c04b] disabled:opacity-50"
             >
               {status === 'loading' ? 'Saving…' : 'Save my picks'}
             </button>

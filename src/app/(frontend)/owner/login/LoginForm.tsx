@@ -41,12 +41,12 @@ export default function LoginForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@example.com"
-        className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/30 outline-none focus:border-[#d4af37]"
+        className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/30 outline-none focus:border-[#10b981]"
       />
       <button
         type="submit"
         disabled={state === 'sending'}
-        className="w-full rounded-lg bg-[#d4af37] py-3 font-semibold text-[#0a1420] transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-lg bg-[#10b981] py-3 font-semibold text-[#0a1420] transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {state === 'sending' ? 'Sending…' : 'Send magic link'}
       </button>

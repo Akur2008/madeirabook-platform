@@ -69,9 +69,9 @@ function WaveIcon({ on }: { on: boolean }) {
 }
 
 // The header's global ambient toggle: switches the ocean/cicadas/birds
-// cocoon on and off. The flag is its own store (cocoonEnabled) so the
-// bottom-bar master mute can override it temporarily without losing the
-// ON state — unmuting brings the cocoon back.
+// cocoon on and off. It reflects the effective state — the bottom-bar
+// master mute flips it to OFF — while the cocoonEnabled flag survives so
+// unmuting brings the cocoon back. Tapping ON while muted unmutes.
 export default function CocoonToggle() {
   const engine = useAudioEngine()
   const pathname = usePathname()
@@ -91,7 +91,7 @@ export default function CocoonToggle() {
   // — there the toggle drives the shared muted flag, like SoundButton.
   const externalAmbient = isExternallyManagedAmbient(pathname, host)
 
-  const on = externalAmbient ? !muted : cocoonOn
+  const on = externalAmbient ? !muted : cocoonOn && !muted
 
   const toggle = useCallback(async () => {
     if (externalAmbient) {
@@ -105,7 +105,7 @@ export default function CocoonToggle() {
       return
     }
     writeCocoonEnabled(true)
-    if (muted) return
+    if (muted) writeSoundMuted(false)
     try {
       await engine.start()
       await engine.playAmbientLayers(DEFAULT_AMBIENT_LAYERS, {
@@ -125,9 +125,9 @@ export default function CocoonToggle() {
         aria-label={on ? 'Turn 3D sound cocoon off' : 'Turn 3D sound cocoon on'}
         aria-pressed={on}
         onClick={() => void toggle()}
-        className={`flex items-center gap-2 rounded-full border px-3 py-1.5 backdrop-blur transition-colors ${
+        className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 backdrop-blur transition-colors ${
           on
-            ? 'border-[#d4af37]/50 bg-[#0a1420]/70 text-[#d4af37]'
+            ? 'border-[#10b981]/50 bg-[#0a1420]/70 text-[#10b981]'
             : 'border-white/15 bg-[#0a1420]/60 text-white/45'
         }`}
       >

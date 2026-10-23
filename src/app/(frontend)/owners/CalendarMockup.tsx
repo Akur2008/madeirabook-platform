@@ -65,7 +65,7 @@ export default function CalendarMockup() {
           <span className="rounded-md border border-white/10 px-2.5 py-1 text-[11px] text-white/50">
             ‹ Prev
           </span>
-          <span className="rounded-md border border-[#d4af37]/40 px-2.5 py-1 text-[11px] font-medium text-[#d4af37]">
+          <span className="rounded-md border border-[#10b981]/40 px-2.5 py-1 text-[11px] font-medium text-[#10b981]">
             Next ›
           </span>
         </div>
@@ -104,7 +104,7 @@ export default function CalendarMockup() {
                   Blocked
                 </span>
               ) : (
-                <span className="mt-0.5 text-[10px] text-[#d4af37]/90">
+                <span className="mt-0.5 text-[10px] text-[#10b981]/90">
                   €{cell.price}
                 </span>
               )}
@@ -121,7 +121,7 @@ export default function CalendarMockup() {
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-sm bg-white/15" /> Blocked
         </span>
-        <span className="ml-auto text-[#d4af37]/80">Stripe payout: €1,240</span>
+        <span className="ml-auto text-[#10b981]/80">Stripe payout: €1,240</span>
       </div>
     </div>
   )

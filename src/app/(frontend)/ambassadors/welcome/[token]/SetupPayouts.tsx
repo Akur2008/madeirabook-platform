@@ -32,7 +32,7 @@ export default function SetupPayouts({ token }: { token: string }) {
         type="button"
         onClick={handleClick}
         disabled={status === 'loading'}
-        className="block w-full rounded-md border border-[#d4af37]/50 bg-[#d4af37]/10 px-4 py-4 text-center text-sm font-semibold text-[#d4af37] transition-colors hover:bg-[#d4af37]/20 disabled:opacity-50"
+        className="block w-full rounded-md border border-[#10b981]/50 bg-[#10b981]/10 px-4 py-4 text-center text-sm font-semibold text-[#10b981] transition-colors hover:bg-[#10b981]/20 disabled:opacity-50"
       >
         {status === 'loading' ? 'Opening Stripe…' : '💳 Set up payouts (Stripe)'}
       </button>

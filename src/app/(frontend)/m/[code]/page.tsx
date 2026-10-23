@@ -11,7 +11,7 @@ export const revalidate = 60
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 const REF_CODE_RE = /^[a-z0-9_-]{2,50}$/
-const DEFAULT_ACCENT = '#d4af37'
+const DEFAULT_ACCENT = '#10b981'
 
 type Slugged = { slug?: string | null }
 

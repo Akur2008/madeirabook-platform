@@ -46,13 +46,13 @@ export default function HotelStories({ stories, theme = 'dark' }: HotelStoriesPr
       : 'text-3xl font-light text-white/90 md:text-4xl'
   const subCls = theme === 'oasis' ? 'text-[#f5efe3]/60' : 'text-white/60'
   const labelCls =
-    theme === 'oasis' ? 'text-[#d4af37]' : 'text-white/85'
+    theme === 'oasis' ? 'text-[#10b981]' : 'text-white/85'
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-16 md:py-20">
       <p
         className={`text-center text-[11px] font-medium uppercase tracking-[0.35em] ${
-          theme === 'oasis' ? 'text-[#d4af37]' : 'text-white/50'
+          theme === 'oasis' ? 'text-[#10b981]' : 'text-white/50'
         }`}
       >
         Stories

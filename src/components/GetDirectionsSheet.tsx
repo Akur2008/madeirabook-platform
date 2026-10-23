@@ -53,7 +53,7 @@ export default function GetDirectionsSheet({
           onClick={() => setOpen(true)}
           className={
             theme === 'gold'
-              ? 'inline-flex items-center justify-center rounded-lg border border-[#d4af37] bg-[#d4af37] px-5 py-2.5 text-sm font-semibold text-[#1c1a16] transition-colors hover:bg-[#c9a227]'
+              ? 'inline-flex items-center justify-center rounded-lg border border-[#10b981] bg-[#10b981] px-5 py-2.5 text-sm font-semibold text-[#0a1420] transition-colors hover:bg-[#059669]'
               : 'inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500'
           }
         >
@@ -99,7 +99,7 @@ export default function GetDirectionsSheet({
                   lat={lat}
                   lng={lng}
                   name={name}
-                  className="w-full whitespace-nowrap rounded-full border border-[#d4af37] bg-[#d4af37] py-3.5 text-xs font-semibold uppercase tracking-widest text-[#1c1a16] transition-colors hover:bg-[#c9a227] sm:text-sm"
+                  className="w-full whitespace-nowrap rounded-full border border-[#10b981] bg-[#10b981] py-3.5 text-xs font-semibold uppercase tracking-widest text-[#0a1420] transition-colors hover:bg-[#059669] sm:text-sm"
                 />
               </div>
             </div>

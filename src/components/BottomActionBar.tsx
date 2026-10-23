@@ -116,7 +116,11 @@ export default function BottomActionBar() {
         className={`${BTN} text-emerald-300 hover:bg-white/10`}
       >
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+          <path d="M5 3v4" />
+          <path d="M19 17v4" />
+          <path d="M3 5h4" />
+          <path d="M17 19h4" />
         </svg>
       </button>
 
@@ -126,17 +130,37 @@ export default function BottomActionBar() {
         aria-label={soundOn ? 'Mute all sound' : 'Unmute sound'}
         aria-pressed={!soundOn}
         onClick={() => void toggleMute()}
-        className={`${BTN} text-lg hover:bg-white/10`}
+        className={`${BTN} hover:bg-white/10`}
       >
-        <span
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
           className={
             soundOn
-              ? 'opacity-100 drop-shadow-[0_0_6px_rgba(34,197,94,0.9)]'
-              : 'opacity-50 grayscale'
+              ? 'text-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]'
+              : 'text-white/40'
           }
         >
-          {soundOn ? '🔊' : '🔇'}
-        </span>
+          <path d="M11 5 6 9H2v6h4l5 4V5z" />
+          {soundOn ? (
+            <>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </>
+          ) : (
+            <>
+              <path d="m22 9-6 6" />
+              <path d="m16 9 6 6" />
+            </>
+          )}
+        </svg>
       </button>
 
       <button

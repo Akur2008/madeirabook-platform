@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 const INPUT =
-  'w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/40 outline-none transition-colors focus:border-[#d4af37]'
+  'w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/40 outline-none transition-colors focus:border-[#10b981]'
 
 export default function B2BLeadForm({
   type,
@@ -53,8 +53,8 @@ export default function B2BLeadForm({
 
   if (status === 'success') {
     return (
-      <div className="w-full rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/10 p-6 text-center">
-        <p className="text-lg font-semibold text-[#d4af37]">
+      <div className="w-full rounded-xl border border-[#10b981]/30 bg-[#10b981]/10 p-6 text-center">
+        <p className="text-lg font-semibold text-[#10b981]">
           Thank you! We will contact you shortly.
         </p>
       </div>
@@ -87,7 +87,7 @@ export default function B2BLeadForm({
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="w-full rounded-lg bg-[#d4af37] px-4 py-3 text-sm font-semibold text-[#030712] transition-colors hover:bg-[#e5c04b] disabled:opacity-50"
+        className="w-full rounded-lg bg-[#10b981] px-4 py-3 text-sm font-semibold text-[#030712] transition-colors hover:bg-[#e5c04b] disabled:opacity-50"
       >
         {status === 'loading' ? 'Sending…' : submitLabel}
       </button>

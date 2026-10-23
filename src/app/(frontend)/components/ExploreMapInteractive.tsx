@@ -28,10 +28,10 @@ const FILTERS: Array<{ key: MapFilter; label: string }> = [
 const TYPE_STYLE: Record<PointType, { color: string; emoji: string }> = {
   property: { color: '#10b981', emoji: '🏠' },
   beach: { color: '#3b82f6', emoji: '🏖️' },
-  restaurant: { color: '#d4af37', emoji: '🍽️' },
+  restaurant: { color: '#10b981', emoji: '🍽️' },
   trail: { color: '#f97316', emoji: '🥾' },
   viewpoint: { color: '#a855f7', emoji: '👁️' },
-  community: { color: '#d4af37', emoji: '⭐' },
+  community: { color: '#10b981', emoji: '⭐' },
 }
 
 interface MapStay {
@@ -423,20 +423,22 @@ export default function ExploreMapInteractive({
     syncIcons()
 
     // Auto-open a few corner teaser cards once the initial map settles so
-    // the map reads as alive, not just pins. Skipped on lat/lng deep
+    // the map reads as alive, not just pins. Only cards with a real photo
+    // open — placeholder icons never auto-open. Skipped on lat/lng deep
     // links — the visitor came for a specific spot, don't cover it with
     // cards. The ref flips when the timer fires, not on schedule, so a
     // StrictMode remount or an early filter change just re-arms the open.
     let autoOpenTimer: ReturnType<typeof setTimeout> | undefined
+    const photoPoints = points.filter((p) => Boolean(p.photoUrl))
     if (
       !autoOpenedRef.current &&
       initialLat == null &&
       initialLng == null &&
-      points.length
+      photoPoints.length
     ) {
       autoOpenTimer = setTimeout(() => {
         autoOpenedRef.current = true
-        setTeasers(pickTeasers(points))
+        setTeasers(pickTeasers(photoPoints))
       }, 600)
     }
 
@@ -461,7 +463,7 @@ export default function ExploreMapInteractive({
           narrow phones it scrolls instead of clipping off-screen left. */}
       <div className="absolute inset-x-0 top-3 z-[1001] overflow-x-auto px-4">
         <div className="flex w-max min-w-full justify-center">
-          <div className="flex gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-md backdrop-blur">
+          <div className="flex gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
@@ -469,7 +471,7 @@ export default function ExploreMapInteractive({
                 onClick={() => setFilter(f.key)}
                 className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition-colors sm:px-4 sm:text-sm ${
                   filter === f.key
-                    ? 'bg-slate-200 text-slate-900'
+                    ? 'bg-emerald-100 text-emerald-900'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -480,13 +482,13 @@ export default function ExploreMapInteractive({
         </div>
       </div>
       {/* Density toggle — featured curation by default, all points on tap */}
-      <div className="absolute left-1/2 top-14 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-md backdrop-blur">
+      <div className="absolute left-1/2 top-14 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
         <button
           type="button"
           aria-pressed={!showAll}
           onClick={() => setShowAll(false)}
           className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            !showAll ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:text-slate-900'
+            !showAll ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Featured only
@@ -496,7 +498,7 @@ export default function ExploreMapInteractive({
           aria-pressed={showAll}
           onClick={() => setShowAll(true)}
           className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            showAll ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:text-slate-900'
+            showAll ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Show all points
