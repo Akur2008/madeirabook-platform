@@ -840,6 +840,14 @@ export interface Referral {
    * Stripe payout schedule for the connected account.
    */
   payoutSchedule?: ('monthly' | 'weekly' | 'daily' | 'manual') | null;
+  /**
+   * Ambassador wallet: commission accrued but not yet paid out, in cents (EUR). Managed by the Stripe webhook and the Pay Out action.
+   */
+  pendingBalance?: number | null;
+  /**
+   * Total commission already transferred to the ambassador, in cents (EUR).
+   */
+  totalPaid?: number | null;
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1834,6 +1842,8 @@ export interface ReferralsSelect<T extends boolean = true> {
   sourceApplication?: T;
   stripeAccountId?: T;
   payoutSchedule?: T;
+  pendingBalance?: T;
+  totalPaid?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;

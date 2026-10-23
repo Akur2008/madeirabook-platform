@@ -182,6 +182,32 @@ export default async function WelcomePage(props: {
     </div>
   )
 
+  const pendingBalanceEur = ((referral.pendingBalance ?? 0) / 100).toFixed(2)
+  const totalPaidEur = ((referral.totalPaid ?? 0) / 100).toFixed(2)
+  const walletBlock = (
+    <div className="mt-8 rounded-lg border border-white/10 bg-white/5 p-5">
+      <p className="text-xs font-semibold uppercase tracking-widest text-white/50">
+        Your balance
+      </p>
+      <div className="mt-3 space-y-1.5 text-sm text-white/80">
+        <div className="flex items-center justify-between">
+          <span>Current balance</span>
+          <span className="font-semibold text-[#d4af37]">
+            €{pendingBalanceEur}
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span>Total paid</span>
+          <span>€{totalPaidEur}</span>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-white/40">
+        Payouts are processed monthly. Make sure your Stripe account is
+        connected.
+      </p>
+    </div>
+  )
+
   if (referral.invitationUsedAt) {
     return (
       <Shell>
@@ -194,6 +220,7 @@ export default async function WelcomePage(props: {
             hello@madeirabook.com
           </a>
         </p>
+        {walletBlock}
         {payoutBlock}
       </Shell>
     )
@@ -308,6 +335,8 @@ export default async function WelcomePage(props: {
           </span>
         </p>
       </div>
+
+      {walletBlock}
 
       {payoutBlock}
 

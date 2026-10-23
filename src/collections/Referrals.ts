@@ -184,6 +184,37 @@ export const Referrals: CollectionConfig = {
       },
     },
     {
+      name: 'pendingBalance',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      admin: {
+        readOnly: true,
+        description:
+          'Ambassador wallet: commission accrued but not yet paid out, in cents (EUR). Managed by the Stripe webhook and the Pay Out action.',
+      },
+    },
+    {
+      name: 'totalPaid',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      admin: {
+        readOnly: true,
+        description:
+          'Total commission already transferred to the ambassador, in cents (EUR).',
+      },
+    },
+    {
+      name: 'walletActions',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/AmbassadorPayoutPanel',
+        },
+      },
+    },
+    {
       name: 'notes',
       type: 'textarea',
     },

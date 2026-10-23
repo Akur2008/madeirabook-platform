@@ -31,6 +31,7 @@ import * as migration_20261020_201346_add_address_to_properties from './20261020
 import * as migration_20261020_212935_add_rooms_structure from './20261020_212935_add_rooms_structure';
 import * as migration_20261021_212730_add_b2b_lead_fields from './20261021_212730_add_b2b_lead_fields';
 import * as migration_20261022_120000_add_is_featured_oasis from './20261022_120000_add_is_featured_oasis';
+import * as migration_20261023_120000_add_wallet_fields_to_referrals from './20261023_120000_add_wallet_fields_to_referrals';
 
 export const migrations = [
   {
@@ -197,5 +198,10 @@ export const migrations = [
     up: migration_20261022_120000_add_is_featured_oasis.up,
     down: migration_20261022_120000_add_is_featured_oasis.down,
     name: '20261022_120000_add_is_featured_oasis'
+  },
+  {
+    up: migration_20261023_120000_add_wallet_fields_to_referrals.up,
+    down: migration_20261023_120000_add_wallet_fields_to_referrals.down,
+    name: '20261023_120000_add_wallet_fields_to_referrals'
   },
 ];

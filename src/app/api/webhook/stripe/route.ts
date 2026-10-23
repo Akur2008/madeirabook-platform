@@ -301,6 +301,15 @@ async function handleCheckoutCompleted(
             status: 'pending',
           },
         })
+        // Accumulate-and-pay-manually: the commission sits in the wallet
+        // until an admin triggers a Stripe transfer from the admin panel.
+        await payload.update({
+          collection: 'referrals',
+          id: referral.id,
+          data: {
+            pendingBalance: (referral.pendingBalance ?? 0) + payoutCents,
+          },
+        })
         console.log(`webhook: affiliate payout: ${refCode} ${payoutCents} cents`)
       } else {
         console.warn(`webhook: referral '${refCode}' not found (session ${session.id})`)
