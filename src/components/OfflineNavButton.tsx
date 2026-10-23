@@ -18,9 +18,10 @@ const DEEP_LINK_TIMEOUT_MS = 1500
 const isMobileDevice = () =>
   /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 
-// The "get the app" modal — shared by the deep-link button and the
-// info-only pill (which always opens the modal, no navigation attempt).
-function OfflineNavModal({ onClose }: { onClose: () => void }) {
+// The "get the app" modal — shared by the deep-link button, the info-only
+// pill and the homepage map's bottom bar (which always opens the modal,
+// no navigation attempt).
+export function OfflineNavModal({ onClose }: { onClose: () => void }) {
   return (
     <div
       className="fixed inset-0 z-[1400] flex items-center justify-center p-6"

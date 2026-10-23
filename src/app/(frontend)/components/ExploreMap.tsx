@@ -8,8 +8,10 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { oasisBase } from '@/lib/oasis-domain'
 import GetDirectionsSheet from '@/components/GetDirectionsSheet'
+import { OfflineNavModal } from '@/components/OfflineNavButton'
 import FloatingPointCards, {
   pickTeasers,
+  SMALL_MAP_SLOTS,
   type MapTeaser,
 } from './FloatingPointCards'
 import PointPreviewSheet, {
@@ -19,8 +21,6 @@ import PointPreviewSheet, {
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 const MADEIRA_CENTER: [number, number] = [32.75, -16.95]
 const MADEIRA_ZOOM = 10
-const ESCAPE_CARD_URL = '/api/escape-card'
-const FALLBACK_CITY = 'Lisbon'
 
 type MapFilter = 'all' | 'stays' | 'beaches' | 'food' | 'trails' | 'views'
 
@@ -138,9 +138,9 @@ interface ExploreMapProps {
   activeFilter?: MapFilter
   ambassador?: AmbassadorBranding | null
   refCode?: string | null
-  // Embedded maps (homepage) hide the bottom escape CTA — the page above
-  // already carries the same action.
-  hideEscapeCta?: boolean
+  // Embedded maps (homepage) get a bottom action bar — "Big Map" link to
+  // /explore plus an Offline Navigation button opening the app modal.
+  bottomBar?: boolean
 }
 
 const escHtml = (s: string) =>
@@ -162,7 +162,7 @@ export default function ExploreMap({
   activeFilter = 'all',
   ambassador = null,
   refCode = null,
-  hideEscapeCta = false,
+  bottomBar = false,
 }: ExploreMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Leaflet.Map | null>(null)
@@ -173,7 +173,7 @@ export default function ExploreMap({
   // Default decluttered map — "Show all points" opt-in brings back everything.
   const [showAll, setShowAll] = useState(false)
   const [ready, setReady] = useState(false)
-  const [escapeCity, setEscapeCity] = useState(FALLBACK_CITY)
+  const [offlineOpen, setOfflineOpen] = useState(false)
   const [dirTarget, setDirTarget] = useState<{
     lat: number
     lng: number
@@ -185,17 +185,6 @@ export default function ExploreMap({
   const [teasers, setTeasers] = useState<MapTeaser[]>([])
   // Fires once: auto-open the corner teaser cards on the initial load
   const autoOpenedRef = useRef(false)
-
-  // Same geo-city lookup as the hero EscapeCard (/api/escape-card reads
-  // Vercel IP headers; falls back to Lisbon when unknown).
-  useEffect(() => {
-    fetch(ESCAPE_CARD_URL)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (typeof d?.city === 'string' && d.city) setEscapeCity(d.city)
-      })
-      .catch(() => undefined)
-  }, [])
 
   // Ambassador curation: empty/missing lists mean "show everything"
   const visibleBeaches = useMemo(() => {
@@ -472,14 +461,14 @@ export default function ExploreMap({
     if (!autoOpenedRef.current && photoTeasers.length) {
       autoOpenTimer = setTimeout(() => {
         autoOpenedRef.current = true
-        setTeasers(pickTeasers(photoTeasers))
+        setTeasers(pickTeasers(photoTeasers, bottomBar ? 2 : undefined))
       }, 600)
     }
 
     return () => {
       if (autoOpenTimer) clearTimeout(autoOpenTimer)
     }
-  }, [ready, filter, showAll, properties, oasisStays, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode])
+  }, [ready, filter, showAll, properties, oasisStays, visibleBeaches, visibleRestaurants, trails, viewpoints, ambassadorPins, ambassador, refCode, bottomBar])
 
   const openTeaser = (t: MapTeaser) => {
     setTeasers((ts) => ts.filter((x) => x.key !== t.key))
@@ -543,8 +532,12 @@ export default function ExploreMap({
           </div>
         </div>
       )}
-      <div className="absolute left-1/2 top-3 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
-        {FILTERS.filter(
+      {/* Scrollable strip: the pill stays centered while it fits; on
+          narrow phones it scrolls instead of clipping off-screen left. */}
+      <div className="absolute inset-x-0 top-3 z-[1001] overflow-x-auto px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-max min-w-full justify-center">
+          <div className="flex gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
+            {FILTERS.filter(
           (f) =>
             f.key === 'all' ||
             (f.key === 'stays' && (properties.length > 0 || oasisStays.length > 0)) ||
@@ -566,50 +559,90 @@ export default function ExploreMap({
             {f.label}
           </button>
         ))}
+          </div>
+        </div>
       </div>
-      {/* Density toggle — featured curation by default; sits above the
-          escape CTA so it never collides with the ambassador card. */}
-      <div className="absolute bottom-16 left-1/2 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
-        <button
-          type="button"
-          aria-pressed={!showAll}
-          onClick={() => setShowAll(false)}
-          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            !showAll ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          Featured only
-        </button>
-        <button
-          type="button"
-          aria-pressed={showAll}
-          onClick={() => setShowAll(true)}
-          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            showAll ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          Show all points
-        </button>
-      </div>
-      {/* Bottom-center keeps clear of the fixed WhatsApp/Sound buttons on the
-          right edge and Leaflet's attribution corner */}
-      {!hideEscapeCta && (
-        <button
-          type="button"
-          onClick={() =>
-            router.push(
-              refCode ? `/book?ref=${encodeURIComponent(refCode)}` : '/book',
-            )
-          }
-          className="absolute bottom-4 left-1/2 z-[1001] -translate-x-1/2 whitespace-nowrap rounded-full border border-white bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-lg backdrop-blur transition-colors hover:bg-emerald-50"
-        >
-          Escape from {escapeCity} →
-        </button>
+      {/* Density toggle — featured curation by default. The embedded map
+          drops it: the bottom action bar owns that edge. */}
+      {!bottomBar && (
+        <div className="absolute bottom-4 left-1/2 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
+          <button
+            type="button"
+            aria-pressed={!showAll}
+            onClick={() => setShowAll(false)}
+            className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              !showAll ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Featured only
+          </button>
+          <button
+            type="button"
+            aria-pressed={showAll}
+            onClick={() => setShowAll(true)}
+            className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              showAll ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Show all points
+          </button>
+        </div>
       )}
+      {/* Embedded bottom action bar — opens the full map or the offline
+          navigation instructions. */}
+      {bottomBar && (
+        <div className="absolute inset-x-3 bottom-3 z-[1002] flex gap-2 rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-lg backdrop-blur">
+          <button
+            type="button"
+            onClick={() => router.push('/explore')}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" />
+              <path d="M15 5.764v15" />
+              <path d="M9 3.236v15" />
+            </svg>
+            Big Map
+          </button>
+          <button
+            type="button"
+            onClick={() => setOfflineOpen(true)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z" />
+            </svg>
+            Offline Navigation
+          </button>
+        </div>
+      )}
+      {offlineOpen && <OfflineNavModal onClose={() => setOfflineOpen(false)} />}
       <FloatingPointCards
         teasers={teasers}
         onSelect={openTeaser}
         onDismiss={dismissTeaser}
+        slots={bottomBar ? SMALL_MAP_SLOTS : undefined}
       />
       <PointPreviewSheet
         open={sheetOpen}

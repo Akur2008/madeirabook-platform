@@ -240,19 +240,10 @@ img.object-cover {
   height: 100%;
 }
 
-/* /explore fullscreen map on phones: the in-map filter bar is wider than
-   the viewport — pin it to the edges and let it scroll horizontally, and
-   drop the Leaflet zoom control below it so nothing overlaps. */
+/* /explore fullscreen map on phones: the top density pill is centered,
+   the layer filters live in the full-width bottom bar — drop the Leaflet
+   zoom control below the pill so nothing overlaps. */
 @media (max-width: 640px) {
-  .explore-fullmap div[class*='left-1/2'][class*='top-3'] {
-    left: 8px;
-    right: 8px;
-    transform: none;
-    translate: none;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
   .explore-fullmap .leaflet-top.leaflet-left {
     top: 56px;
   }

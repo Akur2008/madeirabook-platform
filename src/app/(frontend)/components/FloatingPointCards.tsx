@@ -18,21 +18,24 @@ const TYPE_EMOJI: Record<PointType, string> = {
 }
 
 // Corner slots, kept clear of Leaflet's zoom control (top-left), the
-// centred filter pills, the bottom CTA strip and the fixed Sound/WhatsApp/AI
-// button column on the right edge — the 4th card is desktop-only and sits
-// just left of that column.
+// centred top pill and the bottom filter bar — the 4th card is
+// desktop-only and sits just left of the right edge.
 const CORNER_SLOTS = [
   'left-3 top-28',
   'right-3 top-28',
-  'left-3 bottom-24',
-  'right-[5.5rem] bottom-24 hidden sm:flex',
+  'left-3 bottom-28',
+  'right-3 bottom-28 hidden sm:flex',
 ] as const
+
+// The embedded homepage map shows exactly two cards: top-right and
+// bottom-left, above its own bottom action bar.
+export const SMALL_MAP_SLOTS = ['right-3 top-16', 'left-3 bottom-24'] as const
 
 // Up to `count` teasers: the first pin of every type first (so the corners
 // show variety — a stay, a beach, a restaurant…), then leftovers in pin order.
 export const pickTeasers = <T extends { type: PointType }>(
   points: T[],
-  count = CORNER_SLOTS.length,
+  count: number = CORNER_SLOTS.length,
 ): T[] => {
   const seen = new Set<PointType>()
   const firsts: T[] = []
@@ -52,21 +55,25 @@ interface FloatingPointCardsProps {
   teasers: MapTeaser[]
   onSelect: (teaser: MapTeaser) => void
   onDismiss: (key: string) => void
+  // Corner slot classes — defaults to the full-map four-corner layout;
+  // the embedded homepage map passes SMALL_MAP_SLOTS (two cards).
+  slots?: readonly string[]
 }
 
 export default function FloatingPointCards({
   teasers,
   onSelect,
   onDismiss,
+  slots = CORNER_SLOTS,
 }: FloatingPointCardsProps) {
   if (!teasers.length) return null
   return (
     <>
-      {teasers.slice(0, CORNER_SLOTS.length).map((t, i) => (
+      {teasers.slice(0, slots.length).map((t, i) => (
         <div
           key={t.key}
           data-teaser={t.key}
-          className={`absolute z-[1001] flex ${CORNER_SLOTS[i]}`}
+          className={`absolute z-[1001] flex ${slots[i]}`}
         >
           <div className="relative flex w-40 items-center rounded-xl border border-slate-200 bg-white/95 shadow-lg shadow-black/15 backdrop-blur sm:w-44">
             <button

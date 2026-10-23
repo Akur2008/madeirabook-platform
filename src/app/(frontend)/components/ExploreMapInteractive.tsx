@@ -459,30 +459,8 @@ export default function ExploreMapInteractive({
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
-      {/* Scrollable strip: the pill stays centered while it fits; on
-          narrow phones it scrolls instead of clipping off-screen left. */}
-      <div className="absolute inset-x-0 top-3 z-[1001] overflow-x-auto px-4">
-        <div className="flex w-max min-w-full justify-center">
-          <div className="flex gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
-            {FILTERS.map((f) => (
-              <button
-                key={f.key}
-                type="button"
-                onClick={() => setFilter(f.key)}
-                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition-colors sm:px-4 sm:text-sm ${
-                  filter === f.key
-                    ? 'bg-emerald-100 text-emerald-900'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
       {/* Density toggle — featured curation by default, all points on tap */}
-      <div className="absolute left-1/2 top-14 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
+      <div className="absolute left-1/2 top-3 z-[1001] flex -translate-x-1/2 gap-1 rounded-full border border-white bg-white p-1 shadow-md backdrop-blur">
         <button
           type="button"
           aria-pressed={!showAll}
@@ -503,6 +481,26 @@ export default function ExploreMapInteractive({
         >
           Show all points
         </button>
+      </div>
+      {/* Layer filters pinned to the bottom edge — a wide bar that scrolls
+          horizontally on narrow phones. */}
+      <div className="absolute inset-x-0 bottom-0 z-[1002] overflow-x-auto border-t border-slate-200 bg-white/95 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] backdrop-blur">
+        <div className="flex w-max min-w-full gap-1 px-3 py-3 sm:justify-center">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFilter(f.key)}
+              className={`flex-1 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
+                filter === f.key
+                  ? 'bg-emerald-100 text-emerald-900'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
       <FloatingPointCards
         teasers={teasers}

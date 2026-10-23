@@ -9,7 +9,6 @@ import config from '@/payload.config'
 import HotelStories from '@/components/HotelStories'
 import { HOTEL_STORIES } from '@/lib/hotel-stories'
 import { isBookable } from '@/lib/pricing-rules'
-import { OfflineNavInfoPill } from '@/components/OfflineNavButton'
 import SaveAsAppSheet from '@/components/SaveAsAppSheet'
 import SubscribeForm from '@/components/SubscribeForm'
 import AcquisitionSection from './components/AcquisitionSection'
@@ -364,12 +363,8 @@ export default async function HomePage({
             trails={mapTrails}
             viewpoints={mapViewpoints}
             ambassador={ambassador}
-            hideEscapeCta
+            bottomBar
           />
-        </div>
-        {/* Offline navigation — opens the Organic Maps instructions modal */}
-        <div className="mt-6 flex justify-center">
-          <OfflineNavInfoPill />
         </div>
       </section>
 

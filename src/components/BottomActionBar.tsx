@@ -104,8 +104,9 @@ export default function BottomActionBar() {
     window.open(waUrl, '_blank', 'noopener')
   }, [pathname])
 
-  // The owner cabinet is a back-office tool — no concierge there.
-  if (pathname.startsWith('/owner')) return null
+  // The owner cabinet is a back-office tool, and /explore needs the whole
+  // bottom edge for its layer-filter bar — no floating pill there.
+  if (pathname.startsWith('/owner') || pathname === '/explore') return null
 
   return (
     <div className="fixed bottom-6 right-6 z-[2000] flex items-center gap-1 rounded-full border border-white/15 bg-black/60 p-1.5 shadow-lg backdrop-blur-sm">
