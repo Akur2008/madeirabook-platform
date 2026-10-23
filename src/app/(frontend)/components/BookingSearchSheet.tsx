@@ -20,6 +20,68 @@ export type SearchResult = {
   coverImage?: string | null
   // True when price is a DB estimate (no live PMS rate) — render "from €X".
   estimate?: boolean
+  nights?: number
+  // Stay total minus the cleaning fee — the "n nights" part of the price.
+  accommodation?: number | null
+  cleaningFee?: number | null
+}
+
+export const ESTIMATE_NOTE =
+  'Estimated price. Final price will be confirmed at checkout.'
+
+// Second line under the total: "€200 stay + €50 cleaning fee" when the price
+// carries a cleaning fee, else the average nightly rate.
+export function priceBreakdownText(
+  item: SearchResult,
+  nights: number | null,
+): string | null {
+  if (item.price == null) return null
+  const n = item.nights ?? nights
+  if (item.accommodation != null && item.cleaningFee) {
+    return `${formatMoney(item.accommodation, item.currency)} stay + ${formatMoney(item.cleaningFee, item.currency)} cleaning fee`
+  }
+  if (item.accommodation != null && n && n > 0) {
+    return `avg ${formatMoney(item.accommodation / n, item.currency)} / night`
+  }
+  return null
+}
+
+// Price block shared by every availability result row: the PMS total with
+// the nights + cleaning-fee breakdown, and the estimate note when the price
+// is the DB fallback rather than a live PMS quote.
+export function SearchResultPrice({
+  item,
+  nights,
+}: {
+  item: SearchResult
+  nights: number | null
+}) {
+  if (item.price == null) {
+    return (
+      <p className="mb-0 mt-1 text-sm text-white/60">
+        Contact us via email for availability
+      </p>
+    )
+  }
+  const n = item.nights ?? nights
+  const breakdown = priceBreakdownText(item, n)
+  return (
+    <>
+      <p className="mb-0 mt-1 text-sm text-white/60">
+        <span className="font-semibold text-white/90">
+          {item.estimate ? 'from ' : ''}
+          {formatMoney(item.price, item.currency)}
+        </span>
+        {n != null && ` total · ${n} night${n === 1 ? '' : 's'}`}
+      </p>
+      {breakdown && (
+        <p className="mb-0 mt-0.5 text-xs text-white/45">{breakdown}</p>
+      )}
+      {item.estimate && (
+        <p className="mb-0 mt-0.5 text-xs text-white/45">{ESTIMATE_NOTE}</p>
+      )}
+    </>
+  )
 }
 
 export const CONTACT_EMAIL = 'hello@madeiraoasis.com'
@@ -319,19 +381,7 @@ export default function BookingSearchSheet({
                       <p className="mb-0 truncate text-sm font-medium text-white/90">
                         {item.name}
                       </p>
-                      <p className="mb-0 mt-1 text-sm text-white/60">
-                        {item.price == null ? (
-                          'Contact us via email for availability'
-                        ) : (
-                          <>
-                            <span className="font-semibold text-white/90">
-                              {item.estimate ? 'from ' : ''}
-                              {formatMoney(item.price, item.currency)}
-                            </span>
-                            {nights !== null && ` total · ${nights} nights`}
-                          </>
-                        )}
-                      </p>
+                      <SearchResultPrice item={item} nights={nights} />
                     </div>
                     <span className="text-white/40 transition-transform group-hover:translate-x-1">
                       →
@@ -521,11 +571,7 @@ export function BookingSearchInline({
                   <div className="mt-2 truncate text-sm font-medium text-white/90">
                     {item.name}
                   </div>
-                  <div className="mt-0.5 text-sm font-semibold text-white/90">
-                    {item.price == null
-                      ? 'Contact us via email for availability'
-                      : `${item.estimate ? 'from ' : ''}${formatMoney(item.price, item.currency)} · ${searched.nights} nights`}
-                  </div>
+                  <SearchResultPrice item={item} nights={searched.nights} />
                   <span className="mt-2 block w-full rounded-full border border-white/30 bg-white/10 py-1.5 text-center text-xs uppercase tracking-widest text-white transition-colors group-hover:bg-white/20">
                     {item.price == null ? 'Email →' : 'Book →'}
                   </span>

@@ -318,6 +318,7 @@ export default function ExploreMap({
             (p.pricePerNight ? `€${p.pricePerNight} / night` : null),
           address: p.address ?? null,
           href: withRef(`/p/${p.slug}`),
+          bookable: true,
         }
         const marker = L.marker([p.lat, p.lng], { icon, title: p.title })
         marker.on('click', () => openStaySheet(preview))

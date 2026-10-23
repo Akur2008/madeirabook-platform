@@ -5,6 +5,7 @@ import { Drawer } from 'vaul'
 
 import OfflineNavButton from '@/components/OfflineNavButton'
 import MutedAutoplayVideo from './MutedAutoplayVideo'
+import StayPriceBlock from './StayPriceBlock'
 
 const SERIF = { fontFamily: 'Cormorant Garamond, serif' } as const
 
@@ -47,6 +48,9 @@ export interface PointPreview {
   addedBy?: string | null
   href?: string | null
   address?: string | null
+  // Bookable madeirabook stay — the card renders a date picker + live PMS
+  // price (Smoobu/Zeevou) instead of the static meta price line.
+  bookable?: boolean | null
 }
 
 interface PointPreviewSheetProps {
@@ -169,7 +173,7 @@ export default function PointPreviewSheet({
               >
                 {point.name}
               </h2>
-              {point.meta && (
+              {point.meta && !point.bookable && (
                 <p className="mb-0 mt-2 text-center text-sm text-[#d4af37]">
                   {point.meta}
                 </p>
@@ -178,6 +182,9 @@ export default function PointPreviewSheet({
                 <p className="mb-0 mt-3 text-center text-sm leading-relaxed text-white/70">
                   {point.shortDescription}
                 </p>
+              )}
+              {point.type === 'property' && point.bookable && (
+                <StayPriceBlock slug={point.slug} fallbackText={point.meta} />
               )}
               {point.addedBy && (
                 <p className="mb-0 mt-3 text-center text-xs text-white/45">

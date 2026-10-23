@@ -32,6 +32,9 @@ export interface OasisHotelPin {
   photoUrl?: string | null
   videoUrl?: string | null
   address?: string | null
+  // brand 'both' stays (Orquídea) are bookable through the PMS-backed
+  // search — the pin card shows a live price for the selected dates.
+  bookable?: boolean | null
 }
 
 export interface OasisPoiPin {
@@ -213,6 +216,7 @@ export default function OasisMap({
           [h.category, h.locationName].filter(Boolean).join(' · ') || null,
         address: h.address ?? null,
         href: `${base}/hotels/${h.slug}`,
+        bookable: h.bookable ?? null,
       })
       setSheetOpen(true)
     }

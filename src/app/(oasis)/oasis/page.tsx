@@ -143,6 +143,9 @@ export default async function OasisPage({
           cover && typeof cover === 'object' ? (cover.url ?? null) : null,
         videoUrl:
           video && typeof video === 'object' ? (video.url ?? null) : null,
+        // 'both' brands are on madeirabook too — bookable via the PMS
+        // search; pure madeiraoasis stays keep the concierge card.
+        bookable: p.brand === 'both',
         address:
           [
             p.address?.street,

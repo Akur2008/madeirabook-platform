@@ -280,6 +280,7 @@ export default function ExploreMapInteractive({
         href?: string | null
         address?: string | null
         featured?: boolean | null
+        bookable?: boolean | null
       },
       name: string,
     ) =>
@@ -298,6 +299,7 @@ export default function ExploreMapInteractive({
         addedBy: item.addedBy ?? null,
         href: item.href,
         address: item.address ?? null,
+        bookable: item.bookable ?? null,
       })
 
     const shownStays = showAll ? properties : pickFeatured(properties)
@@ -308,7 +310,11 @@ export default function ExploreMapInteractive({
 
     if (filter === 'all' || filter === 'stays') {
       shownStays.forEach((p) =>
-        push('property', { ...p, photoUrl: p.photoUrl ?? p.coverImage }, p.title),
+        push(
+          'property',
+          { ...p, photoUrl: p.photoUrl ?? p.coverImage, bookable: true },
+          p.title,
+        ),
       )
     }
     if (filter === 'all' || filter === 'beaches') {
@@ -365,6 +371,7 @@ export default function ExploreMapInteractive({
           addedBy: point.addedBy,
           href: point.href,
           address: point.address,
+          bookable: point.bookable,
         })
         setSheetOpen(true)
       })

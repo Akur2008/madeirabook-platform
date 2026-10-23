@@ -10,8 +10,8 @@ import { useAudioEngine } from '@/audio/useAudioEngine'
 
 import {
   SEARCH_URL,
+  SearchResultPrice,
   contactMailto,
-  formatMoney,
   normalizeImage,
   toISODate,
   type SearchResult,
@@ -335,19 +335,16 @@ export default function BookingDrawer({
                             <p className="mb-0 truncate text-sm font-medium text-white/90">
                               {item.name}
                             </p>
-                            <p className="mb-0 mt-1 text-sm text-white/60">
-                              {isCreating ? (
-                                'Opening checkout…'
-                              ) : (
-                                <>
-                                  <span className="font-semibold text-white/90">
-                                    {item.estimate ? 'from ' : ''}
-                                    {formatMoney(item.price, item.currency)}
-                                  </span>
-                                  {` total · ${searchedDates.nights} nights`}
-                                </>
-                              )}
-                            </p>
+                            {isCreating ? (
+                              <p className="mb-0 mt-1 text-sm text-white/60">
+                                Opening checkout…
+                              </p>
+                            ) : (
+                              <SearchResultPrice
+                                item={item}
+                                nights={searchedDates.nights}
+                              />
+                            )}
                           </div>
                           {isCreating ? (
                             <span className="h-4 w-4 shrink-0 animate-spin rounded-full border border-white/30 border-t-white" />

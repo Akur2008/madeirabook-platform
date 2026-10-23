@@ -180,6 +180,9 @@ interface SmoobuAvailabilityEntry {
   available: boolean
   price?: number
   currency?: string
+  // Cleaning fee inside the total price — read from the PMS price breakdown
+  // (Smoobu priceElements) or, for Zeevou, the property's DB cleaningFee.
+  cleaningFee?: number
   reason?: unknown
 }
 
@@ -202,7 +205,11 @@ async function checkApartmentAvailability(
   )
   const prices = ((res && res.prices) || {}) as Record<
     string,
-    { price?: unknown; currency?: string }
+    {
+      price?: unknown
+      currency?: string
+      priceElements?: { type?: string; amount?: unknown }[]
+    }
   >
   const errors = ((res && res.errorMessages) || {}) as Record<string, unknown>
   const result: Record<number, SmoobuAvailabilityEntry> = {}
@@ -210,10 +217,14 @@ async function checkApartmentAvailability(
     const key = String(id)
     const entry = prices[key]
     if (entry && Number.isFinite(Number(entry.price))) {
+      const cleaning = (entry.priceElements ?? []).find(
+        (el) => el?.type === 'cleaningFee' && Number.isFinite(Number(el.amount)),
+      )
       result[id] = {
         available: true,
         price: Number(entry.price),
         currency: entry.currency || 'EUR',
+        ...(cleaning ? { cleaningFee: Number(cleaning.amount) } : {}),
       }
     } else {
       result[id] = { available: false, reason: errors[key] ?? null }
@@ -231,13 +242,84 @@ export interface AvailabilityItem {
   // True when price comes from the DB pricePerNight rather than a live PMS
   // rate (no pmsPropertyId, or the PMS check failed).
   estimate?: boolean
+  nights: number
+  // Stay total minus the cleaning fee — the "n nights" part of the price.
+  accommodation: number | null
+  cleaningFee: number | null
 }
 
-// Availability search across all published properties. Properties with a
-// Smoobu id (pmsPropertyId) get a live availability/price check; everything
-// else falls back to the DB pricePerNight (marked `estimate: true`) instead
-// of being dropped or failing the search. Items without any price keep
-// `price: null` — the UI renders those as "contact us" entries.
+interface ZeevouDocRef {
+  pmsPropertyId?: string | number | null
+  pmsMeta?: unknown
+  cleaningFee?: number | null
+}
+
+// Zeevou has no bulk availability/quote endpoint — compose it from per-day
+// rates (GET /apis/rates: price, stop_sell, min_stay) plus a booking-overlap
+// check. A stay is unavailable when a night is stop-sell'd, overlaps an
+// active booking, or falls under a min-stay rule. When some nights have no
+// rate rows at all we return available-without-price and let the caller fall
+// back to the DB estimate — a partial sum would be a wrong price.
+async function checkZeevouStay(
+  doc: ZeevouDocRef,
+  arrivalDate: string,
+  departureDate: string,
+  nights: number,
+): Promise<SmoobuAvailabilityEntry> {
+  const zeevou = await import('@/services/pms/zeevou')
+  const id = Number(doc.pmsPropertyId)
+  const meta =
+    doc.pmsMeta && typeof doc.pmsMeta === 'object' && !Array.isArray(doc.pmsMeta)
+      ? (doc.pmsMeta as { ratePlanId?: number })
+      : {}
+  const [rates, bookings] = await Promise.all([
+    zeevou.getRates(id, arrivalDate, departureDate, meta.ratePlanId ?? null),
+    zeevou.getReservations(id, arrivalDate, departureDate),
+  ])
+
+  const overlap = bookings.some(
+    (b) =>
+      b.status !== 'cancelled' &&
+      b.arrival < departureDate &&
+      b.departure > arrivalDate,
+  )
+  if (overlap) return { available: false, reason: 'booked' }
+
+  let total = 0
+  let missing = false
+  const day = new Date(`${arrivalDate}T00:00:00Z`)
+  const last = new Date(`${departureDate}T00:00:00Z`)
+  while (day < last) {
+    const iso = day.toISOString().slice(0, 10)
+    const r = rates[iso]
+    if (r?.available === false) return { available: false, reason: 'stop_sell' }
+    if (Number(r?.minStay) > nights) {
+      return { available: false, reason: 'min_stay' }
+    }
+    if (Number.isFinite(Number(r?.price))) total += Number(r.price)
+    else missing = true
+    day.setUTCDate(day.getUTCDate() + 1)
+  }
+  if (missing) return { available: true }
+
+  const cleaning = Number(doc.cleaningFee)
+  const cleaningFee = Number.isFinite(cleaning) && cleaning > 0 ? cleaning : 0
+  return {
+    available: true,
+    price: total + cleaningFee,
+    currency: 'EUR',
+    ...(cleaningFee ? { cleaningFee } : {}),
+  }
+}
+
+// Availability search across all published properties. Each property's PMS
+// (property.pms — Smoobu or Zeevou) is the source of truth for the price:
+// Smoobu ids go to the batch checkApartmentAvailability call, Zeevou
+// properties get a per-property rates+bookings check. Properties whose PMS
+// check fails or that have no pmsPropertyId fall back to the DB
+// pricePerNight (marked `estimate: true`) instead of being dropped.
+// Items without any price keep `price: null` — the UI renders those as
+// "contact us" entries.
 export async function checkAvailability({
   arrivalDate,
   departureDate,
@@ -265,14 +347,25 @@ export async function checkAvailability({
     ),
   )
 
-  const ids = found.docs
-    .map((doc) => Number(doc.pmsPropertyId))
-    .filter(Number.isFinite)
+  // Split by backend — sending a Zeevou id to Smoobu fails the whole batch
+  // ("customer not owner for one or more apartments").
+  const smoobuIds: number[] = []
+  const zeevouDocs: typeof found.docs = []
+  for (const doc of found.docs) {
+    const id = Number(doc.pmsPropertyId)
+    if (!Number.isFinite(id) || id <= 0) continue
+    if (doc.pms === 'zeevou') zeevouDocs.push(doc)
+    else smoobuIds.push(id)
+  }
 
   let avail: Record<number, SmoobuAvailabilityEntry> = {}
-  if (ids.length) {
+  if (smoobuIds.length) {
     try {
-      avail = await checkApartmentAvailability(ids, arrivalDate, departureDate)
+      avail = await checkApartmentAvailability(
+        smoobuIds,
+        arrivalDate,
+        departureDate,
+      )
     } catch (err) {
       console.warn(
         'checkAvailability: Smoobu check failed, falling back to DB prices',
@@ -281,10 +374,34 @@ export async function checkAvailability({
     }
   }
 
+  const zeevouAvail = new Map<number, SmoobuAvailabilityEntry>()
+  if (zeevouDocs.length) {
+    await Promise.all(
+      zeevouDocs.map(async (doc) => {
+        try {
+          zeevouAvail.set(
+            doc.id,
+            await checkZeevouStay(doc, arrivalDate, departureDate, nights),
+          )
+        } catch (err) {
+          console.warn(
+            `checkAvailability: Zeevou check failed for ${doc.slug}, falling back to DB price`,
+            err,
+          )
+        }
+      }),
+    )
+  }
+
   const items: AvailabilityItem[] = []
   for (const doc of found.docs) {
     const id = Number(doc.pmsPropertyId)
-    const entry = Number.isFinite(id) ? avail[id] : undefined
+    const entry =
+      doc.pms === 'zeevou'
+        ? zeevouAvail.get(doc.id)
+        : Number.isFinite(id)
+          ? avail[id]
+          : undefined
     if (entry && !entry.available) continue
 
     const livePrice =
@@ -292,10 +409,26 @@ export async function checkAvailability({
         ? Number(entry.price)
         : null
     const perNight = Number(doc.pricePerNight)
+    const cleaningDb = Number(doc.cleaningFee)
     const estimate = livePrice === null
+    const accommodation =
+      livePrice !== null
+        ? livePrice - (entry?.cleaningFee ?? 0)
+        : Number.isFinite(perNight) && perNight > 0
+          ? perNight * nights
+          : null
+    const cleaningFee =
+      livePrice !== null
+        ? (entry?.cleaningFee ??
+          (Number.isFinite(cleaningDb) && cleaningDb > 0 && cleaningDb < livePrice
+            ? cleaningDb
+            : null))
+        : Number.isFinite(cleaningDb) && cleaningDb > 0
+          ? cleaningDb
+          : null
     const price =
       livePrice ??
-      (Number.isFinite(perNight) && perNight > 0 ? perNight * nights : null)
+      (accommodation !== null ? accommodation + (cleaningFee ?? 0) : null)
 
     const firstImage = doc.media?.[0]?.image
     const coverImage =
@@ -309,6 +442,9 @@ export async function checkAvailability({
       currency:
         entry?.currency && entry.currency !== '€' ? entry.currency : 'EUR',
       coverImage,
+      nights,
+      accommodation,
+      cleaningFee,
       ...(estimate ? { estimate: true } : {}),
     })
   }
