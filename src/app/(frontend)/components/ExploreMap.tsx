@@ -591,11 +591,11 @@ export default function ExploreMap({
       {/* Embedded bottom action bar — opens the full map or the offline
           navigation instructions. */}
       {bottomBar && (
-        <div className="absolute inset-x-3 bottom-3 z-[1002] flex gap-2 rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-lg backdrop-blur">
+        <div className="absolute inset-x-0 bottom-0 z-[1002] flex gap-2 rounded-t-2xl border-t border-slate-200 bg-white p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.15)]">
           <button
             type="button"
             onClick={() => router.push('/explore')}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+            className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
           >
             <svg
               viewBox="0 0 24 24"
@@ -617,7 +617,7 @@ export default function ExploreMap({
           <button
             type="button"
             onClick={() => setOfflineOpen(true)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50"
+            className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50"
           >
             <svg
               viewBox="0 0 24 24"
