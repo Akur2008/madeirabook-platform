@@ -15,6 +15,10 @@ const PLAY_STORE_URL =
 // before assuming the app is not installed.
 const DEEP_LINK_TIMEOUT_MS = 1500
 
+// How long to wait for the browser's geolocation before falling back to
+// the pin-only deep link.
+const GEOLOCATION_TIMEOUT_MS = 8000
+
 const isMobileDevice = () =>
   /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 
@@ -124,6 +128,7 @@ export default function OfflineNavButton({
 }: OfflineNavButtonProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const geoPending = useRef(false)
 
   useEffect(
     () => () => {
@@ -132,20 +137,7 @@ export default function OfflineNavButton({
     [],
   )
 
-  const navigate = useCallback(() => {
-    // Desktop browsers can never handle om:// — go straight to the modal.
-    if (!isMobileDevice()) {
-      setModalOpen(true)
-      return
-    }
-
-    const appName = isOasisHost(window.location.hostname)
-      ? 'Madeira Oasis'
-      : 'Madeirabook'
-    const url = `om://map?v=1&ll=${lat},${lng}&n=${encodeURIComponent(
-      name,
-    )}&appname=${encodeURIComponent(appName)}`
-
+  const openDeepLink = useCallback((url: string) => {
     // When the OS hands the scheme to Organic Maps the page loses
     // visibility; if it stays visible the scheme had no handler.
     let handedOff = false
@@ -165,7 +157,50 @@ export default function OfflineNavButton({
         Date.now() - startedAt < DEEP_LINK_TIMEOUT_MS + 2500
       if (!handedOff && stillForeground) setModalOpen(true)
     }, DEEP_LINK_TIMEOUT_MS)
-  }, [lat, lng, name])
+  }, [])
+
+  const navigate = useCallback(() => {
+    // Desktop browsers can never handle om:// — go straight to the modal.
+    if (!isMobileDevice()) {
+      setModalOpen(true)
+      return
+    }
+    if (geoPending.current) return
+
+    const appName = isOasisHost(window.location.hostname)
+      ? 'Madeira Oasis'
+      : 'Madeirabook'
+    const pinUrl = `om://map?v=1&ll=${lat},${lng}&n=${encodeURIComponent(
+      name,
+    )}&appname=${encodeURIComponent(appName)}`
+
+    // Without a usable position there is no route to build — open the
+    // destination pin like before.
+    if (!('geolocation' in navigator)) {
+      openDeepLink(pinUrl)
+      return
+    }
+
+    // With the guest's position we can open Organic Maps on a ready
+    // route (MyLocation → the place); on denial or timeout we fall back
+    // to the pin-only link.
+    geoPending.current = true
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        geoPending.current = false
+        openDeepLink(
+          `om://route?sll=${coords.latitude},${coords.longitude}` +
+            `&saddr=MyLocation&dll=${lat},${lng}` +
+            `&daddr=${encodeURIComponent(name)}&type=vehicle`,
+        )
+      },
+      () => {
+        geoPending.current = false
+        openDeepLink(pinUrl)
+      },
+      { timeout: GEOLOCATION_TIMEOUT_MS, maximumAge: 60000 },
+    )
+  }, [lat, lng, name, openDeepLink])
 
   return (
     <>
