@@ -1,23 +1,27 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
 import CocoonToggle from '@/components/CocoonToggle'
 import MenuDrawer from '@/components/MenuDrawer'
 
-import BookingSearchSheet from './BookingSearchSheet'
-
 const SERIF = { fontFamily: 'Playfair Display, Cormorant Garamond, serif' } as const
 
 // Smart header: Playfair logo left, the 3D-sound-cocoon toggle in the
-// center, Book Stay + burger on the right. Book Stay opens the search
-// BottomSheet in place — no navigation. The burger opens the icon
-// drawer — there is no inline nav anymore. On phones the toggle drops to
-// its own centered row so all three zones stay readable.
+// center, Book Stay + burger on the right. Book Stay goes to the same
+// /book page the homepage "Book Sanctuary" CTA opens — range calendar +
+// availability search — keeping the ambassador ref. The burger opens the
+// icon drawer — there is no inline nav anymore. On phones the toggle
+// drops to its own centered row so all three zones stay readable.
 export default function Header({ refCode }: { refCode?: string | null }) {
+  const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [bookOpen, setBookOpen] = useState(false)
+
+  const openBook = () => {
+    router.push(refCode ? `/book?ref=${encodeURIComponent(refCode)}` : '/book')
+  }
 
   return (
     <>
@@ -36,7 +40,7 @@ export default function Header({ refCode }: { refCode?: string | null }) {
           <div className="flex items-center gap-2 justify-self-end sm:gap-3">
             <button
               type="button"
-              onClick={() => setBookOpen(true)}
+              onClick={openBook}
               className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-white/30 bg-[#0a1420]/70 px-3 py-2 text-xs font-semibold text-white backdrop-blur transition-colors hover:bg-white/10 sm:px-5 sm:py-2.5 sm:text-sm"
             >
               Book Stay
@@ -71,11 +75,6 @@ export default function Header({ refCode }: { refCode?: string | null }) {
       <MenuDrawer
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        refCode={refCode}
-      />
-      <BookingSearchSheet
-        open={bookOpen}
-        onClose={() => setBookOpen(false)}
         refCode={refCode}
       />
     </>

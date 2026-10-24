@@ -65,7 +65,10 @@ export interface AudioEngineContextValue {
   ) => Promise<void>
   stopAmbient: (fadeMs?: number) => void
   playSluice: (url: string | string[], durationSec?: number) => Promise<void>
-  playVideo: (url: string | string[], options?: { loop?: boolean }) => Promise<void>
+  playVideo: (
+    url: string | string[],
+    options?: { loop?: boolean; duckTo?: number },
+  ) => Promise<void>
   stopVideo: () => void
   stopAll: () => void
   setVolume: (channel: ChannelName, value: number) => void

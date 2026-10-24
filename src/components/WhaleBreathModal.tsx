@@ -36,11 +36,19 @@ export default function WhaleBreathModal() {
   const [breathStep, setBreathStep] = useState(0)
   const [breathSecond, setBreathSecond] = useState(1)
   const breathStepRef = useRef(0)
+  const engineRef = useRef(engine)
   const muted = useSyncExternalStore(
     subscribeSoundMuted,
     readSoundMuted,
     serverSoundMuted,
   )
+
+  // The context value is recreated on every engine emit; the whale effect
+  // must only depend on open/muted or it would stop/restart the source on
+  // every audio state change. The ref always points at the latest handle.
+  useEffect(() => {
+    engineRef.current = engine
+  }, [engine])
 
   // The drawer dispatches the event inside a click — resuming the context
   // right here keeps the browser's user-gesture activation.
@@ -53,17 +61,24 @@ export default function WhaleBreathModal() {
     return () => window.removeEventListener(WHALE_BREATH_EVENT, onOpen)
   }, [engine])
 
-  // One path for the whale: active while open && !muted. The cleanup
-  // stops it — on close, on mute, and on unmount — and unducks the
+  // One path for the whale: active while open && !muted. Opening ducks
+  // the ambient cocoon to silence at once; playVideo's own duck re-asserts
+  // it (duckTo: 0) once the buffer finishes decoding. The cleanup stops
+  // the whale — on close, on mute, and on unmount — and unducks the
   // ambient channel so the cocoon fades back in.
   useEffect(() => {
     if (!open || muted) return
-    void engine.start()
-    void engine.playVideo(WHALES_URL, { loop: true })
-    // playVideo ducks ambient to 0.05 — take it the rest of the way down.
-    engine.duck(0, DUCK_MS)
-    return () => engine.stopVideo()
-  }, [open, muted, engine])
+    const eng = engineRef.current
+    void eng.start()
+    eng.duck(0, DUCK_MS)
+    void eng.playVideo(WHALES_URL, { loop: true, duckTo: 0 })
+    return () => {
+      eng.stopVideo()
+      // If the whale was still loading, stopVideo early-returns before its
+      // unduck — restore the ambient channel explicitly.
+      eng.unduck()
+    }
+  }, [open, muted])
 
   // Re-assert the duck whenever the ambient channel rises while the
   // modal is open — e.g. an unmute restarting the cocoon mid-session.

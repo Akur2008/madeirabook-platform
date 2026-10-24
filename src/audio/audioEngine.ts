@@ -35,7 +35,7 @@ function fadeOutCurve(from: number, to: number): Float32Array {
   const curve = new Float32Array(CURVE_STEPS)
   for (let i = 0; i < CURVE_STEPS; i++) {
     const t = i / (CURVE_STEPS - 1)
-    curve[i] = from + (to - from) * Math.cos((t * Math.PI) / 2)
+    curve[i] = to + (from - to) * Math.cos((t * Math.PI) / 2)
   }
   return curve
 }
@@ -52,6 +52,11 @@ export class AudioEngine {
   private ambientSeq = 0
   private sluiceSource: ActiveSource | null = null
   private videoSource: ActiveSource | null = null
+  // Bumped on every video operation; an async playVideo load started under
+  // an older sequence number is dropped so a stale call can't resurrect
+  // the source after stopVideo/stopAll already ran (e.g. a modal closed
+  // before the whale buffer finished decoding).
+  private videoSeq = 0
   private backgroundFilter: BiquadFilterNode | null = null
   private listeners = new Set<EngineListener>()
   private volumes: Record<ChannelName, number> = {
@@ -319,9 +324,14 @@ export class AudioEngine {
     this.emit()
   }
 
-  async playVideo(url: string | string[], options: { loop?: boolean } = {}): Promise<void> {
+  async playVideo(
+    url: string | string[],
+    options: { loop?: boolean; duckTo?: number } = {},
+  ): Promise<void> {
+    const seq = ++this.videoSeq
     const ctx = this.ensureContext()
     const { buffer, url: resolvedUrl } = await this.load(url)
+    if (seq !== this.videoSeq) return
     this.stopActive(this.videoSource)
     const active = this.makeSource(
       buffer,
@@ -339,11 +349,12 @@ export class AudioEngine {
     }
     active.source.start(ctx.currentTime)
     this.videoSource = active
-    this.duck()
+    this.duck(options.duckTo)
     this.emit()
   }
 
   stopVideo(): void {
+    this.videoSeq++
     if (!this.videoSource) return
     this.stopActive(this.videoSource)
     this.videoSource = null
@@ -353,6 +364,7 @@ export class AudioEngine {
 
   stopAll(): void {
     this.ambientSeq++
+    this.videoSeq++
     for (const s of this.ambientSources) this.stopActive(s)
     this.ambientSources = []
     this.stopActive(this.sluiceSource)
