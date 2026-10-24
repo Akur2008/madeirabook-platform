@@ -127,6 +127,7 @@ export default function OfflineNavButton({
   className,
 }: OfflineNavButtonProps) {
   const [modalOpen, setModalOpen] = useState(false)
+  const [locating, setLocating] = useState(false)
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const geoPending = useRef(false)
 
@@ -147,6 +148,7 @@ export default function OfflineNavButton({
     document.addEventListener('visibilitychange', onVisibility)
 
     const startedAt = Date.now()
+    console.log('[OfflineNav] deep link:', url)
     window.location.href = url
     fallbackTimer.current = setTimeout(() => {
       document.removeEventListener('visibilitychange', onVisibility)
@@ -177,6 +179,7 @@ export default function OfflineNavButton({
     // Without a usable position there is no route to build — open the
     // destination pin like before.
     if (!('geolocation' in navigator)) {
+      console.warn('[OfflineNav] geolocation unavailable — pin-only link')
       openDeepLink(pinUrl)
       return
     }
@@ -185,17 +188,23 @@ export default function OfflineNavButton({
     // route (MyLocation → the place); on denial or timeout we fall back
     // to the pin-only link.
     geoPending.current = true
+    setLocating(true)
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         geoPending.current = false
+        setLocating(false)
         openDeepLink(
           `om://route?sll=${coords.latitude},${coords.longitude}` +
             `&saddr=MyLocation&dll=${lat},${lng}` +
             `&daddr=${encodeURIComponent(name)}&type=vehicle`,
         )
       },
-      () => {
+      (err) => {
         geoPending.current = false
+        setLocating(false)
+        console.warn(
+          `[OfflineNav] geolocation failed (code ${err.code}: ${err.message}) — pin-only link`,
+        )
         openDeepLink(pinUrl)
       },
       { timeout: GEOLOCATION_TIMEOUT_MS, maximumAge: 60000 },
@@ -204,8 +213,13 @@ export default function OfflineNavButton({
 
   return (
     <>
-      <button type="button" onClick={navigate} className={className}>
-        🧭 Navigate Offline
+      <button
+        type="button"
+        onClick={navigate}
+        disabled={locating}
+        className={`${className ?? ''} disabled:cursor-wait disabled:opacity-70`}
+      >
+        {locating ? '📍 Getting your location…' : '🧭 Navigate Offline'}
       </button>
 
       {modalOpen && <OfflineNavModal onClose={() => setModalOpen(false)} />}
