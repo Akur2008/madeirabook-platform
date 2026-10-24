@@ -183,7 +183,7 @@ export default async function OasisHotelPage({
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Hotel',
+    '@type': p.hotelType === 'resort' ? 'Resort' : 'Hotel',
     name: p.title,
     description: p.description || p.shortDescription || '',
     url: `https://www.madeiraoasis.com/hotels/${p.slug}`,
