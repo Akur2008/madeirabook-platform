@@ -122,5 +122,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  return [...staticEntries, ...guideEntries]
+  const { docs: cities } = await payload.find({
+    collection: 'cities',
+    where: { status: { equals: 'published' } },
+    limit: 1000,
+    depth: 0,
+  })
+
+  const escapeEntries: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/escape`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    ...cities.map(c => ({
+      url: `${baseUrl}/escape/${c.slug}`,
+      lastModified: c.updatedAt ? new Date(c.updatedAt) : new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+  ]
+
+  return [...staticEntries, ...guideEntries, ...escapeEntries]
 }

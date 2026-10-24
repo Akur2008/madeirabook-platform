@@ -6,7 +6,10 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
+import EscapeBookButton from '../../components/EscapeBookButton'
+import EscapeBookCard from '../../components/EscapeBookCard'
 import Header from '../../components/Header'
+import { ESCAPE_SEO } from './escape-copy'
 
 export const revalidate = 60
 
@@ -37,6 +40,52 @@ function formatDuration(minutes?: number | null): string | null {
   return m ? `${h}h ${m}m` : `${h}h`
 }
 
+type CopyCity = {
+  name: string
+  airportCode?: string | null
+  flightDurationMinutes?: number | null
+  basePrice?: number | null
+  currency?: string | null
+}
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  EUR: '€',
+  USD: '$',
+  GBP: '£',
+}
+
+function renderEscapeCopy(text: string, city: CopyCity): string {
+  const symbol = CURRENCY_SYMBOLS[city.currency ?? ''] ?? '€'
+  return text
+    .replaceAll('{name}', city.name)
+    .replaceAll('{airportCode}', city.airportCode ?? '')
+    .replaceAll(
+      '{duration}',
+      formatDuration(city.flightDurationMinutes) ?? 'a few hours',
+    )
+    .replaceAll(
+      '{price}',
+      city.basePrice != null ? String(city.basePrice) : '—',
+    )
+    .replaceAll('{currencySymbol}', symbol)
+}
+
+// Fallback for cities without bespoke copy — still unique via city data.
+function fallbackParagraphs(city: CopyCity): string[] {
+  const duration = formatDuration(city.flightDurationMinutes) ?? 'a few hours'
+  const route = city.airportCode ? `${city.airportCode} → FNC` : 'to FNC'
+  const price =
+    city.basePrice != null
+      ? ` with fares from ${CURRENCY_SYMBOLS[city.currency ?? ''] ?? '€'}${city.basePrice} one way`
+      : ''
+  return [
+    `Getting to Madeira from ${city.name} is simple: flights ${route} take about ${duration}${price}. Land, pick up your bags, and the ocean is minutes away.`,
+    `While ${city.name} works through its grey season, Madeira holds +20°C and ocean light all year. The best window is October to April — warm days, low fares and quiet trails.`,
+    'Madeira is quiet luxury as a landscape: UNESCO laurel forest, natural lava pools, levada paths above the clouds and ocean-front stays away from mass tourism.',
+    'Book your sanctuary direct on madeirabook — curated stays, honest prices, no middlemen.',
+  ]
+}
+
 export async function generateStaticParams() {
   const payload = await getPayload({ config: await config })
   const { docs } = await payload.find({
@@ -63,12 +112,15 @@ export async function generateMetadata({
   if (!docs.length) return { title: 'Not found' }
   const city = docs[0]
   const url = `https://www.madeirabook.com/escape/${city.slug}`
-  const description = `Direct flights from ${city.name} to Madeira from €${city.basePrice}. ${city.description?.slice(0, 120) ?? ''}`
+  const title = `Flights from ${city.name} to Madeira — Quiet Luxury Escape | Madeirabook`
+  const description = ESCAPE_SEO[city.slug]
+    ? renderEscapeCopy(ESCAPE_SEO[city.slug].meta, city)
+    : `Direct flights ${city.airportCode} → FNC in about ${formatDuration(city.flightDurationMinutes) ?? 'a few hours'}. ${city.description?.slice(0, 120) ?? ''}`
   return {
-    title: `Escape from ${city.name} to Madeira — Madeirabook`,
+    title,
     description,
     openGraph: {
-      title: `Escape from ${city.name} to Madeira`,
+      title,
       description,
       type: 'website',
       url,
@@ -116,6 +168,10 @@ export default async function EscapePage({
 
   const faqs = (city.faqs ?? []).filter(
     (f) => f.question && f.answer,
+  )
+
+  const seoParagraphs = (ESCAPE_SEO[city.slug]?.paragraphs ?? fallbackParagraphs(city)).map(
+    (p) => renderEscapeCopy(p, city),
   )
 
   const jsonLd = {
@@ -216,6 +272,21 @@ export default async function EscapePage({
           </p>
         )}
 
+        <div className="mt-10">
+          <EscapeBookCard city={city.name} fromIata={city.airportCode} />
+        </div>
+
+        <section className="mt-16">
+          <h2 className="text-2xl font-light text-white/90 md:text-3xl" style={SERIF}>
+            Getting from {city.name} to Madeira
+          </h2>
+          <div className="mt-6 max-w-3xl space-y-5 leading-relaxed text-white/75">
+            {seoParagraphs.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          </div>
+        </section>
+
         <section className="mt-16">
           <h2 className="text-2xl font-light text-white/90 md:text-3xl" style={SERIF}>
             Our stays in Madeira
@@ -313,12 +384,12 @@ export default async function EscapePage({
           >
             ← Back to home
           </Link>
-          <Link
-            href="/book"
+          <EscapeBookButton
+            city={city.name}
+            fromIata={city.airportCode}
+            label="Book sanctuary →"
             className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
-          >
-            Book now →
-          </Link>
+          />
         </div>
       </div>
 

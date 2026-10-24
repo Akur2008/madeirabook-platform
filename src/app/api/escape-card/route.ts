@@ -23,9 +23,22 @@ const CITIES: Record<string, CityInfo> = {
   Amsterdam: { iata: 'AMS', lat: 52.3676, lng: 4.9041, country: 'Netherlands' },
   Dublin: { iata: 'DUB', lat: 53.3498, lng: -6.2603, country: 'Ireland' },
   Porto: { iata: 'OPO', lat: 41.1579, lng: -8.6291, country: 'Portugal' },
+  Manchester: { iata: 'MAN', lat: 53.4808, lng: -2.2426, country: 'United Kingdom' },
+  Edinburgh: { iata: 'EDI', lat: 55.9533, lng: -3.1883, country: 'United Kingdom' },
+  Zurich: { iata: 'ZRH', lat: 47.3769, lng: 8.5417, country: 'Switzerland' },
+  Vienna: { iata: 'VIE', lat: 48.2082, lng: 16.3738, country: 'Austria' },
+  Brussels: { iata: 'BRU', lat: 50.8503, lng: 4.3517, country: 'Belgium' },
 }
 
 const FALLBACK_CITY = 'Lisbon'
+const IATA_RE = /^[A-Z]{3}$/
+
+const CITY_BY_LOWER_NAME = new Map(
+  Object.keys(CITIES).map((name) => [name.toLowerCase(), name]),
+)
+const CITY_BY_IATA = new Map(
+  Object.entries(CITIES).map(([name, info]) => [info.iata, { name, info }]),
+)
 
 function toISODate(d: Date): string {
   const y = d.getFullYear()
@@ -109,12 +122,15 @@ async function fetchCheapest(origin: string): Promise<{ price: number; date: str
 
 type WeatherPoint = { temp: number; code: number } | null
 
-async function fetchWeather(city: CityInfo): Promise<{ from: WeatherPoint; to: WeatherPoint }> {
+async function fetchWeather(
+  origin: { lat: number; lng: number } | null,
+): Promise<{ from: WeatherPoint; to: WeatherPoint }> {
+  if (!origin) return { from: null, to: null }
   try {
     const url =
       `https://api.open-meteo.com/v1/forecast` +
-      `?latitude=${city.lat},${MADEIRA_COORDS.lat}` +
-      `&longitude=${city.lng},${MADEIRA_COORDS.lng}` +
+      `?latitude=${origin.lat},${MADEIRA_COORDS.lat}` +
+      `&longitude=${origin.lng},${MADEIRA_COORDS.lng}` +
       `&current=temperature_2m,weather_code`
     const res = await fetch(url, {
       next: { revalidate: REVALIDATE_SECONDS },
@@ -138,28 +154,68 @@ async function fetchWeather(city: CityInfo): Promise<{ from: WeatherPoint; to: W
   }
 }
 
-export async function GET(req: NextRequest) {
+type Origin = {
+  name: string
+  iata: string
+  country: string
+  coords: { lat: number; lng: number } | null
+}
+
+// ?from=LGW (IATA) or ?city=London overrides geo detection — used by the
+// /escape/[citySlug] pages so the card always shows the page's city.
+function resolveOrigin(req: NextRequest): Origin {
+  const cityParam = req.nextUrl.searchParams.get('city')?.trim() ?? ''
+  const fromParam = (req.nextUrl.searchParams.get('from') ?? '')
+    .trim()
+    .toUpperCase()
+
+  const byName = CITY_BY_LOWER_NAME.get(cityParam.toLowerCase())
+  if (byName) {
+    const info = CITIES[byName]
+    return { name: byName, iata: info.iata, country: info.country, coords: info }
+  }
+  const byIata = IATA_RE.test(fromParam) ? CITY_BY_IATA.get(fromParam) : undefined
+  if (byIata) {
+    return {
+      name: cityParam || byIata.name,
+      iata: byIata.info.iata,
+      country: byIata.info.country,
+      coords: byIata.info,
+    }
+  }
+  if (IATA_RE.test(fromParam)) {
+    // Unknown origin — price lookup still works, weather is skipped.
+    return { name: cityParam || fromParam, iata: fromParam, country: '', coords: null }
+  }
+
   const geoCity = decodeHeader(req.headers.get('x-vercel-ip-city'))
   const geoCountry = decodeHeader(req.headers.get('x-vercel-ip-country'))
-
   const known = geoCity ? CITIES[geoCity] : undefined
-  const geoFallback = !known
-  const cityName = known ? geoCity! : FALLBACK_CITY
-  const city = CITIES[cityName]
-  const country = geoFallback ? city.country : geoCountry || city.country
+  const name = known ? geoCity! : FALLBACK_CITY
+  const info = CITIES[name]
+  return {
+    name,
+    iata: info.iata,
+    country: known ? geoCountry || info.country : info.country,
+    coords: info,
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const origin = resolveOrigin(req)
 
   const [cheapest, weather] = await Promise.all([
-    fetchCheapest(city.iata),
-    fetchWeather(city),
+    fetchCheapest(origin.iata),
+    fetchWeather(origin.coords),
   ])
 
   const priceFallback = cheapest === null
 
   return NextResponse.json(
     {
-      city: cityName,
-      country,
-      fromIata: city.iata,
+      city: origin.name,
+      country: origin.country,
+      fromIata: origin.iata,
       cheapestPrice: cheapest?.price ?? FALLBACK_PRICE_EUR,
       cheapestDate: cheapest?.date ?? toISODate(addDays(new Date(), 7)),
       currency: 'EUR',

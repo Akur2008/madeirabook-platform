@@ -46,7 +46,17 @@ function weatherIcon(code: number | null | undefined): string {
   return '🌤️'
 }
 
-export default function EscapeCard() {
+export default function EscapeCard({
+  city: cityOverride,
+  fromIata: iataOverride,
+  onBook,
+}: {
+  // Pin the card to a specific origin (escape pages) — overrides geo detection.
+  city?: string
+  fromIata?: string
+  // When set, the Book button calls this instead of navigating to /book.
+  onBook?: () => void
+}) {
   const router = useRouter()
   const [escapeCard, setEscapeCard] = useState<EscapeCardData | null>(null)
   // Dates come from the client clock — compute after mount to avoid
@@ -56,7 +66,12 @@ export default function EscapeCard() {
   useEffect(() => {
     const t = setTimeout(() => setWeekend(nextWeekend()), 0)
 
-    fetch(ESCAPE_CARD_URL)
+    const params = new URLSearchParams()
+    if (cityOverride) params.set('city', cityOverride)
+    if (iataOverride) params.set('from', iataOverride)
+    const url = params.size ? `${ESCAPE_CARD_URL}?${params}` : ESCAPE_CARD_URL
+
+    fetch(url)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d?.fallback === true) {
@@ -67,16 +82,20 @@ export default function EscapeCard() {
       .catch(() => setEscapeCard(null))
 
     return () => clearTimeout(t)
-  }, [])
+  }, [cityOverride, iataOverride])
 
-  const city = escapeCard?.city || FALLBACK_CITY
-  const fromIata = escapeCard?.fromIata || FALLBACK_IATA
+  const city = escapeCard?.city || cityOverride || FALLBACK_CITY
+  const fromIata = escapeCard?.fromIata || iataOverride || FALLBACK_IATA
   const hasPrice = typeof escapeCard?.cheapestPrice === 'number'
   const weekendLabel = weekend
     ? `${weekend.arrival.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${weekend.departure.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
     : null
 
   const goToBook = () => {
+    if (onBook) {
+      onBook()
+      return
+    }
     const ref = new URLSearchParams(window.location.search).get('ref')
     router.push(ref ? `/book?ref=${encodeURIComponent(ref)}` : '/book')
   }

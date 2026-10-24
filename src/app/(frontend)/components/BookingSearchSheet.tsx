@@ -129,6 +129,8 @@ export default function BookingSearchSheet({
   initialArrival,
   initialDeparture,
   refCode,
+  originCity,
+  originIata,
 }: {
   open: boolean
   onClose: () => void
@@ -136,6 +138,9 @@ export default function BookingSearchSheet({
   initialDeparture?: string
   // Ambassador ref — appended to result links so attribution survives.
   refCode?: string | null
+  // Escape pages: show which origin the guest is flying from.
+  originCity?: string
+  originIata?: string
 }) {
   const engine = useAudioEngine()
   const [mounted, setMounted] = useState(false)
@@ -291,6 +296,12 @@ export default function BookingSearchSheet({
           <p className="mb-0 text-2xl font-light text-white/95" style={SERIF}>
             When are you escaping?
           </p>
+          {(originCity || originIata) && (
+            <p className="mb-0 mt-2 text-sm text-white/50">
+              Flying from {originCity ?? originIata}
+              {originIata ? ` · ${originIata} → FNC` : ''}
+            </p>
+          )}
 
           <form onSubmit={handleSearch} className="mt-5">
             <div className="grid grid-cols-2 gap-3">
