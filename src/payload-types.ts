@@ -963,6 +963,16 @@ export interface Guide {
    * Short preview used on cards and as SEO description fallback.
    */
   excerpt?: string | null;
+  /**
+   * Optional FAQ block. Rendered on the page and emitted as FAQPage JSON-LD.
+   */
+  faqs?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
   category?: ('gastronomy' | 'lifestyle' | 'logistics' | 'spots' | 'history') | null;
   featuredRestaurants?: (number | Restaurant)[] | null;
   featuredBeaches?: (number | Beach)[] | null;
@@ -1886,6 +1896,13 @@ export interface GuidesSelect<T extends boolean = true> {
   coverImage?: T;
   content?: T;
   excerpt?: T;
+  faqs?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   category?: T;
   featuredRestaurants?: T;
   featuredBeaches?: T;

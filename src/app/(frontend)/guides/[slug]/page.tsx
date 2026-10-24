@@ -110,6 +110,8 @@ export default async function GuidePage({
     .filter(isDoc<Property>)
     .slice(0, 3)
 
+  const faqs = (guide.faqs ?? []).filter((f) => f.question && f.answer)
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -125,6 +127,19 @@ export default async function GuidePage({
       url: 'https://www.madeirabook.com',
     },
   }
+
+  const faqJsonLd =
+    faqs.length > 0
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: faqs.map((f) => ({
+            '@type': 'Question',
+            name: f.question,
+            acceptedAnswer: { '@type': 'Answer', text: f.answer },
+          })),
+        }
+      : null
 
   return (
     <div className="min-h-dvh bg-[#0a1420] text-white">
@@ -188,6 +203,23 @@ export default async function GuidePage({
           <article className="mt-10 max-w-3xl space-y-4 [&_li]:text-white/75 [&_ol]:ml-6 [&_ol]:list-decimal [&_ul]:ml-6 [&_ul]:list-disc [&_blockquote]:border-l-2 [&_blockquote]:border-[#10b981]/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-white/70">
             <RichText data={guide.content} converters={jsxConverters} />
           </article>
+        )}
+
+        {/* FAQs */}
+        {faqs.length > 0 && (
+          <section className="mt-14 max-w-3xl">
+            <h2 className="text-2xl font-light text-white/90 md:text-3xl" style={SERIF}>
+              Frequently asked questions
+            </h2>
+            <dl className="mt-8 space-y-6">
+              {faqs.map((f) => (
+                <div key={f.id ?? f.question}>
+                  <dt className="text-base font-medium text-white/90">{f.question}</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-white/70">{f.answer}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         )}
 
         {/* Featured restaurants */}
@@ -340,6 +372,12 @@ export default async function GuidePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
     </div>
   )
 }

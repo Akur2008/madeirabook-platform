@@ -46,6 +46,17 @@ export const Guides: CollectionConfig = {
       },
     },
     {
+      name: 'faqs',
+      type: 'array',
+      admin: {
+        description: 'Optional FAQ block. Rendered on the page and emitted as FAQPage JSON-LD.',
+      },
+      fields: [
+        { name: 'question', type: 'text', required: true },
+        { name: 'answer', type: 'textarea', required: true },
+      ],
+    },
+    {
       name: 'category',
       type: 'select',
       options: [
