@@ -7,6 +7,7 @@ import SoundButton from '@/components/SoundButton'
 import WhatsAppConciergeButton, {
   OASIS_WA_BASE,
 } from '@/components/WhatsAppConciergeButton'
+import CookieConsent from '@/components/CookieConsent'
 import OasisLink from '../(frontend)/components/OasisLink'
 import './oasis.css'
 
@@ -89,6 +90,7 @@ export default function OasisLayout(props: { children: React.ReactNode }) {
           <AiConciergeWidget />
           <SoundButton />
         </AudioEngineProvider>
+        <CookieConsent />
       </body>
     </html>
   )

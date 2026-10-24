@@ -266,6 +266,24 @@ export default function ApplyForm({
         onToggle={toggle(setSelectedRestaurants)}
       />
 
+      <label className="flex cursor-pointer items-start gap-2 text-xs leading-snug text-white/60">
+        <input
+          type="checkbox"
+          name="agreed"
+          required
+          className="mt-0.5 accent-green-500"
+        />
+        <span>
+          I agree to the processing of my data as described in the{' '}
+          <a
+            href="/legal/privacy"
+            className="underline underline-offset-2 hover:text-white"
+          >
+            Privacy Policy
+          </a>
+        </span>
+      </label>
+
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       <button

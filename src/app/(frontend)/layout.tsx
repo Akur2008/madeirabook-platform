@@ -1,6 +1,5 @@
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
-import { Analytics } from '@vercel/analytics/next'
 import './styles.css'
 import Footer from './components/Footer'
 import { AudioEngineProvider } from '@/audio/AudioEngineProvider'
@@ -8,6 +7,8 @@ import GlobalAmbient from '@/components/GlobalAmbient'
 import BottomActionBar from '@/components/BottomActionBar'
 import WhaleBreathModal from '@/components/WhaleBreathModal'
 import AiConciergeWidget from '@/components/AiConciergeWidget'
+import CookieConsent from '@/components/CookieConsent'
+import AnalyticsWithConsent from '@/components/AnalyticsWithConsent'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.madeirabook.com'),
@@ -64,7 +65,8 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           <BottomActionBar />
           <WhaleBreathModal />
         </AudioEngineProvider>
-        <Analytics />
+        <CookieConsent />
+        <AnalyticsWithConsent />
       </body>
     </html>
   )

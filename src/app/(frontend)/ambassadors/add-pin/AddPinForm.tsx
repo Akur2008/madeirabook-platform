@@ -263,6 +263,25 @@ export default function AddPinForm({ token }: { token: string }) {
         />
       </div>
 
+      <label className="flex cursor-pointer items-start gap-2 text-xs leading-snug text-white/60">
+        <input
+          type="checkbox"
+          name="agreed"
+          required
+          className="mt-0.5 accent-[#10b981]"
+        />
+        <span>
+          I have the rights or permission to use the uploaded media and accept
+          the{' '}
+          <a
+            href="/legal/privacy"
+            className="underline underline-offset-2 hover:text-white"
+          >
+            Privacy Policy
+          </a>
+        </span>
+      </label>
+
       {error && <p className="text-center text-sm text-red-400">{error}</p>}
 
       <button

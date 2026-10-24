@@ -103,7 +103,13 @@ export default function SubscribeForm({
             className="mt-0.5 accent-green-600"
           />
           <span>
-            I agree to receive emails from Madeirabook and accept the Privacy Policy
+            I agree to receive emails from Madeirabook and accept the{' '}
+            <a
+              href="/legal/privacy"
+              className="underline underline-offset-2 hover:text-white"
+            >
+              Privacy Policy
+            </a>
           </span>
         </label>
 

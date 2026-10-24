@@ -90,6 +90,23 @@ export default function OasisInquiryForm({
         rows={4}
         className={`mt-4 ${inputClass}`}
       />
+      <label className="mt-4 flex cursor-pointer items-start gap-2 text-xs leading-snug text-[#1c1a16]/60">
+        <input
+          type="checkbox"
+          name="agreed"
+          required
+          className="mt-0.5 accent-[#10b981]"
+        />
+        <span>
+          I agree to the processing of my data as described in the{' '}
+          <a
+            href="/legal/privacy"
+            className="underline underline-offset-2 hover:text-[#1c1a16]"
+          >
+            Privacy Policy
+          </a>
+        </span>
+      </label>
       {state === 'error' && (
         <p className="mt-3 text-sm text-red-700">
           Something went wrong. Please try again.
